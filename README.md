@@ -1,21 +1,31 @@
 ![Logo](admin/mydlink.png)
 # ioBroker.mydlink
-=================
 
-![Number of Installations](http://iobroker.live/badges/mydlink-installed.svg) ![Number of Installations](http://iobroker.live/badges/mydlink-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
+
+<!--- ![Number of Installations](http://iobroker.live/badges/mydlink-installed.svg) ![Number of Installations](http://iobroker.live/badges/mydlink-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
 [![Tests](https://travis-ci.org/arteck/ioBroker.mydlink.svg?branch=master)](https://travis-ci.org/arteck/ioBroker.mydlink)
 
-[![NPM](https://nodei.co/npm/iobroker.mydlink.png?downloads=true)](https://nodei.co/npm/iobroker.mydlink/)
+[![NPM](https://nodei.co/npm/iobroker.mydlink.png?downloads=true)](https://nodei.co/npm/iobroker.mydlink/) --->
 
 
 
 MyDlink Adapter for ioBroker. 
 ------------------------------------------------------------------------------
 
-Currently only supports dsp-w215 smart plug.
-You need to specify IP and PIN for every device. 
-PIN is printed on the bottom of the device.
+Allows to control power sockets or motion detectors from D-Link from within ioBroker.
+
+Currently tested:
+* DSP-W215 Socket (socket, temperature, current)
+* DCH-S150 Motion Detector (last motion detected)
+
+The adapter needs to poll the devices. So sensor readings and motion detection will be 
+delayed by polling interval (can be set in config)
+
+In config there is a list where you need to specify IP and PIN for every device. 
+The PIN is printed on the bottom of the device.
+
+The adapter does not interfere with the use of the app.
 
 ## Changelog
 
@@ -25,7 +35,7 @@ PIN is printed on the bottom of the device.
 ## License
 MIT License
 
-Copyright (c) 2019 Author <author@mail.com>
+Copyright (c) 2019 Garfonso <garfonso@mobo.info>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
