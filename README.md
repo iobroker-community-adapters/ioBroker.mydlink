@@ -2,11 +2,11 @@
 # ioBroker.mydlink
 
 
-<!--- ![Number of Installations](http://iobroker.live/badges/mydlink-installed.svg) ![Number of Installations](http://iobroker.live/badges/mydlink-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
+![Number of Installations](http://iobroker.live/badges/mydlink-installed.svg) ![Number of Installations](http://iobroker.live/badges/mydlink-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
 [![Tests](https://travis-ci.org/arteck/ioBroker.mydlink.svg?branch=master)](https://travis-ci.org/arteck/ioBroker.mydlink)
 
-[![NPM](https://nodei.co/npm/iobroker.mydlink.png?downloads=true)](https://nodei.co/npm/iobroker.mydlink/) --->
+[![NPM](https://nodei.co/npm/iobroker.mydlink.png?downloads=true)](https://nodei.co/npm/iobroker.mydlink/)
 
 
 
@@ -31,6 +31,9 @@ The PIN is printed on the bottom of the device.
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+
+### 0.0.2
+* (Garfonso) move to ioborker-community-adapters
 
 ### 0.0.1
 * (Garfonso) initial release

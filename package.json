@@ -6,7 +6,7 @@
     "name": "Garfonso",
     "email": "garfonso@mobo.info"
   },
-  "homepage": "https://github.com/Garfonso/ioBroker.mydlink",
+  "homepage": "https://github.com/iobroker-community-adapters/ioBroker.mydlink",
   "license": "MIT",
   "keywords": [
     "mydlink",
@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Garfonso/ioBroker.mydlink"
+    "url": "https://github.com/iobroker-community-adapters/ioBroker.mydlink"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^1.0.3",
@@ -52,7 +52,7 @@
     "lint": "eslint"
   },
   "bugs": {
-    "url": "https://github.com/Garfonso/ioBroker.mydlink/issues"
+    "url": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/issues"
   },
   "readmeFilename": "README.md"
 }
