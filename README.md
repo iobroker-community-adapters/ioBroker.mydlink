@@ -16,6 +16,7 @@ MyDlink Adapter for ioBroker.
 Allows to control power sockets or motion detectors from [D-Link](https://eu.dlink.com/uk/en/for-home/smart-home) from within ioBroker. 
 
 Currently tested devices:
+
 | Model | Type  | Image |
 | :---: | :---: | :---: |
 | [DSP-W215](https://eu.dlink.com/uk/en/products/dsp-w215-smart-plug) | Socket (socket, temperature, current) | ![Image](admin/DSP_W215.png) | 
