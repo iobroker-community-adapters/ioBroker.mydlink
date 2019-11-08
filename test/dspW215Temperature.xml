@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetCurrentTemperatureResponse xmlns="http://purenetworks.com/HNAP1/">
+            <GetCurrentTemperatureResult>OK</GetCurrentTemperatureResult>
+            <CurrentTemperature>41</CurrentTemperature>
+        </GetCurrentTemperatureResponse>
+    </soap:Body>
+</soap:Envelope>

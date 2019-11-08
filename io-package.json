@@ -1,0 +1,62 @@
+{
+  "common": {
+    "name": "mydlink",
+    "version": "0.0.1",
+    "news": {
+      "0.0.1": {
+        "en": "first test version ",
+        "de": "erste test version "
+      }
+    },
+    "title": "mydlink",
+    "titleLang": {
+      "en": "mydlink",
+      "de": "mydlink"
+    },
+    "desc": {
+      "en": "connects mydlink plugs to ioBroker",
+      "de": "verbindet mydlink Steckdosen mit ioBroker"
+    },
+    "authors": [
+      "Garfonso <garfonso@mobo.info>"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "main.js",
+    "icon": "mydlink.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/Garfonso/ioBroker.mydlink/master/admin/mydlink.png",
+    "readme": "https://github.com/Garfonso/ioBroker.mydlink/blob/master/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "hardware",
+    "restartAdapters":          [
+      "mydlink"
+    ],
+    "keywords": ["mydlink", "dsp-w215"],
+    "compact": true,
+    "materialize": true,
+    "materializeTab": true,
+    "adminTab": {
+      "singleton": true,
+      "name": {
+        "en": "mydlink (JavaScript)",
+        "de": "mydlink (JavaScript)"
+      },
+      "link": "",
+      "fa-icon": "info"
+    },
+    "supportCustoms": true,
+    "dependencies": [
+      {
+        "js-controller": ">=1.4.2"
+      }
+    ]
+  },
+  "native": {
+    "interval": 1000,
+    "devices": []
+  },
+  "objects": [],
+  "instanceObjects": []
+}

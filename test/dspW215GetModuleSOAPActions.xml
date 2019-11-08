@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetModuleSOAPActionsResponse xmlns="http://purenetworks.com/HNAP1/">
+            <GetModuleSOAPActionsResult>OK</GetModuleSOAPActionsResult>
+            <ModuleSOAPList>
+                <SOAPActions>
+                    <ModuleID>1</ModuleID>
+                    <Action>GetSocketSettings</Action>
+                    <Action>SetSocketSettings</Action>
+                    <Action>GetSocketSettings2</Action>
+                    <Action>GetSocketLogs</Action>
+                    <Action>CleanSocketLogs</Action>
+                </SOAPActions>
+                <SOAPActions>
+                    <ModuleID>2</ModuleID>
+                    <Action>GetPowerMeterSettings</Action>
+                    <Action>SetPowerMeterSettings</Action>
+                    <Action>GetPowerMeterSettings2</Action>
+                    <Action>GetCurrentPowerConsumption</Action>
+                    <Action>GetPMWarningThreshold</Action>
+                    <Action>SetPMWarningThreshold</Action>
+                    <Action>GetPURSupportedTypes</Action>
+                    <Action>GetPURecords</Action>
+                    <Action>GetPowerMeterLogs</Action>
+                    <Action>CleanPowerMeterLogs</Action>
+                    <Action>GetLatestDetection</Action>
+                </SOAPActions>
+                <SOAPActions>
+                    <ModuleID>3</ModuleID>
+                    <Action>GetTempMonitorSettings</Action>
+                    <Action>SetTempMonitorSettings</Action>
+                    <Action>GetTempMonitorSettings2</Action>
+                    <Action>GetCurrentTemperature</Action>
+                    <Action>GetTempMonitorLogs</Action>
+                    <Action>CleanTempMonitorLogs</Action>
+                    <Action>GetLatestDetection</Action>
+                </SOAPActions>
+            </ModuleSOAPList>
+        </GetModuleSOAPActionsResponse>
+    </soap:Body>
+</soap:Envelope>

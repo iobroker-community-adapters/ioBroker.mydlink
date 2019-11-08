@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <LoginResponse xmlns="http://purenetworks.com/HNAP1/">
+            <LoginResult>OK</LoginResult>
+            <Challenge>U93VrPpoSrqitteYH4CI</Challenge>
+            <Cookie>wTWYCZkfoP</Cookie>
+            <PublicKey>W1pucRSV9rEADGxkoRFf</PublicKey>
+        </LoginResponse>
+    </soap:Body>
+</soap:Envelope>

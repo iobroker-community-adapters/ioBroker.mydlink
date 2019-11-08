@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetSocketSettingsResponse xmlns="http://purenetworks.com/HNAP1/">
+            <GetSocketSettingsResult>OK</GetSocketSettingsResult>
+            <SocketInfoList>
+                <SocketInfo>
+                    <ModuleID>1</ModuleID>
+                    <NickName>Socket 1</NickName>
+                    <Description>Socket 1</Description>
+                    <OPStatus>true</OPStatus>
+                    <HNAPVersion>0102</HNAPVersion>
+                </SocketInfo>
+            </SocketInfoList>
+        </GetSocketSettingsResponse>
+    </soap:Body>
+</soap:Envelope>

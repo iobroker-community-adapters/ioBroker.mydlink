@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetDeviceSettings2Response xmlns="http://purenetworks.com/HNAP1/">
+            <GetDeviceSettings2Result>OK</GetDeviceSettings2Result>
+            <SerialNumber>0</SerialNumber>
+            <TimeZone>+1</TimeZone>
+            <TZLocation>Europe/Berlin</TZLocation>
+            <AutoAdjustDST>true</AutoAdjustDST>
+            <Locale>en-US</Locale>
+            <SupportedLocales>
+                <string>en-AU</string>
+                <string>en-CA</string>
+                <string>zh-CN</string>
+                <string>en-SG</string>
+                <string>zh-TW</string>
+                <string>ko-KR</string>
+                <string>ja</string>
+                <string>en-US</string>
+                <string>en-GB</string>
+                <string>lo</string>
+                <string>pt-BR</string>
+            </SupportedLocales>
+            <SSL>false</SSL>
+        </GetDeviceSettings2Response>
+    </soap:Body>
+</soap:Envelope>

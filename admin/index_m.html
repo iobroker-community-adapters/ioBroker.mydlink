@@ -1,0 +1,118 @@
+<html>
+
+<head>
+
+    <!-- Load ioBroker scripts and styles-->
+    <link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
+    <link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
+
+    <script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+
+    <script type="text/javascript" src="../../js/translate.js"></script>
+    <script type="text/javascript" src="../../lib/js/materialize.js"></script>
+    <script type="text/javascript" src="../../js/adapter-settings.js"></script>
+
+    <!-- Load our own files -->
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script type="text/javascript" src="words.js"></script>
+
+<!-- you have to define 2 functions in the global scope: -->
+<script type="text/javascript">
+
+    var devices = [];
+    // This will be called by the admin adapter when the settings page loads
+    function load(settings, onChange) {
+        // example: select elements with id=key and class=value and insert value
+        if (!settings) return;
+        $('.value').each(function () {
+            var $key = $(this);
+            var id = $key.attr('id');
+            if ($key.attr('type') === 'checkbox') {
+                // do not call onChange direct, because onChange could expect some arguments
+                $key.prop('checked', settings[id])
+                    .on('change', () => onChange())
+                ;
+            } else {
+                // do not call onChange direct, because onChange could expect some arguments
+                $key.val(settings[id])
+                    .on('change', () => onChange())
+                    .on('keyup', () => onChange())
+                ;
+            }
+        });
+        onChange(false);
+
+        //handle devices array.
+        devices = settings.devices || [];
+        values2table('devices', devices, onChange);
+
+        // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
+        if (M) M.updateTextFields();
+    }
+
+    // This will be called by the admin adapter when the user presses the save button
+    function save(callback) {
+        var obj = {};
+        $('.value').each(function () {
+            var $this = $(this);
+            if ($this.attr('type') === 'checkbox') {
+                obj[$this.attr('id')] = $this.prop('checked');
+            } else {
+                obj[$this.attr('id')] = $this.val();
+            }
+        });
+
+        obj.devices = table2values('devices');
+
+        callback(obj);
+    }
+</script>
+</head>
+<body>
+<!-- you have to put your config page in a div with id adapter-container -->
+<div class="m adapter-container">
+    <div class="row">
+        <div class="col s12">
+            <ul class="tabs">
+                <li class="tab col s2"><a href="#tab-main" class="translate active">Main settings</a></li>
+                <li class="tab col s2"><a href="#tab-devices" class="translate">addresses</a></li>
+            </ul>
+        </div>
+
+        <div id="tab-main" class="col s12 page">
+            <div class="row">
+                <div class="col s12 m4 l2">
+                    <img src="mydlink.png" class="logo">
+                </div>
+            </div>
+
+            <div class="col s12 m4 l1">
+                <input class="value number" id="interval" size="5" maxlength="6" type="number"/>
+                <label class="translate" for="interval">interval</label>
+            </div>
+        </div>
+
+
+        <div id="tab-devices" class="col s12 page">
+            <div class="col s12" id="devices">
+                <a class="btn-floating waves-effect waves-light blue table-button-add"><i class="material-icons">add</i></a>
+                <div class="table-values-div">
+                    <table class="table-values">
+                        <thead>
+                        <tr>
+                            <th data-name="name" style="width: 50%" class="translate">name</th>
+                            <th data-name="ip" style="width: 30%" class="translate">ipaddress</th>
+                            <th data-name="pin" style="..." class="translate">pin</th>
+                            <th data-name="enabled" style="width: 70px" data-style="width: 70px" data-type="checkbox" class="translate">enabled</th>
+                            <th data-buttons="delete up down" style="width: 120px"></th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

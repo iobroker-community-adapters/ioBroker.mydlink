@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetModuleSOAPActionsResponse xmlns="http://purenetworks.com/HNAP1/">
+            <GetModuleSOAPActionsResult>OK</GetModuleSOAPActionsResult>
+            <ModuleSOAPList>
+                <SOAPActions>
+                    <ModuleID>1</ModuleID>
+                    <Action>GetMotionDetectorSettings</Action>
+                    <Action>SetMotionDetectorSettings</Action>
+                    <Action>GetMotionDetectorLogs</Action>
+                    <Action>CleanMotionDetectorLogs</Action>
+                    <Action>GetLatestDetection</Action>
+                </SOAPActions>
+            </ModuleSOAPList>
+        </GetModuleSOAPActionsResponse>
+    </soap:Body>
+</soap:Envelope>

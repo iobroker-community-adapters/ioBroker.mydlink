@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetPMWarningThresholdResponse xmlns="http://purenetworks.com/HNAP1/">
+            <GetPMWarningThresholdResult>OK</GetPMWarningThresholdResult>
+            <Threshold>30.0</Threshold>
+            <Percentage>90</Percentage>
+            <PeriodicType>Monthly</PeriodicType>
+            <StartTime>1</StartTime>
+            <TotalConsumption>1.305929</TotalConsumption>
+            <TimeStamp>1572126229</TimeStamp>
+        </GetPMWarningThresholdResponse>
+    </soap:Body>
+</soap:Envelope>
