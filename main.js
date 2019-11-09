@@ -337,7 +337,7 @@ class DlinkSmarhome extends utils.Adapter {
      * Poll a value, compare it to the value already set and if different, set value in DB.
      * @param pollFunc - function to use for polling
      * @param id - state Id
-     * @returns {Promise<boolean>}
+     * @returns {Promise<boolean>} //true if change did happen.
      */
     async pollAndSetState(pollFunc, id) {
         let value = await pollFunc();
@@ -348,14 +348,10 @@ class DlinkSmarhome extends utils.Adapter {
             //something went wrong... maybe can not read that setting at all?
             throw "Error during reading " + id;
         }
-        let valueSet = await this.getStateAsync(id);
-        //this.log.debug("Got state: " + JSON.stringify(valueSet, null, 2));
-        if (!valueSet || !valueSet.ack || value !== valueSet.val) {
-            //this.log.debug("Setting state to " + value + ", because " + (!valueSet) + " || " + (!valueSet.ack) + " || " + (value !== valueSet.val));
-            await this.setStateAsync(id, value, true);
-            return true;
-        }
-        return false;
+
+        let result = await this.setStateChangedAsync(id, value, true);
+        // @ts-ignore
+        return !result.notChanged;
     }
 
     /**
@@ -387,13 +383,7 @@ class DlinkSmarhome extends utils.Adapter {
                     //this.log.debug("Setting state to true.");
                     await this.setStateAsync(device.id + stateSuffix, detectionHappened, true);
                 } else {
-                    let currState = await this.getStateAsync(device.id + stateSuffix);
-                    //this.log.debug("State currently is: " + currState.val);
-                    if (!currState || currState.val) {
-                        this.log.debug("Setting state to false.");
-                        //reset state to false on poll after detection.
-                        await this.setStateAsync(device.id + stateSuffix, false, true);
-                    }
+                    await this.setStateChangedAsync(device.id + stateSuffix, false, true);
                 }
             }
             if (device.hasTemp) {
