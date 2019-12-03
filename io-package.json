@@ -5,6 +5,7 @@
     "news": {
       "0.0.3": {
         "en": "use setStateChanged instead of polling state before writing,\nminor clean ups.",
+        "de": "Interne Optimierungen."
       },
       "0.0.2": {
         "en": "moved to iobroker-community-adapters",
