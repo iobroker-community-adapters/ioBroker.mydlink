@@ -32,6 +32,10 @@ The adapter does not interfere with the use of the app.
 
 ## Changelog
 
+### 0.0.3
+* (Garfonso) use setStateChanged instead of polling state before writing.
+* (Garfonso) minor clean ups.
+
 ### 0.0.2
 * (Garfonso) move to ioborker-community-adapters
 

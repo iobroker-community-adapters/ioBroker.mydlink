@@ -1,8 +1,11 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "news": {
+      "0.0.3": {
+        "en": "use setStateChanged instead of polling state before writing,\nminor clean ups.",
+      },
       "0.0.2": {
         "en": "moved to iobroker-community-adapters",
         "de": "zu iobroker-community-adapters umgezogen"
