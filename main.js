@@ -470,7 +470,7 @@ class DlinkSmarhome extends utils.Adapter {
 
                     try {
                         await switchFunc();
-                        this.log.debug("Switched " + device.name + " on.");
+                        this.log.debug("Switched " + device.name + (state.val ? " on." : " off."));
                         await this.pollAndSetState(device.client.state, device.id + stateSuffix);
                     } catch(e) {
                         this.log.error("Error while switching device " + device.name + ": " +  + JSON.stringify(e, null, 2));
