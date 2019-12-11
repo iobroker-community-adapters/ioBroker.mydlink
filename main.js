@@ -303,11 +303,12 @@ class DlinkSmarhome extends utils.Adapter {
                 };
                 this.devices.push(internalDevice);
 
-                let interval = this.config.interval;
+                let interval = device.pollInterval || this.config.interval;
                 if (interval !== 0) {
                     this.log.debug("Start polling.");
-                    if (interval < 1000) {
-                        interval = 1000; //polling once every three seconds should be enough, right?
+                    if (interval < 500) {
+                        this.log.warn("Increasing poll rate to twice per second. Please check device config.");
+                        interval = 500; //polling once every second should be enough, right?
                     }
                     internalDevice.interval = setInterval(this.onInterval.bind(this, internalDevice), interval);
                 } else {

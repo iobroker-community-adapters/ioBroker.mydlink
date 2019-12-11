@@ -25,8 +25,8 @@ systemDictionary = {
         "pl": "addresses to monitoring"
     },
     "interval": {
-        "en": "Polling interval[ms]",
-        "de": "Abfrage Intervall[ms]",
+        "en": "Polling interval[ms] (ignored if per device interval is set)",
+        "de": "Abfrage Intervall[ms] (wird ignoriert, wenn beim Gerät ein Interval gesetzt wird)",
         "ru": "Интервал опроса в миллисекундах:",
         "pt": "Polling interval[ms]",
         "nl": "Polling interval[ms]",
@@ -67,6 +67,17 @@ systemDictionary = {
         "it": "Name",
         "es": "Name",
         "pl": "Name"
+    },
+    "pollInterval": {
+        "en": "Polling interval[ms]",
+        "de": "Abfrage Intervall[ms]",
+        "ru": "Интервал опроса в миллисекундах:",
+        "pt": "Polling interval[ms]",
+        "nl": "Polling interval[ms]",
+        "fr": "Polling interval[ms]",
+        "it": "Polling interval[ms]",
+        "es": "Polling interval[ms]",
+        "pl": "Polling interval[ms]"
     },
     "settings": {
         "en": "Adapter settings",
