@@ -28,6 +28,7 @@ const powerSuffix = ".currentPower";
 const totalPowerSuffix = ".totalPower";
 const temperatureSuffix = ".temperature";
 const lastDetectedSuffix = ".lastDetected";
+const noMotionSuffix = ".no_motion";
 
 class DlinkSmarhome extends utils.Adapter {
     /**
@@ -146,6 +147,20 @@ class DlinkSmarhome extends utils.Adapter {
                     name: 'lastDetected',
                     type: 'number',
                     role: 'value.time',
+                    read: true,
+                    write: false
+                },
+                native: {}
+            });
+
+            this.log.debug("Creating no_motion object for " + device.name);
+            await this.setObjectAsync(device.name + noMotionSuffix, {
+                type: 'state',
+                common: {
+                    name: 'No motion since',
+                    type: 'number',
+                    role: 'value.interval',
+                    unit: "seconds",
                     read: true,
                     write: false
                 },
@@ -303,16 +318,16 @@ class DlinkSmarhome extends utils.Adapter {
                 };
                 this.devices.push(internalDevice);
 
-                let interval = device.pollInterval || this.config.interval;
-                if (interval !== 0) {
-                    this.log.debug("Start polling.");
+                let interval = Number.parseInt(device.pollInterval || this.config.interval);
+                if (!Number.isNaN(interval) && interval !== 0) {
+                    this.log.debug("Start polling for " + device.name);
                     if (interval < 500) {
                         this.log.warn("Increasing poll rate to twice per second. Please check device config.");
                         interval = 500; //polling once every second should be enough, right?
                     }
                     internalDevice.interval = setInterval(this.onInterval.bind(this, internalDevice), interval);
                 } else {
-                    this.log.debug("Polling disabled");
+                    this.log.debug("Polling disabled, interval was " + interval + " from " + device.pollInterval + " and " + this.config.interval);
                 }
 
                 //login:
@@ -378,13 +393,18 @@ class DlinkSmarhome extends utils.Adapter {
             }
             if (device.hasLastDetected) {
                 let detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
-                //this.log.debug("Detection happened: " + detectionHappened);
                 if (detectionHappened) {
                     //always set state to true, for new detections.
-                    //this.log.debug("Setting state to true.");
                     await this.setStateAsync(device.id + stateSuffix, detectionHappened, true);
                 } else {
                     await this.setStateChangedAsync(device.id + stateSuffix, false, true);
+                }
+
+                //fill no detection variable:
+                let lastDetection = await this.getStateAsync(device.id + lastDetectedSuffix);
+                if (lastDetection) {
+                    let noMotion = Math.round((Date.now() - lastDetection.val) / 1000);
+                    await this.setStateChangedAsync(device.id + noMotionSuffix, noMotion, true);
                 }
             }
             if (device.hasTemp) {
