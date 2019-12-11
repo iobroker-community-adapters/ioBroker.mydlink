@@ -32,6 +32,10 @@ The adapter does not interfere with the use of the app.
 
 ## Changelog
 
+### 0.0.4
+* (Garfonso) polling interval can now be configured on per device basis (if not configured for a device global poll intervall will be used.) Recommendation: Use high global poll interval and a smaller one for motion detectors.
+* (Garfonso) added no_motion state for motion detectors, contains number of seconds since last motion.
+
 ### 0.0.3
 * (Garfonso) use setStateChanged instead of polling state before writing.
 * (Garfonso) minor clean ups.

@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "news": {
+      "0.0.4": {
+        "en": "added pollInterval option on per device basis.\nadded no_motion field to motion sensors.",
+        "de": "poll interval kann jetzt für jedes Gerät einzeln festgelegt werden.\nneues no_motion feld für Bewegungsmelder."
+      },
       "0.0.3": {
         "en": "use setStateChanged instead of polling state before writing,\nminor clean ups.",
         "de": "Interne Optimierungen."
