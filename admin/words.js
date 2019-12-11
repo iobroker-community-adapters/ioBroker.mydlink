@@ -15,7 +15,7 @@ systemDictionary = {
     },
     "addresses": {
         "en": "addresses to monitoring",
-        "de": "Adresse für Monitoring",
+        "de": "Adressen für Monitoring",
         "ru": "Список IP адресов для мониторинга",
         "pt": "addresses to monitoring",
         "nl": "addresses to monitoring",
