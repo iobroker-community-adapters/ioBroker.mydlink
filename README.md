@@ -23,10 +23,12 @@ Currently tested devices:
 | [DCH-S150](https://eu.dlink.com/uk/en/products/dch-s150-motion-sensor) | Motion Detector (last motion detected) | ![Image](admin/DCH_S150.png) |
 
 The adapter needs to poll the devices. So sensor readings and motion detection will be 
-delayed by polling interval (can be set in config)
+delayed by polling interval (can be set in config).
 
 In config there is a list where you need to specify IP and PIN for every device. 
 The PIN is printed on the bottom of the device.
+In the list you can also specify a poll interval for single devices. The global one is used if nothing is set here. Advised
+is to set a small interval here for sensors and a longer interval for plugs.
 
 The adapter does not interfere with the use of the app.
 

@@ -26,8 +26,8 @@
       "de": "mydlink"
     },
     "desc": {
-      "en": "connects mydlink plugs to ioBroker",
-      "de": "verbindet mydlink Steckdosen mit ioBroker"
+      "en": "connects mydlink plugs and sensors to ioBroker",
+      "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker"
     },
     "authors": [
       "Garfonso <garfonso@mobo.info>"
