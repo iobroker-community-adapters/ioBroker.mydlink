@@ -42,23 +42,11 @@
     "loglevel": "info",
     "mode": "daemon",
     "type": "hardware",
-    "restartAdapters":          [
-      "mydlink"
-    ],
+    "connectionType": "local polling",
     "keywords": ["mydlink", "dsp-w215"],
     "compact": true,
     "materialize": true,
-    "materializeTab": true,
-    "adminTab": {
-      "singleton": true,
-      "name": {
-        "en": "mydlink (JavaScript)",
-        "de": "mydlink (JavaScript)"
-      },
-      "link": "",
-      "fa-icon": "info"
-    },
-    "supportCustoms": true,
+    "supportCustoms": false,
     "dependencies": [
       {
         "js-controller": ">=1.5.11"
