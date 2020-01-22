@@ -25,14 +25,24 @@ Currently tested devices:
 The adapter needs to poll the devices. So sensor readings and motion detection will be 
 delayed by polling interval (can be set in config).
 
-In config there is a list where you need to specify IP and PIN for every device. 
-The PIN is printed on the bottom of the device.
-In the list you can also specify a poll interval for single devices. The global one is used if nothing is set here. Advised
-is to set a small interval here for sensors and a longer interval for plugs.
+#### Configuration:
+* global poll interval - Adapter will poll all devices in that interval, if they do not have a specific interval set. Set to 0 to disable.
+* List of devices, each device with following settings:
+
+<table>
+<tr><td>Name</td><td>set a name here, must be unique (for mydlink devices)</td></tr>
+<tr><td>IP</td><td>fill in IP address here, hostname should also work</td></tr>
+<tr><td>PIN</td><td>PIN is printed on a sticker on the device, probably at the bottom</td></tr>
+<tr><td>Poll interval</td><td>per device poll interval, leave empty to use global poll interval. <br /> Set 0 to disable polling. <br /><b>Recommendation:</b> Set a fast poll interval for sensors and a longer one for plugs.</td></tr>
+<tr><td>enable</td><td>if not enabled, will not be polled or controlled. <br />Devices that are not plugged in can be disabled to avoid error messages in the log.</td></tr>
+</table>
 
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+
+### 0.0.5
+* (Garfonso) fixed config files for release in latest repository.
 
 ### 0.0.4
 * (Garfonso) polling interval can now be configured on per device basis (if not configured for a device global poll intervall will be used.) Recommendation: Use high global poll interval and a smaller one for motion detectors.
@@ -51,8 +61,6 @@ The adapter does not interfere with the use of the app.
 ## License
 MIT License
 
-Copyright (c) 2019 Garfonso <garfonso@mobo.info>
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -70,3 +78,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Copyright (c) 2019 Garfonso <garfonso@mobo.info>
