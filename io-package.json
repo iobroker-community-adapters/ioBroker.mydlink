@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "news": {
+      "0.0.6": {
+        "en": "prevent removement of custom details in objects",
+        "de": "verhindere, dass eingestellte details an Objekten überschrieben werden"
+      },
       "0.0.5": {
         "en": "fixed config files for release in latest repository.",
         "de": "Konfigurationsdateien für eine Veröffentlichung im repository aufgeräumt"
@@ -46,7 +50,8 @@
     "loglevel": "info",
     "mode": "daemon",
     "type": "hardware",
-    "connectionType": "local polling",
+    "connectionType": "local",
+    "dataSource": "poll",
     "keywords": ["mydlink", "dsp-w215"],
     "compact": true,
     "materialize": true,

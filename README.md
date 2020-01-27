@@ -41,6 +41,9 @@ The adapter does not interfere with the use of the app.
 
 ## Changelog
 
+### 0.0.6
+* (Garfonso) prevent removement of custom details in objects.
+
 ### 0.0.5
 * (Garfonso) fixed config files for release in latest repository.
 
