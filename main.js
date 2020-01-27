@@ -64,7 +64,7 @@ class DlinkSmarhome extends utils.Adapter {
         //also set the native part of the device:
         await this.createDeviceAsync(device.name, {name: device.name}, device);
         //create state object, for plug this is writable for sensor not.
-        await this.setObjectAsync(device.name + stateSuffix, {
+        await this.setObjectNotExistsAsync(device.name + stateSuffix, {
             type: 'state',
             common: {
                 name: 'state',
@@ -75,7 +75,7 @@ class DlinkSmarhome extends utils.Adapter {
             },
             native: {}
         });
-        await this.setObjectAsync(device.name + enabledSuffix, {
+        await this.setObjectNotExistsAsync(device.name + enabledSuffix, {
             type: 'state',
             common: {
                 name: 'enabled',
@@ -96,7 +96,7 @@ class DlinkSmarhome extends utils.Adapter {
     async createObjects(device) {
         if(device.hasTemp) {
             this.log.debug("Creating temp object for " + device.name);
-            await this.setObjectAsync(device.name + temperatureSuffix, {
+            await this.setObjectNotExistsAsync(device.name + temperatureSuffix, {
                 type: 'state',
                 common: {
                     name: 'temperature',
@@ -111,7 +111,7 @@ class DlinkSmarhome extends utils.Adapter {
         }
         if (device.hasPower) {
             this.log.debug("Creating power object for " + device.name);
-            await this.setObjectAsync(device.name + powerSuffix, {
+            await this.setObjectNotExistsAsync(device.name + powerSuffix, {
                 type: 'state',
                 common: {
                     name: 'currentPowerConsumption',
@@ -126,7 +126,7 @@ class DlinkSmarhome extends utils.Adapter {
         }
         if (device.hasTotalPower) {
             this.log.debug("Creating totalPower object for " + device.name);
-            await this.setObjectAsync(device.name + totalPowerSuffix, {
+            await this.setObjectNotExistsAsync(device.name + totalPowerSuffix, {
                 type: 'state',
                 common: {
                     name: 'totalPowerConsumption',
@@ -141,7 +141,7 @@ class DlinkSmarhome extends utils.Adapter {
         }
         if (device.hasLastDetected) {
             this.log.debug("Creating lastDetected object for " + device.name);
-            await this.setObjectAsync(device.name + lastDetectedSuffix, {
+            await this.setObjectNotExistsAsync(device.name + lastDetectedSuffix, {
                 type: 'state',
                 common: {
                     name: 'lastDetected',
@@ -154,7 +154,7 @@ class DlinkSmarhome extends utils.Adapter {
             });
 
             this.log.debug("Creating no_motion object for " + device.name);
-            await this.setObjectAsync(device.name + noMotionSuffix, {
+            await this.setObjectNotExistsAsync(device.name + noMotionSuffix, {
                 type: 'state',
                 common: {
                     name: 'No motion since',
@@ -170,7 +170,7 @@ class DlinkSmarhome extends utils.Adapter {
 
         if (!device.canSwitchOnOff) {
             this.log.debug("Changing state to indicator for " + device.name);
-            await this.setObjectAsync(device.name + stateSuffix, {
+            await this.extendObjectAsync(device.name + stateSuffix, {
                 type: 'state',
                 common: {
                     name: 'state',
@@ -186,7 +186,7 @@ class DlinkSmarhome extends utils.Adapter {
         }
 
         //have ready indicator:
-        await this.setObjectAsync(device.name + readySuffix, {
+        await this.setObjectNotExistsAsync(device.name + readySuffix, {
             type: 'state',
             common: {
                 name: "ready",
