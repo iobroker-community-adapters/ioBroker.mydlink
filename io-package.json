@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "news": {
+      "0.0.7": {
+        "en": "added info.connection state, silenced repeated error messages",
+        "de": "info.connection state hinzugefügt, wiederholte Fehlermeldungen unterdrückt"
+      },
       "0.0.6": {
         "en": "prevent removement of custom details in objects",
         "de": "verhindere, dass eingestellte details an Objekten überschrieben werden"

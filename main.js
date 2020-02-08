@@ -272,6 +272,20 @@ class DlinkSmarhome extends utils.Adapter {
         this.log.debug('polling interval: ' + this.config.interval);
         this.log.debug('devices: ' + JSON.stringify(this.config.devices, null, 2));
 
+        //connection state -> will become green if at least one device is reachable.
+        await this.setObjectNotExistsAsync("info.connection", {
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "If communication with cec-client works",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {},
+        });
+
         //compare existing and configured devices:
         let existingDevices = await this.getDevicesAsync();
         this.log.debug("Got devices: " + JSON.stringify(existingDevices, null, 2));
@@ -314,7 +328,8 @@ class DlinkSmarhome extends utils.Adapter {
                     id: id, //for easier state updates
                     name: device.name, //for easier logging
                     loggedIn: false,
-                    identified: false
+                    identified: false,
+                    ready: false
                 };
                 this.devices.push(internalDevice);
 
@@ -388,6 +403,9 @@ class DlinkSmarhome extends utils.Adapter {
                 await this.identifyDevice(device);
             }
             await this.pollAndSetState(device.client.isDeviceReady, device.id + readySuffix);
+            //poll ready will throw error if not ready.
+            device.ready = true;
+            await this.setStateChangedAsync("info.connection", true, true);
             if (device.canSwitchOnOff) {
                 await this.pollAndSetState(device.client.state, device.id + stateSuffix);
             }
@@ -418,11 +436,18 @@ class DlinkSmarhome extends utils.Adapter {
             }
             //this.log.debug("Polling of " + device.name + " finished.");
         } catch (e) {
-            this.log.error("Error during polling " + device.name + ": " + JSON.stringify(e, null, 2));
+            if (device.ready) {
+                this.log.error("Error during polling " + device.name + ": " + JSON.stringify(e, null, 2));
+            }
             if (e.errno === 403) {
                 device.loggedIn = false; //login next polling.
             }
-            await this.setStateAsync(device.id + readySuffix, false, true);
+            device.ready = false;
+            await this.setStateChangedAsync(device.id + readySuffix, false, true);
+
+            let connected = false;
+            this.devices.forEach((device) => { connected = connected || device.ready; }); //turn green if at least one device is ready = reachable.
+            await this.setStateChangedAsync("info.connection", connected, true);
         }
     }
 
