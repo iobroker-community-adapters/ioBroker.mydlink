@@ -251,10 +251,14 @@ class DlinkSmarhome extends utils.Adapter {
             let loginResult = await device.client.login();
             this.log.debug(device.name + " successfully logged in. " + JSON.stringify(loginResult));
             device.loggedIn = true;
+            device.loginErrorPrinted = false;
         } catch (e) {
+            if (!device.loginErrorPrinted) {
+                this.log.debug("Login error: " +  JSON.stringify(e, null, 2));
+                this.log.error(device.name + " could not login. Please check credentials and if device is online/connected. Error: " + JSON.stringify(e, null, 2));
+                device.loginErrorPrinted = true;
+            }
             device.loggedIn = false;
-            this.log.debug("Login error: " +  JSON.stringify(e, null, 2));
-            this.log.error(device.name + " could not login. Please check credentials and if device is online/connected. Error: " + JSON.stringify(e, null, 2));
         }
         return device.loggedIn;
     }
@@ -330,7 +334,8 @@ class DlinkSmarhome extends utils.Adapter {
                     name: device.name, //for easier logging
                     loggedIn: false,
                     identified: false,
-                    ready: false
+                    ready: false,
+                    loginErrorPrinted: false
                 };
                 this.devices.push(internalDevice);
 
