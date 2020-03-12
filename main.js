@@ -287,6 +287,7 @@ class DlinkSmarhome extends utils.Adapter {
         });
 
         //compare existing and configured devices:
+        let haveActiveDevices = false;
         let existingDevices = await this.getDevicesAsync();
         this.log.debug("Got devices: " + JSON.stringify(existingDevices, null, 2));
         for (const device of this.config.devices) {
@@ -336,6 +337,7 @@ class DlinkSmarhome extends utils.Adapter {
                 let interval = Number.parseInt(device.pollInterval || this.config.interval);
                 if (!Number.isNaN(interval) && interval !== 0) {
                     this.log.debug("Start polling for " + device.name);
+                    haveActiveDevices = true; //only use yellow/green states if polling at least one device.
                     if (interval < 500) {
                         this.log.warn("Increasing poll rate to twice per second. Please check device config.");
                         interval = 500; //polling once every second should be enough, right?
@@ -362,6 +364,7 @@ class DlinkSmarhome extends utils.Adapter {
             this.log.debug(oldDevice.native.name + " not in config anymore. Delete objects.");
             await this.deleteDeviceAsync(oldDevice.native.name);
         }
+        await this.setStateChangedAsync("info.connection", !haveActiveDevices, true); //if no active device -> make green.
     }
 
     /**
