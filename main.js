@@ -9,6 +9,9 @@
  */
 
 'use strict';
+
+import { deviceFlags } from "./lib/deviceFlags.js";
+
 /*
  * Created with @iobroker/create-adapter v1.20.0
  */
@@ -94,7 +97,7 @@ class DlinkSmarhome extends utils.Adapter {
      * @returns {Promise<void>}
      */
     async createObjects(device) {
-        if(device.hasTemp) {
+        if(device.flags.hasTemp) {
             this.log.debug("Creating temp object for " + device.name);
             await this.setObjectNotExistsAsync(device.name + temperatureSuffix, {
                 type: 'state',
@@ -109,7 +112,7 @@ class DlinkSmarhome extends utils.Adapter {
                 native: {}
             });
         }
-        if (device.hasPower) {
+        if (device.flags.hasPower) {
             this.log.debug("Creating power object for " + device.name);
             await this.setObjectNotExistsAsync(device.name + powerSuffix, {
                 type: 'state',
@@ -124,7 +127,7 @@ class DlinkSmarhome extends utils.Adapter {
                 native: {}
             });
         }
-        if (device.hasTotalPower) {
+        if (device.flags.hasTotalPower) {
             this.log.debug("Creating totalPower object for " + device.name);
             await this.setObjectNotExistsAsync(device.name + totalPowerSuffix, {
                 type: 'state',
@@ -139,7 +142,7 @@ class DlinkSmarhome extends utils.Adapter {
                 native: {}
             });
         }
-        if (device.hasLastDetected) {
+        if (device.flags.hasLastDetected) {
             this.log.debug("Creating lastDetected object for " + device.name);
             await this.setObjectNotExistsAsync(device.name + lastDetectedSuffix, {
                 type: 'state',
@@ -168,7 +171,7 @@ class DlinkSmarhome extends utils.Adapter {
             });
         }
 
-        if (!device.canSwitchOnOff) {
+        if (!device.flags.canSwitchOnOff) {
             this.log.debug("Changing state to indicator for " + device.name);
             await this.extendObjectAsync(device.name + stateSuffix, {
                 type: 'state',
@@ -213,29 +216,20 @@ class DlinkSmarhome extends utils.Adapter {
         let soapactions = await device.client.getModuleSOAPActions(0);
         this.log.debug("Module SOAP Actions: " + JSON.stringify(soapactions, null, 2));
 
-        switch(device.model) {
-            case "DSP-W215":
-                device.canSwitchOnOff = true;
-                device.hasTemp = true;
-                device.hasPower = true;
-                device.hasTotalPower = true;
-                device.hasLastDetected = false;
-                break;
-            case "DCH-S150":
-                device.canSwitchOnOff = false;
-                device.hasTemp = false;
-                device.hasPower = false;
-                device.hasTotalPower = false;
-                device.hasLastDetected = true;
-                break;
-            default:
-                device.canSwitchOnOff = (settings.ModelDescription.indexOf("Socket") >= 0); //if is socket, probably can switch on/off.
-                device.hasTemp = false;
-                device.hasPower = false;
-                device.hasTotalPower = false;
-                device.hasLastDetected = false;
-                break;
+        const flags = deviceFlags[device.model];
+        if (flags) {
+            device.flags = flags;
+        } else {
+            device.flags = {
+                canSwitchOnOff: (settings.PresentationURL.toLowerCase().indexOf("dsp") >= 0), //if is socket, probably can switch on/off
+                hasTemp: false,
+                hasPower: false,
+                hasTotalPower: false,
+                hasLastDetected: false
+            }
+            //report unknown device:
         }
+
         await this.createObjects(device);
         device.identified = true;
         return device;
@@ -417,7 +411,7 @@ class DlinkSmarhome extends utils.Adapter {
             if (device.canSwitchOnOff) {
                 await this.pollAndSetState(device.client.state, device.id + stateSuffix);
             }
-            if (device.hasLastDetected) {
+            if (device.flags.hasLastDetected) {
                 let detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
                 if (detectionHappened) {
                     //always set state to true, for new detections.
@@ -433,13 +427,13 @@ class DlinkSmarhome extends utils.Adapter {
                     await this.setStateChangedAsync(device.id + noMotionSuffix, noMotion, true);
                 }
             }
-            if (device.hasTemp) {
+            if (device.flags.hasTemp) {
                 await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix);
             }
-            if (device.hasPower) {
+            if (device.flags.hasPower) {
                 await this.pollAndSetState(device.client.consumption, device.id + powerSuffix);
             }
-            if (device.hasTotalPower) {
+            if (device.flags.hasTotalPower) {
                 await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix);
             }
             //this.log.debug("Polling of " + device.name + " finished.");
