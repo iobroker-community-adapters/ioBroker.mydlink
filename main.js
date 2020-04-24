@@ -10,8 +10,6 @@
 
 'use strict';
 
-import { deviceFlags } from "./lib/deviceFlags.js";
-
 /*
  * Created with @iobroker/create-adapter v1.20.0
  */
@@ -20,6 +18,7 @@ import { deviceFlags } from "./lib/deviceFlags.js";
 // you need to create an adapter
 const utils = require("@iobroker/adapter-core");
 const Mdns = require("mdns-discovery");
+const deviceFlags = require("./lib/deviceFlags");
 
 // Load your modules here, e.g.:
 // const fs = require("fs");
