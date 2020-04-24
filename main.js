@@ -236,6 +236,25 @@ class DlinkSmarhome extends utils.Adapter {
                 hasLastDetected: false
             }
             //report unknown device:
+            const xmls = await device.client.getDeviceDescriptionXML();
+            this.log.info("Found new device, please report the following (full log from file, please) to developer: " + JSON.stringify(xmls, null, 2));
+            if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
+                const sentryInstance = this.getPluginInstance('sentry');
+                if (sentryInstance) {
+                    const Sentry = sentryInstance.getSentryObject();
+                    Sentry && Sentry.withScope(scope => {
+                        scope.setLevel('info');
+                        for (const key of Object.keys(xmls)) {
+                            scope.setExtra(key, xmls[key]);
+                        }
+                        Sentry.captureMessage('Unknown-Device', 'info'); // Level "info"
+                    });
+                } else {
+                    this.log.error("No sentry plugin?");
+                }
+            } else {
+                this.log.error("No plugin support, yet?");
+            }
         }
 
         await this.createObjects(device);
