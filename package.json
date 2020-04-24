@@ -22,7 +22,8 @@
     "@iobroker/plugin-sentry": "^0.1.2",
     "mdns-discovery": "^0.2.6",
     "then-request": "latest",
-    "xmldom": "^0.3.0"
+    "xmldom": "^0.3.0",
+    "snyk": "^1.311.0"
   },
   "devDependencies": {
     "@iobroker/testing": "^2.0.0",
@@ -51,10 +52,13 @@
     "test:unit": "mocha test/unit --exit",
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:js && npm run test:package",
-    "lint": "eslint"
+    "lint": "eslint",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "bugs": {
     "url": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/issues"
   },
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "snyk": true
 }
