@@ -16,22 +16,30 @@
 
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
-const utils = require("@iobroker/adapter-core");
-const Mdns = require("mdns-discovery");
-const deviceFlags = require("./lib/deviceFlags");
+const utils = require('@iobroker/adapter-core');
+const Mdns = require('mdns-discovery');
+const deviceFlags = require('./lib/deviceFlags');
 
 // Load your modules here, e.g.:
-// const fs = require("fs");
-const createSoapClient = require("./lib/soapclient.js");
+// const fs = require('fs');
+const createSoapClient = require('./lib/soapclient.js');
 
-const readySuffix = ".ready";
-const enabledSuffix = ".enabled";
-const stateSuffix = ".state";
-const powerSuffix = ".currentPower";
-const totalPowerSuffix = ".totalPower";
-const temperatureSuffix = ".temperature";
-const lastDetectedSuffix = ".lastDetected";
-const noMotionSuffix = ".no_motion";
+const readySuffix = '.ready';
+const enabledSuffix = '.enabled';
+const stateSuffix = '.state';
+const powerSuffix = '.currentPower';
+const totalPowerSuffix = '.totalPower';
+const temperatureSuffix = '.temperature';
+const lastDetectedSuffix = '.lastDetected';
+const noMotionSuffix = '.no_motion';
+
+function decrypt(key, value) {
+    let result = '';
+    for (let i = 0; i < value.length; ++i) {
+        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+    }
+    return result;
+}
 
 class DlinkSmarhome extends utils.Adapter {
     /**
@@ -45,15 +53,38 @@ class DlinkSmarhome extends utils.Adapter {
         this.on('ready', this.onReady.bind(this));
         this.on('objectChange', this.onObjectChange.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
-        // this.on('message', this.onMessage.bind(this));
+        this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
+
+        /**
+         * @typedef DeviceConfig
+         * @type {Object}
+         * @property {string} model - model name of device
+         */
+        /**
+         * @typedef Device
+         * @type {Object}
+         * @property {object} client - soap client
+         * @property {string} ip - device.ip,
+         * @property {string} pin - device.pin,
+         * @property {string} mac - mac address and id of device
+         * @property {string} id - full object id of device (derived from mac)
+         * @property {string} name - device.name, //for easier logging
+         * @property {boolean} loggedIn - true if logged in
+         * @property {boolean} identified - true if identified
+         * @property {boolean} ready - true if logged in and ready to send / receive and online
+         * @property {boolean} loginErrorPrinted - used to surpress repeating login errors.
+         * @property {boolean} created - true if created in ioBroker (can only happen with mac)
+         * @property {number} pollInterval configured pollInterval in milliseconds
+         * @property {NodeJS.Timeout|undefined} intervalHandle handle of interval
+         */
 
         /**
          * Array of devices.
          *  Device consists of:
          *      config: which includes IP, PIN, ... set by the user
          *      client: soapclient for interaction with device
-         * @type {Array}
+         * @type {Array<Device>}
          */
         this.devices = [];
         /**
@@ -104,14 +135,14 @@ class DlinkSmarhome extends utils.Adapter {
      */
     async createObjects(device) {
         if(device.flags.hasTemp) {
-            this.log.debug("Creating temp object for " + device.name);
+            this.log.debug('Creating temp object for ' + device.name);
             await this.setObjectNotExistsAsync(device.name + temperatureSuffix, {
                 type: 'state',
                 common: {
                     name: 'temperature',
                     type: 'number',
                     role: 'value.temperature',
-                    unit: "°C",
+                    unit: '°C',
                     read: true,
                     write: false
                 },
@@ -119,14 +150,14 @@ class DlinkSmarhome extends utils.Adapter {
             });
         }
         if (device.flags.hasPower) {
-            this.log.debug("Creating power object for " + device.name);
+            this.log.debug('Creating power object for ' + device.name);
             await this.setObjectNotExistsAsync(device.name + powerSuffix, {
                 type: 'state',
                 common: {
                     name: 'currentPowerConsumption',
                     type: 'number',
                     role: 'value.power.consumption',
-                    unit: "Wh",
+                    unit: 'Wh',
                     read: true,
                     write: false
                 },
@@ -134,14 +165,14 @@ class DlinkSmarhome extends utils.Adapter {
             });
         }
         if (device.flags.hasTotalPower) {
-            this.log.debug("Creating totalPower object for " + device.name);
+            this.log.debug('Creating totalPower object for ' + device.name);
             await this.setObjectNotExistsAsync(device.name + totalPowerSuffix, {
                 type: 'state',
                 common: {
                     name: 'totalPowerConsumption',
                     type: 'number',
                     role: 'value.power.consumption',
-                    unit: "kWh",
+                    unit: 'kWh',
                     read: true,
                     write: false
                 },
@@ -149,7 +180,7 @@ class DlinkSmarhome extends utils.Adapter {
             });
         }
         if (device.flags.hasLastDetected) {
-            this.log.debug("Creating lastDetected object for " + device.name);
+            this.log.debug('Creating lastDetected object for ' + device.name);
             await this.setObjectNotExistsAsync(device.name + lastDetectedSuffix, {
                 type: 'state',
                 common: {
@@ -162,14 +193,14 @@ class DlinkSmarhome extends utils.Adapter {
                 native: {}
             });
 
-            this.log.debug("Creating no_motion object for " + device.name);
+            this.log.debug('Creating no_motion object for ' + device.name);
             await this.setObjectNotExistsAsync(device.name + noMotionSuffix, {
                 type: 'state',
                 common: {
                     name: 'No motion since',
                     type: 'number',
                     role: 'value.interval',
-                    unit: "seconds",
+                    unit: 'seconds',
                     read: true,
                     write: false
                 },
@@ -178,7 +209,7 @@ class DlinkSmarhome extends utils.Adapter {
         }
 
         if (!device.flags.canSwitchOnOff) {
-            this.log.debug("Changing state to indicator for " + device.name);
+            this.log.debug('Changing state to indicator for ' + device.name);
             await this.extendObjectAsync(device.name + stateSuffix, {
                 type: 'state',
                 common: {
@@ -198,9 +229,9 @@ class DlinkSmarhome extends utils.Adapter {
         await this.setObjectNotExistsAsync(device.name + readySuffix, {
             type: 'state',
             common: {
-                name: "ready",
-                type: "number",
-                role: "indicator",
+                name: 'ready',
+                type: 'number',
+                role: 'indicator',
                 read: true,
                 write: false
             },
@@ -214,29 +245,29 @@ class DlinkSmarhome extends utils.Adapter {
      * @returns {Promise<*>}
      */
     async identifyDevice(device) {
-        //get device settings, which returns modelname and firmware version. So we know what states to create.
-        let settings = await device.client.getDeviceSettings();
-        this.log.debug(device.name + " returned following device settings: " + JSON.stringify(settings, null, 2));
+        //get device settings, which returns model name and firmware version. So we know what states to create.
+        const settings = await device.client.getDeviceSettings();
+        this.log.debug(device.name + ' returned following device settings: ' + JSON.stringify(settings, null, 2));
         device.model = settings.ModelName;
         device.mac = settings.DeviceMac;
 
-        let soapactions = await device.client.getModuleSOAPActions(0);
-        this.log.debug("Module SOAP Actions: " + JSON.stringify(soapactions, null, 2));
+        //let soapactions = await device.client.getModuleSOAPActions(0);
+        //this.log.debug('Module SOAP Actions: ' + JSON.stringify(soapactions, null, 2));
 
         const flags = deviceFlags[device.model];
         if (flags) {
             device.flags = flags;
         } else {
             device.flags = {
-                canSwitchOnOff: (settings.PresentationURL.toLowerCase().indexOf("dsp") >= 0), //if is socket, probably can switch on/off
+                canSwitchOnOff: (settings.PresentationURL.toLowerCase().indexOf('dsp') >= 0), //if is socket, probably can switch on/off
                 hasTemp: false,
                 hasPower: false,
                 hasTotalPower: false,
                 hasLastDetected: false
-            }
+            };
             //report unknown device:
             const xmls = await device.client.getDeviceDescriptionXML();
-            this.log.info("Found new device, please report the following (full log from file, please) to developer: " + JSON.stringify(xmls, null, 2));
+            this.log.info('Found new device, please report the following (full log from file, please) to developer: ' + JSON.stringify(xmls, null, 2));
             if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
                 const sentryInstance = this.getPluginInstance('sentry');
                 if (sentryInstance) {
@@ -246,13 +277,13 @@ class DlinkSmarhome extends utils.Adapter {
                         for (const key of Object.keys(xmls)) {
                             scope.setExtra(key, xmls[key]);
                         }
-                        Sentry.captureMessage('Unknown-Device', 'info'); // Level "info"
+                        Sentry.captureMessage('Unknown-Device', 'info'); // Level 'info'
                     });
                 } else {
-                    this.log.error("No sentry plugin?");
+                    this.log.error('No sentry plugin?');
                 }
             } else {
-                this.log.error("No plugin support, yet?");
+                this.log.error('No plugin support, yet?');
             }
         }
 
@@ -268,14 +299,14 @@ class DlinkSmarhome extends utils.Adapter {
      */
     async loginDevice(device) {
         try {
-            let loginResult = await device.client.login();
-            this.log.debug(device.name + " successfully logged in. " + JSON.stringify(loginResult));
+            const loginResult = await device.client.login();
+            this.log.debug(device.name + ' successfully logged in. ' + JSON.stringify(loginResult));
             device.loggedIn = true;
             device.loginErrorPrinted = false;
         } catch (e) {
             if (!device.loginErrorPrinted) {
-                this.log.debug("Login error: " +  JSON.stringify(e, null, 2));
-                this.log.error(device.name + " could not login. Please check credentials and if device is online/connected. Error: " + JSON.stringify(e, null, 2));
+                this.log.debug('Login error: ' +  JSON.stringify(e, null, 2));
+                this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + JSON.stringify(e, null, 2));
                 device.loginErrorPrinted = true;
             }
             device.loggedIn = false;
@@ -289,7 +320,7 @@ class DlinkSmarhome extends utils.Adapter {
     async onReady() {
         // Initialize your adapter here
 
-        // The adapters config (in the instance object everything under the attribute "native") is accessible via
+        // The adapters config (in the instance object everything under the attribute 'native') is accessible via
         // this.config:
         //ie array devices with device objects.
         //and polling time = interval
@@ -300,71 +331,74 @@ class DlinkSmarhome extends utils.Adapter {
         this.autoDetect();
 
         //connection state -> will become green if at least one device is reachable.
-        await this.setObjectNotExistsAsync("info.connection", {
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "If communication with cec-client works",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
+        await this.setObjectNotExistsAsync('info.connection', {
+            'type': 'state',
+            'common': {
+                'role': 'indicator.connected',
+                'name': 'If communication with cec-client works',
+                'type': 'boolean',
+                'read': true,
+                'write': false,
+                'def': false
             },
-            "native": {},
+            'native': {},
         });
 
         //compare existing and configured devices:
         let haveActiveDevices = false;
-        let existingDevices = await this.getDevicesAsync();
-        this.log.debug("Got devices: " + JSON.stringify(existingDevices, null, 2));
-        for (const device of this.config.devices) {
-            this.log.debug("Processing " + device.name);
+        const existingDevices = await this.getDevicesAsync();
+        this.log.debug('Got devices: ' + JSON.stringify(existingDevices, null, 2));
+        for (const existingDevice of existingDevices) {
+            this.log.debug('Processing ' + existingDevice.common.name);
+            const native = existingDevice.native;
 
+            //TODO: understand JSDoc stuff here and remove real casts.
             //internal configuration:
-            let internalDevice = {
-                config: device,
+            const device = {
                 client: {}, //filled later
-                ip: device.ip,
-                pin: device.pin,
-                mac: false, //unknown yet
-                id: false, //for easier state updates -> depents on MAC.
-                name: device.name, //for easier logging
+                ip: /** @type {string} */ (native.ip),
+                pin: decrypt(native.pin),
+                pollInterval: /** @type {number} */ (native.pollInterval),
+                mac: /** @type {string} */ (native.mac),
+                id: existingDevice._id, //for easier state updates -> depents on MAC.
+                name: existingDevice.common.name, //for easier logging
                 loggedIn: false,
                 identified: false,
                 ready: false,
+                intervalHandle: undefined,
                 loginErrorPrinted: false,
-                created: false
+                created: true
             };
 
             //interrogate enabled devices
             //this will get MAC for manually configured devices.
-            if (device.enabled) {
+            if (native.enabled) {
                 //create the soapclient
-                internalDevice.client = createSoapClient({
-                    user: "Admin",
+                device.client = createSoapClient({
+                    user: 'Admin',
                     password: device.pin,
-                    url: "http://" + device.ip + "/HNAP1"
+                    url: 'http://' + device.ip + '/HNAP1'
                 }); //no https, sadly.
 
                 //keep config and client for later reference.
-                this.devices.push(internalDevice);
+                this.devices.push(device);
 
                 //login:
-                await this.loginDevice(internalDevice);
+                await this.loginDevice(device);
 
-                if (internalDevice.loggedIn) {
+                if (device.loggedIn) {
                     try {
-                        await this.identifyDevice(internalDevice);
+                        await this.identifyDevice(device);
                     } catch (e) {
-                        this.log.error(internalDevice.name + " could not get settings: " + +JSON.stringify(e, null, 2));
+                        this.log.error(device.name + ' could not get settings: ' + JSON.stringify(e, null, 2));
                     }
                 }
             }
 
-            let id = "mydlink." + this.instance + "." + internalDevice.mac; //mac should be filled if device identification worked.
+            /*let id = 'mydlink.' + this.instance + '.' + internalDevice.mac; //mac should be filled if device identification worked.
             let detectByIp = false;
             if (!internalDevice.mac) {
-                this.log.info("Mac of " + internalDevice.name + " unknown.");
+                this.log.info('Mac of ' + internalDevice.name + ' unknown.');
                 detectByIp = true;
             }
 
@@ -379,7 +413,7 @@ class DlinkSmarhome extends utils.Adapter {
                     rightDevice = edev._id === id;
                 }
                 if (rightDevice) {
-                    this.log.debug("Device " + internalDevice.name + " already exists. Do not create.");
+                    this.log.debug('Device ' + internalDevice.name + ' already exists. Do not create.');
                     //remove from existing devices.
                     existingDevices.splice(i, 1);
                     found = true;
@@ -388,40 +422,41 @@ class DlinkSmarhome extends utils.Adapter {
             }
             if (!found) {
                 if (internalDevice.mac) {
-                    this.log.debug("Device " + internalDevice.name + " new. Create device.");
+                    this.log.debug('Device ' + internalDevice.name + ' new. Create device.');
                     device.mac = internalDevice.mac; //store mac in native part of device.
                     await this.createNewDevice(device);
                     internalDevice.created = true;
                 } else {
                     internalDevice.created = false;
                 }
-            }
+            }*/
 
             //transfer enabled flag to object:
             await this.setStateAsync(device.name + enabledSuffix, {val: device.enabled, ack: true});
 
             //start polling if device is enabled (do this after all is setup).
             if (device.enabled) {
-                let interval = Number.parseInt(device.pollInterval || this.config.interval);
-                if (!Number.isNaN(interval) && interval !== 0) {
-                    this.log.debug("Start polling for " + device.name);
+                let interval = device.pollInterval || this.config.interval;
+                if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
+                    this.log.debug('Start polling for ' + device.name);
                     haveActiveDevices = true; //only use yellow/green states if polling at least one device.
                     if (interval < 500) {
-                        this.log.warn("Increasing poll rate to twice per second. Please check device config.");
-                        interval = 500; //polling once every second should be enough, right?
+                        this.log.warn('Increasing poll rate to twice per second. Please check device config.');
+                        interval = 500; //polling twice every second should be enough, right?
                     }
-                    internalDevice.interval = setInterval(this.onInterval.bind(this, internalDevice), interval);
+                    device.intervalHandle = setInterval(this.onInterval.bind(this, device),
+                        interval);
                 } else {
-                    this.log.debug("Polling disabled, interval was " + interval + " from " + device.pollInterval + " and " + this.config.interval);
+                    this.log.debug('Polling disabled, interval was ' + interval + ' from ' + device.pollInterval + ' and ' + this.config.interval);
                 }
             }
         }//processing devices for the first time
 
-        for (const oldDevice of existingDevices) {
-            this.log.debug(oldDevice.native.name + " not in config anymore. Delete objects.");
+        /*for (const oldDevice of existingDevices) {
+            this.log.debug(oldDevice.native.name + ' not in config anymore. Delete objects.');
             await this.deleteDeviceAsync(oldDevice.native.name);
-        }
-        await this.setStateChangedAsync("info.connection", !haveActiveDevices, true); //if no active device -> make green.
+        }*/
+        await this.setStateChangedAsync('info.connection', !haveActiveDevices, true); //if no active device -> make green.
     }
 
     /**
@@ -432,15 +467,15 @@ class DlinkSmarhome extends utils.Adapter {
      */
     async pollAndSetState(pollFunc, id) {
         let value = await pollFunc();
-        if (value === "OK") {
+        if (value === 'OK') {
             value = true; //for ready
         }
-        if (value === "ERROR") {
+        if (value === 'ERROR') {
             //something went wrong... maybe can not read that setting at all?
-            throw "Error during reading " + id;
+            throw 'Error during reading ' + id;
         }
 
-        let result = await this.setStateChangedAsync(id, value, true);
+        const result = await this.setStateChangedAsync(id, value, true);
         // @ts-ignore
         return !result.notChanged;
     }
@@ -451,10 +486,10 @@ class DlinkSmarhome extends utils.Adapter {
      * @returns {Promise<void>}
      */
     async onInterval(device) {
-        //this.log.debug("Polling " + device.name);
+        //this.log.debug('Polling ' + device.name);
         try {
             if (!device.loggedIn) {
-                let result = await this.loginDevice(device);
+                const result = await this.loginDevice(device);
                 if (!result) {
                     return;
                 }
@@ -465,12 +500,12 @@ class DlinkSmarhome extends utils.Adapter {
             await this.pollAndSetState(device.client.isDeviceReady, device.id + readySuffix);
             //poll ready will throw error if not ready.
             device.ready = true;
-            await this.setStateChangedAsync("info.connection", true, true);
+            await this.setStateChangedAsync('info.connection', true, true);
             if (device.flags.canSwitchOnOff) {
                 await this.pollAndSetState(device.client.state, device.id + stateSuffix);
             }
             if (device.flags.hasLastDetected) {
-                let detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
+                const detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
                 if (detectionHappened) {
                     //always set state to true, for new detections.
                     await this.setStateAsync(device.id + stateSuffix, detectionHappened, true);
@@ -479,9 +514,10 @@ class DlinkSmarhome extends utils.Adapter {
                 }
 
                 //fill no detection variable:
-                let lastDetection = await this.getStateAsync(device.id + lastDetectedSuffix);
+                const lastDetection = await this.getStateAsync(device.id + lastDetectedSuffix);
                 if (lastDetection) {
-                    let noMotion = Math.round((Date.now() - lastDetection.val) / 1000);
+                    //@ts-ignore -> we already check for null / undefined???
+                    const noMotion = Math.round((Date.now() - /** @type {number} */ lastDetection.val) / 1000);
                     await this.setStateChangedAsync(device.id + noMotionSuffix, noMotion, true);
                 }
             }
@@ -494,10 +530,10 @@ class DlinkSmarhome extends utils.Adapter {
             if (device.flags.hasTotalPower) {
                 await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix);
             }
-            //this.log.debug("Polling of " + device.name + " finished.");
+            //this.log.debug('Polling of ' + device.name + ' finished.');
         } catch (e) {
             if (device.ready) {
-                this.log.debug("Error during polling " + device.name + ": " + JSON.stringify(e, null, 2));
+                this.log.debug('Error during polling ' + device.name + ': ' + JSON.stringify(e, null, 2));
             }
             if (e.errno === 403) {
                 device.loggedIn = false; //login next polling.
@@ -507,7 +543,7 @@ class DlinkSmarhome extends utils.Adapter {
 
             let connected = false;
             this.devices.forEach((device) => { connected = connected || device.ready; }); //turn green if at least one device is ready = reachable.
-            await this.setStateChangedAsync("info.connection", connected, true);
+            await this.setStateChangedAsync('info.connection', connected, true);
         }
     }
 
@@ -517,13 +553,13 @@ class DlinkSmarhome extends utils.Adapter {
      */
     onUnload(callback) {
         try {
-            this.log.debug("Stop polling");
+            this.log.debug('Stop polling');
             for (const device of this.devices) {
-                if (device.interval) {
-                    clearInterval(device.interval);
+                if (device.intervalHandle) {
+                    clearInterval(device.intervalHandle);
                 }
             }
-            if (this.mdns && typeof this.mdns.close === "function") {
+            if (this.mdns && typeof this.mdns.close === 'function') {
                 this.mdns.close();
             }
 
@@ -542,7 +578,7 @@ class DlinkSmarhome extends utils.Adapter {
     onObjectChange(id, obj) {
         if (obj) {
             // The object was changed
-            this.log.info("object " + id + " changed: " + JSON.stringify(obj, null, 2));
+            this.log.info('object ' + id + ' changed: ' + JSON.stringify(obj, null, 2));
         } else {
             // The object was deleted
             this.log.info(`object ${id} deleted`);
@@ -568,10 +604,10 @@ class DlinkSmarhome extends utils.Adapter {
         if (state.ack === false) {
             //find devices:
             for (const device of this.devices) {
-                let devId = device.id + stateSuffix;
+                const devId = device.id + stateSuffix;
                 if (id === devId) {
                     //found device:
-                    this.log.debug("Found device to switch.");
+                    this.log.debug('Found device to switch.');
                     let switchFunc = device.client.off;
                     if (state.val) {
                         switchFunc = device.client.on;
@@ -579,10 +615,10 @@ class DlinkSmarhome extends utils.Adapter {
 
                     try {
                         await switchFunc();
-                        this.log.debug("Switched " + device.name + (state.val ? " on." : " off."));
+                        this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
                         await this.pollAndSetState(device.client.state, device.id + stateSuffix);
                     } catch(e) {
-                        this.log.error("Error while switching device " + device.name + ": " +  + JSON.stringify(e, null, 2));
+                        this.log.error('Error while switching device ' + device.name + ': ' +  + JSON.stringify(e, null, 2));
                     }
                     break; //can stop loop.
                 }
@@ -590,43 +626,43 @@ class DlinkSmarhome extends utils.Adapter {
         }
     }
 
-    // /**
-    //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-    //  * Using this method requires "common.message" property to be set to true in io-package.json
-    //  * @param {ioBroker.Message} obj
-    //  */
-    // onMessage(obj) {
-    // 	if (typeof obj === 'object' && obj.message) {
-    // 		if (obj.command === 'send') {
-    // 			// e.g. send email or pushover or whatever
-    // 			this.log.info('send command');
+    /**
+     * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
+     * Using this method requires 'common.message' property to be set to true in io-package.json
+     * @param {ioBroker.Message} obj
+     */
+    async onMessage(obj) {
+        if (typeof obj === 'object' && obj.message) {
+            if (obj.command === 'discovery') {
+                // e.g. send email or pushover or whatever
+                this.log.debug('discovery command');
 
-    // 			// Send response in callback if required
-    // 			if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-    // 		}
-    // 	}
-    // }
+                // Send response in callback if required
+                if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+            }
+        }
+    }
 
     autoDetect() {
         this.mdns = new Mdns({
             timeout: 0, //0 == stay active??
-            name: [ "_dhnap._tcp.local" ],
-            find: "*",
+            name: [ '_dhnap._tcp.local' ],
+            find: '*',
             broadcast: true
         });
 
-        this.mdns.on("entry", this.onDetection);
-        this.mdns.run(() => this.log.info("Discovery done"));
+        this.mdns.on('entry', this.onDetection);
+        this.mdns.run(() => this.log.info('Discovery done'));
     }
 
     async onDetection(entry) {
         function typeFromTarget(obj) {
             if (obj.target) {
-                return obj.target.split(".")[0];
+                return obj.target.split('.')[0];
             }
         }
 
-        this.log.debug("Got discovery: " + JSON.stringify(entry, null, 2));
+        this.log.debug('Got discovery: ' + JSON.stringify(entry, null, 2));
         let device = this.detectedDevices[entry.ip];
         if (!device) {
             device = {
@@ -646,16 +682,16 @@ class DlinkSmarhome extends utils.Adapter {
             device.type = typeFromTarget(entry.A) || device.type;
         }
         if (entry.TXT && entry.TXT.data) {
-            let start = entry.TXT.indexOf("mac=");
+            const start = entry.TXT.indexOf('mac=');
             if (start >= 0) {
                 try {
                     device.mac = entry.TXT.data.subarray(start + 4, start + 21).toString();
                 } catch (e) {
-                    this.log.warn("Could not extract mac for detected device with ip " + device.ip);
+                    this.log.warn('Could not extract mac for detected device with ip ' + device.ip);
                 }
             }
 
-            if (entry.TXT.data.includes("mydlink=true")) {
+            if (entry.TXT.data.includes('mydlink=true')) {
                 device.mydlink = true; //ok, great :-)
                 //TODO: ok, lets create device?
             }
