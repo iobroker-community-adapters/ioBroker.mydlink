@@ -60,6 +60,7 @@
     "compact": true,
     "materialize": true,
     "supportCustoms": false,
+    "messagebox": true,
     "dependencies": [
       {
         "js-controller": ">=1.5.11"
@@ -71,5 +72,19 @@
     "devices": []
   },
   "objects": [],
-  "instanceObjects": []
+  "instanceObjects": [
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "connection status to wifi determined by at least one device responding",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }

@@ -20,11 +20,61 @@
 <!-- you have to define 2 functions in the global scope: -->
 <script type="text/javascript">
 
-    var devices = [];
+    function asyncEmit(func, id) {
+        return new Promise((resolve, reject) => {
+            socket.emit(func, id, function (err, obj) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(obj);
+                }
+            });
+        });
+    }
+
+    function asyncSendTo(func, parameters = {}) {
+        return new Promise((resolve, reject) => {
+            sendTo(adapter + '.' + instance, func, parameters, function (result) {
+                if (result.error) {
+                    reject(result.error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    function addRowToDevices(event) {
+        console.log("Button clicked! ", event);
+    }
+
+    function onChangeDetectedDevices(index, attr) {
+        console.log("OnChange: " + index + " - " + attr);
+    }
+
+    function onReadyDevices(event) {
+        console.log("OnReady: ", event);
+    }
+
+    async function periodicallyGetDevices() {
+        const detectedDevices = await asyncSendTo('discovery');
+        values2table('detectedDevices', detectedDevices, {onChange: onChangeDetectedDevices, onReady: onReadyDevices});
+        setTimeout(periodicallyGetDevices, 1000);
+    }
+
+    const tableDevices = [];
     // This will be called by the admin adapter when the settings page loads
-    function load(settings, onChange) {
+    async function load(settings, onChange) {
         // example: select elements with id=key and class=value and insert value
         if (!settings) return;
+
+        //get auto detection results:
+        periodicallyGetDevices();
+
+        //get devices:
+        const devices = await asyncSendTo('getDevices');
+        values2table('devices', tableDevices);
+
         $('.value').each(function () {
             var $key = $(this);
             var id = $key.attr('id');
@@ -43,19 +93,20 @@
         });
         onChange(false);
 
-        //handle devices array.
-        devices = settings.devices || [];
-        values2table('devices', devices, onChange);
-
         // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
         if (M) M.updateTextFields();
     }
 
+    async function sendDevices() {
+        const tableDevices = table2values("devices");
+        await asyncSendTo("sendDevices", tableDevices);
+    }
+
     // This will be called by the admin adapter when the user presses the save button
     function save(callback) {
-        var obj = {};
+        const obj = {};
         $('.value').each(function () {
-            var $this = $(this);
+            const $this = $(this);
             if ($this.attr('type') === 'checkbox') {
                 obj[$this.attr('id')] = $this.prop('checked');
             } else {
@@ -63,9 +114,9 @@
             }
         });
 
-        obj.devices = table2values('devices');
-
-        callback(obj);
+        sendDevices().then(() => {
+            callback(obj);
+        });
     }
 </script>
 </head>
@@ -93,17 +144,21 @@
             </div>
         </div>
 
-
         <div id="tab-devices" class="col s12 page">
+            <div class="section">
+                <h5 class="translate">ConfiguredDevices</h5>
+            </div>
+
             <div class="col s12" id="devices">
                 <div class="table-values-div">
                     <table class="table-values">
                         <thead>
                         <tr>
-                            <th data-name="name" style="width: 50%" class="translate">name</th>
-                            <th data-name="ip" style="width: 30%" class="translate">ipaddress</th>
-                            <th data-name="pin" style="..." class="translate">pin</th>
-                            <th data-name="pollInterval" style="..." class="translate">pollInterval</th>
+                            <th data-name="name" style="width: auto" class="translate">name</th>
+                            <th data-name="mac" style="width: 150px" class="translate">mac</th>
+                            <th data-name="ip" style="width: 150px" class="translate">ipaddress</th>
+                            <th data-name="pin" style="width: 70px" class="translate">pin</th>
+                            <th data-name="pollInterval" style="width: 190px" class="translate">pollInterval</th>
                             <th data-name="enabled" style="width: 70px" data-style="width: 70px" data-type="checkbox" class="translate">enabled</th>
                             <th data-buttons="delete up down" style="width: 120px"></th>
                         </tr>
@@ -111,6 +166,26 @@
                     </table>
                 </div>
                 <a class="btn-floating waves-effect waves-light blue table-button-add"><i class="material-icons">add</i></a>
+            </div>
+
+            <div class="section" style="margin-top: 50px;">
+                <h5 class="translate">detectedDevices</h5>
+                <p class="translate">autoDetectDescription</p>
+            </div>
+            <div class="col s12" id="detectedDevices">
+                <div class="table-values-div">
+                    <table class="table-values">
+                        <thead>
+                        <tr>
+                            <!-- <th data-name="alreadyPresent" style="width: 70px" data-style="width: 70px" data-type="checkbox" class="translate">alreadyInUse</th> -->
+                            <th data-name="name" style="width: 30%" class="translate" readOnly>name</th>
+                            <th data-name="mac" style="width: 30%" class="translate" readOnly>mac</th>
+                            <th data-name="ip" style="width: 30%" class="translate" readOnly>ipaddress</th>
+                            <th data-buttons="add" style="width: 120px"></th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
