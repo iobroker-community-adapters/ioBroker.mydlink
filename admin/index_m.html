@@ -19,6 +19,14 @@
 
 <!-- you have to define 2 functions in the global scope: -->
 <script type="text/javascript">
+    let secret;
+    function encrypt(key, value) {
+        let result = '';
+        for (let i = 0; i < value.length; ++i) {
+            result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+        }
+        return result;
+    }
 
     function asyncEmit(func, id) {
         return new Promise((resolve, reject) => {
@@ -91,7 +99,6 @@
                 values2table('devices', tableDevices, _onChange);
             } else {
                 M.toast({html: "Device already present."});
-
             }
         });
     }
@@ -137,6 +144,10 @@
         // example: select elements with id=key and class=value and insert value
         if (!settings) return;
         _onChange = onChange;
+
+        socket.emit('getObject', 'system.config', function (err, obj) {
+            secret = (obj.native ? obj.native.secret : '') || 'RJaeBLRPwvPfh5O';
+        });
 
         //get auto detection results:
         periodicallyGetDevices();
@@ -220,9 +231,12 @@
         if (M) M.updateTextFields();
     }
 
-    async function sendDevices() {
+    async function sendDevices(obj) {
         const tableDevices = table2values("devices");
-        console.log(tableDevices);
+        obj.devices = tableDevices;
+        for (const device of obj.devices) {
+            device.pin = encrypt(secret, device.pin);
+        }
         await asyncSendTo("sendDevices", {devices: tableDevices});
     }
 
@@ -239,7 +253,7 @@
             }
         });
 
-        sendDevices().then((result) => {
+        sendDevices(obj).then((result) => {
             console.log("Send devices came back: ", result);
             $("#add-ip-device-spinner").addClass('hide');
             callback(obj);
@@ -334,14 +348,14 @@
             <p class="translate center">onlineMessage</p>
             <div class="row center">
                 <div class="input-field col s3">
-                    <input placeholder="192.168.0.1" class="value" id="device-ip" type="text"></input>
+                    <input placeholder="192.168.0.1" id="device-ip" type="text"></input>
                     <label for="device-ip" class="translate">ipaddress</label>
                 </div>
             </div>
             <div class="row center">
                 <div class="input-field col s3">
-                    <input placeholder="123456" class="value" id="device-pin" type="text"></input>
-                    <label for="device-ip" class="translate">pin</label>
+                    <input placeholder="123456" id="device-pin" type="text"></input>
+                    <label for="device-pin" class="translate">pin</label>
                 </div>
             </div>
         </div>

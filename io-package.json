@@ -98,7 +98,9 @@
             }
         }
     },
-    "native": {},
+    "native": {
+        "devices": []
+    },
     "objects": [],
     "instanceObjects": [
         {

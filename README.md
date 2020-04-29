@@ -43,6 +43,9 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+### __WORK IN PROGRESS__
+* Re-added device config to adapter config (in case objects get deleted).
+
 ### 1.0.0 (2020-04-30)
 * BREAKING CHANGE: device id is now mac instead of name -> all devices need to be recreated. Sorry for that. But should never happen again, now. New devices *should* be created automatically.
 * added encryption of PIN

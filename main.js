@@ -294,19 +294,7 @@ class DlinkSmarthome extends utils.Adapter {
             await this.createNewDevice(device); //store device settings
 
             //delete old device:
-            try {
-                const ids = await this.getObjectListAsync({
-                    startkey: oldId,
-                    endkey: oldId + '\u9999'
-                });
-                if (ids) {
-                    for (const obj of ids.rows) {
-                        await this.delObjectAsync(obj.value._id);
-                    }
-                }
-            } catch (e) {
-                this.log.info('Could not delete old device ' + device.name + ', because: ' + e.stack);
-            }
+            await this.deleteDeviceFull(oldId);
         }
 
         const flags = deviceFlags[device.model];
@@ -345,6 +333,26 @@ class DlinkSmarthome extends utils.Adapter {
         await this.createObjects(device);
         device.identified = true;
         return device;
+    }
+
+    /**
+     * deletes all objects of an device and the device itself (deleteDeviceAsync does not work somehow...?)
+     * @param {string} id
+     */
+    async deleteDeviceFull(id) {
+        try {
+            const ids = await this.getObjectListAsync({
+                startkey: id,
+                endkey: id + '\u9999'
+            });
+            if (ids) {
+                for (const obj of ids.rows) {
+                    await this.delObjectAsync(obj.value._id);
+                }
+            }
+        } catch (e) {
+            this.log.error('Error during deletion of ' + id + ': ' + e.stack);
+        }
     }
 
     /**
@@ -444,12 +452,12 @@ class DlinkSmarthome extends utils.Adapter {
      * @param {Record<string, any>} tableDevice
      * @returns {Device}
      */
-    createDeviceFromTable(tableDevice) {
+    createDeviceFromTable(tableDevice, doDecrypt = false) {
         //internal configuration:
         const device = {
             client: {}, //filled later
             ip: tableDevice.ip,
-            pin: tableDevice.pin,
+            pin: doDecrypt ? decrypt(this.secret, tableDevice.pin) : tableDevice.pin,
             pollInterval: tableDevice.pollInterval,
             mac: tableDevice.mac.toUpperCase(),
             id: idFromMac(tableDevice.mac),
@@ -550,10 +558,33 @@ class DlinkSmarthome extends utils.Adapter {
         //start existing devices:
         let haveActiveDevices = false;
         const existingDevices = await this.getDevicesAsync();
+        const configDevicesToAdd = [].concat(this.config.devices);
         this.log.debug('Got existing devices: ' + JSON.stringify(existingDevices, null, 2));
+        this.log.debug('Got config devices: ' + JSON.stringify(configDevicesToAdd, null, 2));
         for (const existingDevice of existingDevices) {
-            const device = this.createDeviceFromConfig(existingDevice);
+            let found = false;
+            for (const configDevice of this.config.devices) {
+                // @ts-ignore
+                if (configDevice.mac === existingDevice.native.mac) {
+                    found = true;
+                    configDevicesToAdd.splice(configDevicesToAdd.indexOf(configDevice), 1);
+                }
+            }
+            if (found) {
+                const device = this.createDeviceFromConfig(existingDevice);
+                haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
+                //keep config and client for later reference.
+                this.devices.push(device);
+            } else {
+                await this.deleteDeviceFull(existingDevice._id);
+            }
+        }
+
+        for (const configDevice of configDevicesToAdd) {
+            const device = this.createDeviceFromTable(configDevice, true);
             haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
+            //call this here again, to make sure it happens.
+            await this.createNewDevice(device); //store device settings
             //keep config and client for later reference.
             this.devices.push(device);
         }
@@ -772,6 +803,12 @@ class DlinkSmarthome extends utils.Adapter {
                     try {
                         const inCommingDevices = /** @type {Record<string, any>} */ (obj.message).devices || [];
                         this.log.debug('Got devices: ' + JSON.stringify(inCommingDevices, null, 2));
+                        //decrypt here again, because UI encrypts in order to save in config:
+                        for (const dev of inCommingDevices) {
+                            dev.pin = decrypt(this.secret, dev.pin);
+                        }
+
+                        //loop over our devices -> kill what is not there anymore and update the others.
                         for (const device of this.devices) {
                             let found = false;
                             let changed = false;
@@ -805,19 +842,7 @@ class DlinkSmarthome extends utils.Adapter {
                                 //delete not found devices -> user deleted them from table
                                 if (!found) {
                                     this.log.debug(device.name + ' not in config anymore. Delete objects for ' + device.mac);
-                                    try {
-                                        const ids = await this.getObjectListAsync({
-                                            startkey: device.id,
-                                            endkey: device.id + '\u9999'
-                                        });
-                                        if (ids) {
-                                            for (const obj of ids.rows) {
-                                                await this.delObjectAsync(obj.value._id);
-                                            }
-                                        }
-                                    } catch (e) {
-                                        this.log.error('Error during deletion of ' + device.mac + ': ' + e.stack);
-                                    }
+                                    await this.deleteDeviceFull(device.id);
                                 } else {
                                     //device did change -> restart:
                                     await this.createNewDevice(device); //store device settings
@@ -826,6 +851,7 @@ class DlinkSmarthome extends utils.Adapter {
                             }
                         }
 
+                        //add new devices:
                         for (const device of inCommingDevices) {
                             if (!device.found) {
                                 if (!device.mac || !device.pin || !device.ip) {
@@ -833,7 +859,7 @@ class DlinkSmarthome extends utils.Adapter {
                                     continue;
                                 }
                                 this.log.debug('New device ' + JSON.stringify(device, null, 2));
-                                const fullDevice = this.createDeviceFromTable(device);
+                                const fullDevice = this.createDeviceFromTable(device, false);
                                 await this.createNewDevice(fullDevice);
                                 await this.startDevice(fullDevice);
                             }
@@ -911,7 +937,7 @@ class DlinkSmarthome extends utils.Adapter {
             return;
         }
 
-        this.log.debug('Got discovery: ' + JSON.stringify(entry, null, 2));
+        //this.log.debug('Got discovery: ' + JSON.stringify(entry, null, 2));
         if (entry.TXT && entry.TXT.data) {
             //build detected device and fill it:
             let device = this.detectedDevices[entry.ip];
