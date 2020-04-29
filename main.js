@@ -288,8 +288,24 @@ class DlinkSmarthome extends utils.Adapter {
             device.mac = settings.DeviceMacId.toUpperCase();
             //do that here to allow conversion from old devices.
             device.id = idFromMac(device.mac);
+            // @ts-ignore
+            device.pollInterval = device.pollInterval || this.config.pollInterval;
             await this.createNewDevice(device); //store device settings
-            //TODO: delete old device.
+
+            //delete old device:
+            try {
+                const ids = await this.getObjectListAsync({
+                    startkey: device.name,
+                    endkey: device.name + '\u9999'
+                });
+                if (ids) {
+                    for (const obj of ids.rows) {
+                        await this.delObjectAsync(obj.value._id);
+                    }
+                }
+            } catch (e) {
+                this.log.info('Could not delete old device ' + device.name + ', because: ' + e.stack);
+            }
         }
 
         //let soapactions = await device.client.getModuleSOAPActions(0);
