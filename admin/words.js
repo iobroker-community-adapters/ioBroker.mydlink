@@ -127,16 +127,16 @@ systemDictionary = {
         'zh-cn': '已启用'
     },
     'autoDetectDescription': {
-        'en': 'The following  devices were detected. They need to be configured to be used by ioBroker. Click add button to transfer values into the table above. Then add name & pin and save.',
-        'de': 'Die folgenden Geräte wurden erkannt. Sie müssen für die Verwendung durch ioBroker konfiguriert werden. Klicken Sie auf die Schaltfläche Hinzufügen, um Werte in die obige Tabelle zu übertragen. Dann Name & Pin hinzufügen und speichern.',
-        'ru': 'Следующие устройства были обнаружены. Они должны быть настроены для использования ioBroker. Нажмите кнопку Добавить, чтобы перенести значения в таблицу выше. Затем добавьте имя и пин-код и сохраните.',
-        'pt': 'Os seguintes dispositivos foram detectados. Eles precisam ser configurados para serem usados pelo ioBroker. Clique no botão Adicionar para transferir valores para a tabela acima. Em seguida, adicione nome e pino e salve.',
-        'nl': 'De volgende apparaten zijn gedetecteerd. Ze moeten worden geconfigureerd om door ioBroker te worden gebruikt. Klik op de knop Toevoegen om waarden over te dragen naar de bovenstaande tabel. Voeg vervolgens naam & pin toe en sla op.',
-        'fr': "Les appareils suivants ont été détectés. Ils doivent être configurés pour être utilisés par ioBroker. Cliquez sur le bouton Ajouter pour transférer les valeurs dans le tableau ci-dessus. Ajoutez ensuite le nom et l'épingle et enregistrez.",
-        'it': 'Sono stati rilevati i seguenti dispositivi. Devono essere configurati per essere utilizzati da ioBroker. Fare clic sul pulsante Aggiungi per trasferire i valori nella tabella sopra. Quindi aggiungi nome e pin e salva.',
-        'es': 'Se detectaron los siguientes dispositivos. Deben estar configurados para ser utilizados por ioBroker. Haga clic en el botón Agregar para transferir valores a la tabla anterior. Luego agregue nombre y pin y guarde.',
-        'pl': 'Wykryto następujące urządzenia. Muszą być skonfigurowane do użycia przez ioBroker. Kliknij przycisk Dodaj, aby przenieść wartości do powyższej tabeli. Następnie dodaj nazwę i przypnij i zapisz.',
-        'zh-cn': '检测到以下设备。它们需要配置为由ioBroker使用。单击添加按钮将值传输到上表中。然后添加名称和固定并保存。'
+        'en': 'The following  devices were detected. They need to be configured to be used by ioBroker. Click add button to transfer values into the table. Then add name & pin and save.',
+        'de': 'Die folgenden Geräte wurden erkannt. Sie müssen für die Verwendung durch ioBroker konfiguriert werden. Klicken Sie auf die Schaltfläche Hinzufügen, um Werte in die Tabelle zu übertragen. Dann Name & Pin hinzufügen und speichern.',
+        'ru': 'Следующие устройства были обнаружены. Они должны быть настроены для использования ioBroker. Нажмите кнопку Добавить, чтобы перенести значения в таблицу. Затем добавьте имя и пин-код и сохраните.',
+        'pt': 'Os seguintes dispositivos foram detectados. Eles precisam ser configurados para serem usados pelo ioBroker. Clique no botão Adicionar para transferir valores para a tabela. Em seguida, adicione nome e pino e salve.',
+        'nl': 'De volgende apparaten zijn gedetecteerd. Ze moeten worden geconfigureerd om door ioBroker te worden gebruikt. Klik op de knop Toevoegen om waarden over te dragen naar de tabel. Voeg vervolgens naam & pin toe en sla op.',
+        'fr': "Les appareils suivants ont été détectés. Ils doivent être configurés pour être utilisés par ioBroker. Cliquez sur le bouton Ajouter pour transférer des valeurs dans le tableau. Ajoutez ensuite le nom et l'épingle et enregistrez.",
+        'it': 'Sono stati rilevati i seguenti dispositivi. Devono essere configurati per essere utilizzati da ioBroker. Fare clic sul pulsante Aggiungi per trasferire i valori nella tabella. Quindi aggiungi nome e pin e salva.',
+        'es': 'Se detectaron los siguientes dispositivos. Deben estar configurados para ser utilizados por ioBroker. Haga clic en el botón Agregar para transferir valores a la tabla. Luego agregue nombre y pin y guarde.',
+        'pl': 'Wykryto następujące urządzenia. Muszą być skonfigurowane do użycia przez ioBroker. Kliknij przycisk Dodaj, aby przenieść wartości do tabeli. Następnie dodaj nazwę i przypnij i zapisz.',
+        'zh-cn': '检测到以下设备。它们需要配置为由ioBroker使用。单击添加按钮将值传输到表中。然后添加名称和固定并保存。'
     },
     'ConfiguredDevices': {
         'en': 'Configured devices',
@@ -161,5 +161,125 @@ systemDictionary = {
         'es': 'Dispositivos detectados',
         'pl': 'Wykryte urządzenia',
         'zh-cn': '检测到的设备'
+    },
+    'model': {
+        'en': 'Model',
+        'de': 'Modell',
+        'ru': 'модель',
+        'pt': 'Modelo',
+        'nl': 'Model',
+        'fr': 'Modèle',
+        'it': 'Modello',
+        'es': 'Modelo',
+        'pl': 'Model',
+        'zh-cn': '模型'
+    },
+    'addByIP': {
+        'en': 'Add by IP',
+        'de': 'Mit IP hinzufügen',
+        'ru': 'Добавить по IP',
+        'pt': 'Adicionar por IP',
+        'nl': 'Toevoegen via IP',
+        'fr': 'Ajouter par IP',
+        'it': 'Aggiungi tramite IP',
+        'es': 'Agregar por IP',
+        'pl': 'Dodaj według adresu IP',
+        'zh-cn': '通过IP添加'
+    },
+    'onlineMessage': {
+        'en': 'Device must be online',
+        'de': 'Gerät muss online sein',
+        'ru': 'Устройство должно быть онлайн',
+        'pt': 'O dispositivo deve estar online',
+        'nl': 'Apparaat moet online zijn',
+        'fr': "L'appareil doit être en ligne",
+        'it': 'Il dispositivo deve essere online',
+        'es': 'El dispositivo debe estar en línea',
+        'pl': 'Urządzenie musi być online',
+        'zh-cn': '设备必须在线'
+    },
+    'errorIdentify': {
+        'en': 'Could not contact device. Either try again later or add device manually with other button.',
+        'de': 'Gerät konnte nicht kontaktiert werden. Versuchen Sie es später erneut oder fügen Sie das Gerät manuell mit einer anderen Schaltfläche hinzu.',
+        'ru': 'Не удалось связаться с устройством. Попробуйте позже или добавьте устройство вручную с помощью другой кнопки.',
+        'pt': 'Não foi possível entrar em contato com o dispositivo. Tente novamente mais tarde ou adicione o dispositivo manualmente com outro botão.',
+        'nl': 'Kan geen contact maken met het apparaat. Probeer het later opnieuw of voeg het apparaat handmatig toe met een andere knop.',
+        'fr': 'Impossible de contacter le périphérique. Réessayez plus tard ou ajoutez un appareil manuellement avec un autre bouton.',
+        'it': 'Impossibile contattare il dispositivo. Riprova più tardi o aggiungi il dispositivo manualmente con un altro pulsante.',
+        'es': 'No se pudo contactar con el dispositivo. Intente nuevamente más tarde o agregue el dispositivo manualmente con otro botón.',
+        'pl': 'Nie można skontaktować się z urządzeniem. Spróbuj ponownie później lub dodaj urządzenie ręcznie za pomocą innego przycisku.',
+        'zh-cn': '无法联系设备。请稍后再试，或使用其他按钮手动添加设备。'
+    },
+    'Add': {
+        'en': 'Add',
+        'de': 'Hinzufügen',
+        'ru': 'Добавить',
+        'pt': 'Adicionar',
+        'nl': 'Toevoegen',
+        'fr': 'Ajouter',
+        'it': 'Inserisci',
+        'es': 'Añadir',
+        'pl': 'Dodaj',
+        'zh-cn': '加'
+    },
+    'Close': {
+        'en': 'Close',
+        'de': 'Schließen',
+        'ru': 'близко',
+        'pt': 'Fechar',
+        'nl': 'Dichtbij',
+        'fr': 'proche',
+        'it': 'Vicino',
+        'es': 'Cerca',
+        'pl': 'Blisko',
+        'zh-cn': '关'
+    },
+    'Error': {
+        'en': 'Error',
+        'de': 'Fehler',
+        'ru': 'ошибка',
+        'pt': 'Erro',
+        'nl': 'Fout',
+        'fr': 'Erreur',
+        'it': 'Errore',
+        'es': 'Error',
+        'pl': 'Błąd',
+        'zh-cn': '错误'
+    },
+    'addAutoDevice': {
+        'en': 'Add detected device',
+        'de': 'Erkanntes Gerät hinzufügen',
+        'ru': 'Добавить обнаруженное устройство',
+        'pt': 'Adicionar dispositivo detectado',
+        'nl': 'Voeg gedetecteerd apparaat toe',
+        'fr': 'Ajouter un appareil détecté',
+        'it': 'Aggiungi dispositivo rilevato',
+        'es': 'Agregar dispositivo detectado',
+        'pl': 'Dodaj wykryte urządzenie',
+        'zh-cn': '添加检测到的设备'
+    },
+    'addIpDevice': {
+        'en': 'Add device by IP',
+        'de': 'Gerät über IP hinzufügen',
+        'ru': 'Добавить устройство по IP',
+        'pt': 'Adicionar dispositivo por IP',
+        'nl': 'Voeg apparaat toe via IP',
+        'fr': 'Ajouter un appareil par IP',
+        'it': 'Aggiungi dispositivo tramite IP',
+        'es': 'Agregar dispositivo por IP',
+        'pl': 'Dodaj urządzenie według adresu IP',
+        'zh-cn': '通过IP添加设备'
+    },
+    'addManualDevice': {
+        'en': 'Add device manually',
+        'de': 'Gerät manuell hinzufügen',
+        'ru': 'Добавить устройство вручную',
+        'pt': 'Adicionar dispositivo manualmente',
+        'nl': 'Apparaat handmatig toevoegen',
+        'fr': 'Ajouter un appareil manuellement',
+        'it': 'Aggiungi dispositivo manualmente',
+        'es': 'Agregar dispositivo manualmente',
+        'pl': 'Dodaj urządzenie ręcznie',
+        'zh-cn': '手动添加设备'
     }
 };
