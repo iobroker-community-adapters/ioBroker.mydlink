@@ -741,6 +741,28 @@ class DlinkSmarthome extends utils.Adapter {
                     }
                     break; //end switch clause.
                 }
+                case 'identifyDevice': {
+                    const params = /** @type {Record<string, any>} */ (obj.message);
+                    if (params && params.ip && params.pin) {
+                        const device = this.createDeviceFromIpAndPin(params.ip, params.pin);
+                        await this.startDevice(device);
+                        if (device.loggedIn && device.identified) { //will be false if ip wrong or duplicate mac.
+                            this.devices.push(device);
+                        }
+                        const sendDevice = {
+                            mac: device.mac,
+                            name: device.name,
+                            ip: device.ip,
+                            pollInterval: device.pollInterval,
+                            pin: device.pin,
+                            enabled: device.loggedIn && device.identified
+                        };
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, sendDevice, obj.callback);
+                        }
+                    }
+                    break;
+                }
                 default: {
                     this.log.debug('Unknown command ' + obj.command);
                     break;
