@@ -355,13 +355,21 @@ class DlinkSmarthome extends utils.Adapter {
     async loginDevice(device) {
         try {
             const loginResult = await device.client.login();
-            this.log.debug(device.name + ' successfully logged in. ' + JSON.stringify(loginResult));
-            device.loggedIn = true;
-            device.loginErrorPrinted = false;
+            if (loginResult === 'success') {
+                this.log.debug(device.name + ' successfully logged in. ' + JSON.stringify(loginResult));
+                device.loggedIn = true;
+                device.loginErrorPrinted = false;
+            } else {
+                if (!device.loginErrorPrinted) {
+                    this.log.debug('Login error: soapclient returned ' + loginResult);
+                    this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected.');
+                    device.loginErrorPrinted = true;
+                }
+            }
         } catch (e) {
             if (!device.loginErrorPrinted) {
-                this.log.debug('Login error: ' +  JSON.stringify(e, null, 2));
-                this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + JSON.stringify(e, null, 2));
+                this.log.debug('Login error: ' +  e.stack);
+                this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.stack);
                 device.loginErrorPrinted = true;
             }
             device.loggedIn = false;
