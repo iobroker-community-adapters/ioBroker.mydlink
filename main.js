@@ -383,7 +383,7 @@ class DlinkSmarthome extends utils.Adapter {
             ip: /** @type {string} */ (native.ip),
             pin: decrypt(this.secret, native.pin),
             pollInterval: /** @type {number} */ (native.pollInterval),
-            mac: /** @type {string} */ (native.mac).toUpperCase(),
+            mac: /** @type {string} */ (native.mac) ? /** @type {string} */ (native.mac).toUpperCase() : '',
             id: configDevice._id, //for easier state updates -> depents on MAC.
             name: configDevice.common.name, //for easier logging
             loggedIn: false,
