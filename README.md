@@ -43,6 +43,15 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+### __WORK IN PROGRESS__
+* BREAKING CHANGE: device id is now mac instead of name -> all devices need to be recreated. Sorry for that. But should never happen again, now. New devices *should* be created automatically.
+* added encryption of PIN
+* settings stored in native part of device (please do not delete them or you have to reconfigure them)
+* modified device creation / identification / start to allow devices to be (re-)started during runtime (you do not need to press save on config page anymore)
+* added auto detection
+* added missing translations
+* added sentry plugin (including sending information about unknown devices)
+* a lot of internal restructuring and cleanup for better maintenance in future.
 
 ### 0.0.7
 * (Garfonso) added info.connection state
