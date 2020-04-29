@@ -83,9 +83,9 @@ function idFromMac(mac) {
  * @property {boolean} enabled true if device should be talked too.
  */
 
-class DlinkSmarhome extends utils.Adapter {
+class DlinkSmarthome extends utils.Adapter {
     /**
-     * @param {Partial<ioBroker.AdapterOptions>} [options={}]
+     * @param {Partial<utils.AdapterOptions>} [options={}]
      */
     constructor(options) {
         super({
@@ -832,10 +832,10 @@ class DlinkSmarhome extends utils.Adapter {
 if (module.parent) {
     // Export the constructor in compact mode
     /**
-     * @param {Partial<ioBroker.AdapterOptions>} [options={}]
+     * @param {Partial<utils.AdapterOptions>} [options={}]
      */
-    module.exports = (options) => new DlinkSmarhome(options);
+    module.exports = (options) => new DlinkSmarthome(options);
 } else {
     // otherwise start the instance directly
-    new DlinkSmarhome();
+    new DlinkSmarthome();
 }
