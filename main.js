@@ -308,9 +308,6 @@ class DlinkSmarthome extends utils.Adapter {
             }
         }
 
-        //let soapactions = await device.client.getModuleSOAPActions(0);
-        //this.log.debug('Module SOAP Actions: ' + JSON.stringify(soapactions, null, 2));
-
         const flags = deviceFlags[device.model];
         if (flags) {
             device.flags = flags;
@@ -518,7 +515,7 @@ class DlinkSmarthome extends utils.Adapter {
                 device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
                     device.pollInterval);
             } else {
-                this.log.debug('Polling disabled, interval was ' + interval + ' from ' + device.pollInterval);
+                this.log.debug('Polling of ' + device.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
             }
         }
 
