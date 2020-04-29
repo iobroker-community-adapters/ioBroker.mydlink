@@ -276,10 +276,10 @@ class DlinkSmarthome extends utils.Adapter {
         const settings = await device.client.getDeviceSettings();
         this.log.debug(device.name + ' returned following device settings: ' + JSON.stringify(settings, null, 2));
         device.model = settings.ModelName;
-        if (device.mac && device.mac !== settings.DeviceMac) {
+        if (device.mac && device.mac !== settings.DeviceMacId) {
             this.log.warn('Device mac differs from stored mac for ' + device.name);
         } else {
-            device.mac = settings.DeviceMac;
+            device.mac = settings.DeviceMacId.toUpperCase();
             //do that here to allow conversion from old devices.
             device.id = idFromMac(device.mac);
             await this.createNewDevice(device); //store device settings
