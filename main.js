@@ -588,7 +588,7 @@ class DlinkSmarthome extends utils.Adapter {
                 if (device.intervalHandle) {
                     clearInterval(device.intervalHandle);
                 }
-                if (device.client) {
+                if (device.client && typeof device.client.close === 'function') {
                     device.client.close();
                 }
             }
@@ -675,7 +675,6 @@ class DlinkSmarthome extends utils.Adapter {
                             const device = this.detectedDevices[key];
                             if (!device.alreadyPresent) {
                                 device.readOnly = true;
-                                device.name = device.type;
                                 devices.push(device);
                             }
                         }
@@ -687,9 +686,7 @@ class DlinkSmarthome extends utils.Adapter {
                     const devices = await this.getDevicesAsync();
                     const tableDevices = [];
                     for (const device of devices)  {
-                        if (device.native.pin && device.native.pinEncrypted) {
-                            device.native.pin = decrypt(this.secret, device.native.pin);
-                        }
+                        device.native.pin = decrypt(this.secret, device.native.pin);
                         tableDevices.push(device.native);
                     }
                     if (obj.callback) {
@@ -698,45 +695,80 @@ class DlinkSmarthome extends utils.Adapter {
                     break;
                 }
                 case 'sendDevices': {
-                    const inCommingDevices = /** @type {Record<string, any>} */ (obj.message).devices || [];
-                    for (const device of this.devices) {
-                        let found = false;
-                        let changed = false;
-                        for (const configDevice of inCommingDevices) {
-                            if (configDevice.mac.toUpperCase() === device.mac.toUpperCase()) {
-                                found = true;
-                                changed = configDevice.ip !== device.ip || configDevice.pin !== device.pin ||
-                                    configDevice.name !== device.name || configDevice.pollInterval !== device.pollInterval ||
-                                    configDevice.enabled !== device.enabled;
-                                if (changed) {
-                                    device.ip = configDevice.ip;
-                                    device.pin = configDevice.pin;
-                                    device.name = configDevice.name;
-                                    device.pollInterval = configDevice.pollInterval;
-                                    device.enabled = configDevice.enabled;
+                    try {
+                        const inCommingDevices = /** @type {Record<string, any>} */ (obj.message).devices || [];
+                        this.log.debug('Got devices: ' + JSON.stringify(inCommingDevices, null, 2));
+                        for (const device of this.devices) {
+                            let found = false;
+                            let changed = false;
+                            for (const configDevice of inCommingDevices) {
+                                if (configDevice.mac.toUpperCase() === device.mac.toUpperCase()) {
+                                    found = true;
+                                    changed = configDevice.ip !== device.ip || configDevice.pin !== device.pin ||
+                                        configDevice.name !== device.name || configDevice.pollInterval !== device.pollInterval ||
+                                        configDevice.enabled !== device.enabled;
+                                    if (changed) {
+                                        device.ip = configDevice.ip;
+                                        device.pin = configDevice.pin;
+                                        device.name = configDevice.name;
+                                        device.pollInterval = configDevice.pollInterval;
+                                        device.enabled = configDevice.enabled;
+                                    }
+                                    configDevice.found = true;
+                                    break;
                                 }
-                                break;
+                            }
+
+                            //remove not found devices:
+                            if (!found || changed) {
+                                if (device.client && typeof device.client.close === 'function') {
+                                    device.client.close();
+                                }
+                                if (device.intervalHandle) {
+                                    clearTimeout(device.intervalHandle);
+                                }
+
+                                //delete not found devices -> user deleted them from table
+                                if (!found) {
+                                    this.log.debug(device.name + ' not in config anymore. Delete objects for ' + device.mac);
+                                    try {
+                                        const ids = await this.getObjectListAsync({
+                                            startkey: device.id,
+                                            endkey: device.id + '\u9999'
+                                        });
+                                        if (ids) {
+                                            for (const obj of ids.rows) {
+                                                await this.delObjectAsync(obj.value._id);
+                                            }
+                                        }
+                                    } catch (e) {
+                                        this.log.error('Error during deletion of ' + device.mac + ': ' + e.stack);
+                                    }
+                                } else {
+                                    //device did change -> restart:
+                                    await this.createNewDevice(device); //store device settings
+                                    await this.startDevice(device); //will also store new parameters.
+                                }
                             }
                         }
 
-                        //remove not found devices:
-                        if (!found || changed) {
-                            if (device.client) {
-                                device.client.close();
+                        for (const device of inCommingDevices) {
+                            if (!device.found) {
+                                if (!device.mac || !device.pin || !device.ip) {
+                                    this.log.error('Incomplete device: ' + JSON.stringify(device, null, 2));
+                                    continue;
+                                }
+                                this.log.debug('New device ' + JSON.stringify(device, null, 2));
+                                const fullDevice = this.createDeviceFromTable(device);
+                                await this.createNewDevice(fullDevice);
+                                await this.startDevice(fullDevice);
                             }
-                            if (device.intervalHandle) {
-                                clearTimeout(device.intervalHandle);
-                            }
-
-                            //delete not found devices -> user deleted them from table
-                            if (!found) {
-                                this.log.debug(device.name + ' not in config anymore. Delete objects.');
-                                await this.deleteDeviceAsync(device.id); //does this delete all states, too?
-                            } else {
-                                //device did change -> restart:
-                                await this.createNewDevice(device); //store device settings
-                                await this.startDevice(device); //will also store new parameters.
-                            }
+                        }
+                    } catch (e) {
+                        this.log.error('Error during processing config: ' + e.stack);
+                    } finally {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, 'success', obj.callback);
                         }
                     }
                     break; //end switch clause.
