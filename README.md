@@ -35,13 +35,16 @@ delayed by polling interval (can be set in config).
 <tr><td>Name</td><td>set a name here, must be unique (for mydlink devices)</td></tr>
 <tr><td>IP</td><td>fill in IP address here, hostname should also work</td></tr>
 <tr><td>PIN</td><td>PIN is printed on a sticker on the device, probably at the bottom</td></tr>
-<tr><td>Poll interval</td><td>per device poll interval, leave empty to use global poll interval. <br /> Set 0 to disable polling. <br /><b>Recommendation:</b> Set a fast poll interval for sensors and a longer one for plugs.</td></tr>
-<tr><td>enable</td><td>if not enabled, will not be polled or controlled. <br />Devices that are not plugged in can be disabled to avoid error messages in the log.</td></tr>
+<tr><td>Poll interval</td><td>per device poll interval<br /> Set 0 to disable polling. <br /><b>Recommendation:</b> Set a fast poll interval for sensors and a longer one for plugs.</td></tr>
+<tr><td>enable</td><td>if not enabled, will not be polled or controlled. <br />Devices that are not plugged in can be disabled to avoid network traffic and error messages in the log.</td></tr>
 </table>
 
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+### __WORK IN PROGRESS__
+* 
+
 ### 1.0.1 (2020-04-30)
 * Re-added device config to adapter config (in case objects get deleted).
 
