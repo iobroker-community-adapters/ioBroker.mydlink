@@ -125,7 +125,7 @@ class DlinkSmarthome extends utils.Adapter {
         await this.createDeviceAsync(device.id, {name: device.name}, {
             ip: device.ip,
             mac: device.mac,
-            pin: encrypt(device.pin),
+            pin: encrypt(this.secret, device.pin),
             pollInterval: device.pollInterval,
             enabled: device.enabled,
             name: device.name
@@ -361,7 +361,7 @@ class DlinkSmarthome extends utils.Adapter {
         const device = {
             client: {}, //filled later
             ip: /** @type {string} */ (native.ip),
-            pin: decrypt(native.pin),
+            pin: decrypt(this.secret, native.pin),
             pollInterval: /** @type {number} */ (native.pollInterval),
             effectivePollInterval: 0,
             mac: /** @type {string} */ (native.mac).toUpperCase(),
