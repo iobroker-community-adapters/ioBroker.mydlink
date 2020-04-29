@@ -332,7 +332,7 @@ class DlinkSmarthome extends utils.Adapter {
                         for (const key of Object.keys(xmls)) {
                             scope.setExtra(key, xmls[key]);
                         }
-                        Sentry.captureMessage('Unknown-Device', 'info'); // Level 'info'
+                        Sentry.captureMessage('Unknown-Device ' + device.model, 'info'); // Level 'info'
                     });
                 } else {
                     this.log.error('No sentry plugin?');
