@@ -156,7 +156,7 @@ class DlinkSmarthome extends utils.Adapter {
 
     /**
      * Creates objects based on flags on device. IE for W215 also temperature and power measurement.
-     * @param device
+     * @param {Device} device
      * @returns {Promise<void>}
      */
     async createObjects(device) {
@@ -284,19 +284,20 @@ class DlinkSmarthome extends utils.Adapter {
 
         if (device.mac && device.mac !== settings.DeviceMacId) {
             this.log.warn('Device mac differs from stored mac for ' + device.name);
-        } else {
+        } else if (!device.mac) {
             device.mac = settings.DeviceMacId.toUpperCase();
             //do that here to allow conversion from old devices.
+            const oldId = device.id;
             device.id = idFromMac(device.mac);
             // @ts-ignore
-            device.pollInterval = device.pollInterval || this.config.pollInterval;
+            device.pollInterval = device.pollInterval || this.config.interval;
             await this.createNewDevice(device); //store device settings
 
             //delete old device:
             try {
                 const ids = await this.getObjectListAsync({
-                    startkey: device.name,
-                    endkey: device.name + '\u9999'
+                    startkey: oldId,
+                    endkey: oldId + '\u9999'
                 });
                 if (ids) {
                     for (const obj of ids.rows) {
