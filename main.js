@@ -76,7 +76,6 @@ function idFromMac(mac) {
  * @property {boolean} loginErrorPrinted - used to surpress repeating login errors.
  * @property {boolean} created - true if created in ioBroker (can only happen with mac)
  * @property {number} pollInterval configured pollInterval in milliseconds
- * @property {number} effectivePollInterval pollInterval from device or adapter
  * @property {NodeJS.Timeout|undefined} intervalHandle handle of interval
  * @property {string} model Model name of hardware device
  * @property {Record<string, boolean>} flags determine what features the hardware has
@@ -300,7 +299,7 @@ class DlinkSmarthome extends utils.Adapter {
             device.flags = flags;
         } else {
             device.flags = {
-                canSwitchOnOff: (settings.PresentationURL.toLowerCase().indexOf('dsp') >= 0), //if is socket, probably can switch on/off
+                canSwitchOnOff: (settings.ModuleTypes.find(t => t.indexOf('Plug') >= 0)), //if is socket, probably can switch on/off
                 hasTemp: false,
                 hasPower: false,
                 hasTotalPower: false,
@@ -370,7 +369,6 @@ class DlinkSmarthome extends utils.Adapter {
             ip: /** @type {string} */ (native.ip),
             pin: decrypt(this.secret, native.pin),
             pollInterval: /** @type {number} */ (native.pollInterval),
-            effectivePollInterval: 0,
             mac: /** @type {string} */ (native.mac).toUpperCase(),
             id: configDevice._id, //for easier state updates -> depents on MAC.
             name: configDevice.common.name, //for easier logging
@@ -389,6 +387,65 @@ class DlinkSmarthome extends utils.Adapter {
     }
 
     /**
+     *
+     * @param {string} ip
+     * @param {string} pin
+     * @returns {Device}
+     */
+    createDeviceFromIpAndPin(ip, pin) {
+        //internal configuration:
+        const device = {
+            client: {}, //filled later
+            ip: ip,
+            pin: pin,
+            pollInterval: 0,
+            mac: '',
+            id: '',
+            name: ip,
+            loggedIn: false,
+            identified: false,
+            ready: false,
+            intervalHandle: undefined,
+            loginErrorPrinted: false,
+            created: true,
+            model: '',
+            flags: {},
+            enabled: true
+        };
+
+        return device;
+    }
+
+    /**
+     * Creates full device from configuration table:
+     * @param {Record<string, any>} tableDevice
+     * @returns {Device}
+     */
+    createDeviceFromTable(tableDevice) {
+        //internal configuration:
+        const device = {
+            client: {}, //filled later
+            ip: tableDevice.ip,
+            pin: tableDevice.pin,
+            pollInterval: tableDevice.pollInterval,
+            mac: tableDevice.mac.toUpperCase(),
+            id: idFromMac(tableDevice.mac),
+            name: tableDevice.name,
+            loggedIn: false,
+            identified: false,
+            ready: false,
+            intervalHandle: undefined,
+            loginErrorPrinted: false,
+            created: true,
+            model: '',
+            flags: {},
+            enabled: tableDevice.enabled
+        };
+
+        return device;
+    }
+
+    /**
      * starting communication with device from config.
      * @param {Device} device
      * @returns {Promise<boolean>}
@@ -396,7 +453,7 @@ class DlinkSmarthome extends utils.Adapter {
     async startDevice(device) {
         //if device was already started -> stop it.
         //(use case: ip did change or settings did change)
-        if (device.client) {
+        if (device.client && typeof device.client.close === 'function') {
             device.client.close();
         }
         if (device.intervalHandle) {
@@ -420,7 +477,7 @@ class DlinkSmarthome extends utils.Adapter {
                 try {
                     await this.identifyDevice(device);
                 } catch (e) {
-                    this.log.error(device.name + ' could not get settings: ' + JSON.stringify(e, null, 2));
+                    this.log.error(device.name + ' could not get settings: ' + e.stack);
                 }
             }
         }
@@ -431,7 +488,7 @@ class DlinkSmarthome extends utils.Adapter {
         //start polling if device is enabled (do this after all is setup).
         let result = false;
         if (device.enabled) {
-            let interval = device.pollInterval || this.config.interval;
+            let interval = device.pollInterval;
             if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
                 this.log.debug('Start polling for ' + device.name);
                 result = true; //only use yellow/green states if polling at least one device.
@@ -439,10 +496,10 @@ class DlinkSmarthome extends utils.Adapter {
                     this.log.warn('Increasing poll rate to twice per second. Please check device config.');
                     interval = 500; //polling twice every second should be enough, right?
                 }
-                device.effectivePollInterval = interval; //store here, after createNewDevice in order to not store it.
+                device.pollInterval = interval;
                 // @ts-ignore
                 device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
-                    device.effectivePollInterval);
+                    device.pollInterval);
             } else {
                 this.log.debug('Polling disabled, interval was ' + interval + ' from ' + device.pollInterval + ' and ' + this.config.interval);
             }
@@ -479,9 +536,9 @@ class DlinkSmarthome extends utils.Adapter {
         this.log.debug('Got existing devices: ' + JSON.stringify(existingDevices, null, 2));
         for (const existingDevice of existingDevices) {
             const device = this.createDeviceFromConfig(existingDevice);
+            haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
             //keep config and client for later reference.
             this.devices.push(device);
-            haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
         }
 
         await this.setStateChangedAsync('info.connection', !haveActiveDevices, true); //if no active device -> make green.
@@ -574,7 +631,7 @@ class DlinkSmarthome extends utils.Adapter {
             await this.setStateChangedAsync('info.connection', connected, true);
         }
         device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
-            device.effectivePollInterval);
+            device.pollInterval);
     }
 
     /**
