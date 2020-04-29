@@ -65,7 +65,15 @@
       {
         "js-controller": ">=1.5.11"
       }
-    ]
+    ],
+    "plugins": {
+      "sentry": {
+        "dsn": "https://f3bd9039fcf9447a97efcc52d8f8b349@o377092.ingest.sentry.io/5198728",
+        "pathWhitelist": ["@iobroker", "iobroker.js-controller", "mydlink", "soapclient", "deviceFlags"],
+        "pathBlacklist": [],
+        "errorBlacklist": ["SyntaxError"]
+      }
+    }
   },
   "native": {
 
