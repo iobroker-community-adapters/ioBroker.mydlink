@@ -29,7 +29,6 @@ The adapter needs to poll the devices. So sensor readings and motion detection w
 delayed by polling interval (can be set in config).
 
 #### Configuration:
-* global poll interval - Adapter will poll all devices in that interval, if they do not have a specific interval set. Set to 0 to disable.
 * List of devices, each device with following settings:
 
 <table>
