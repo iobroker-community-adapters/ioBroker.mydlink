@@ -68,8 +68,7 @@
     ]
   },
   "native": {
-    "interval": 1000,
-    "devices": []
+
   },
   "objects": [],
   "instanceObjects": [

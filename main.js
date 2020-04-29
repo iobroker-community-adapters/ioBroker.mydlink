@@ -289,6 +289,7 @@ class DlinkSmarthome extends utils.Adapter {
             //do that here to allow conversion from old devices.
             device.id = idFromMac(device.mac);
             await this.createNewDevice(device); //store device settings
+            //TODO: delete old device.
         }
 
         //let soapactions = await device.client.getModuleSOAPActions(0);
@@ -501,7 +502,7 @@ class DlinkSmarthome extends utils.Adapter {
                 device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
                     device.pollInterval);
             } else {
-                this.log.debug('Polling disabled, interval was ' + interval + ' from ' + device.pollInterval + ' and ' + this.config.interval);
+                this.log.debug('Polling disabled, interval was ' + interval + ' from ' + device.pollInterval);
             }
         }
 
@@ -513,12 +514,6 @@ class DlinkSmarthome extends utils.Adapter {
      */
     async onReady() {
         // Initialize your adapter here
-
-        // The adapters config (in the instance object everything under the attribute 'native') is accessible via
-        // this.config:
-        //ie array devices with device objects.
-        //and polling time = interval
-        this.log.debug('polling interval: ' + this.config.interval);
 
         //get secret for decryption:
         const systemConfig = await this.getForeignObjectAsync('system.config');
