@@ -56,24 +56,93 @@
         console.log("OnReady: ", event);
     }
 
+    function macToId(mac) {
+        return mac.replace(/:/g, '');
+    }
+
+    function addDeviceToTable(device) {
+        const id = macToId(device.mac)
+        const button = '<a class="btn-floating waves-effect waves-light blue" id="' + id + '-add" class="values-buttons"><i class="material-icons">add</i></a>';
+        const parts = [];
+        parts.push('<tr id="' + id + '">');
+        parts.push('<td><span id="' + id + '-model">' + device.type + '</span></td>');
+        parts.push('<td><span id="' + id + '-mac">' + device.mac + '</span></td>');
+        parts.push('<td><span id="' + id + '-ip">' + device.ip + '</span></td>');
+        parts.push('<td><span id="' + id + '-add">' + (device.alreadyPresent ? "&nbsp;" : button) + '</span></td>');
+        parts.push("</tr>");
+
+        const html = parts.join("\n");
+
+        let result = $("#detectedDevices").append(html);
+
+        result = $("#" + id + "-add").on('click', function () {
+            console.log("Clicked on " + device.mac + "!");
+            const oldDevice = tableDevices.find(d => d.mac === device.mac);
+            if (!oldDevice) {
+                tableDevices.push({
+                    name: device.type,
+                    mac: device.mac,
+                    ip: device.ip,
+                    pin: device.pin,
+                    pollInterval: 30000,
+                    enabled: true
+                });
+                $("#" + id).remove();
+                values2table('devices', tableDevices, _onChange);
+            } else {
+                M.toast({html: "Device already present."});
+
+            }
+        });
+    }
+
+    const presentDevices = [];
     async function periodicallyGetDevices() {
         const detectedDevices = await asyncSendTo('discovery');
-        values2table('detectedDevices', detectedDevices, {onChange: onChangeDetectedDevices, onReady: onReadyDevices});
+        for (const device of detectedDevices) {
+            let oldDevice = tableDevices.find(d => d.mac === device.mac);
+            if (!oldDevice) {
+                oldDevice = presentDevices.find(d => d.mac === device.mac);
+                if (!oldDevice) {
+                    console.log("New device: " + device.ip);
+                    addDeviceToTable(device);
+                    presentDevices.push(device);
+                }
+            }
+        }
         setTimeout(periodicallyGetDevices, 1000);
     }
 
     const tableDevices = [];
+    async function periodicallyGetExistingDevices() {
+        const devices = await asyncSendTo('getDevices');
+        let dirty = false;
+        for (const device of devices) {
+            const oldDevice = tableDevices.find(d => d.mac === device.mac);
+            if (!oldDevice) {
+                console.log("New device: " + device.ip);
+                dirty = true;
+                tableDevices.push(device);
+            }
+        }
+        if (dirty) {
+            values2table('devices', tableDevices, _onChange);
+        }
+    }
+
+
+    let _onChange;
     // This will be called by the admin adapter when the settings page loads
     async function load(settings, onChange) {
         // example: select elements with id=key and class=value and insert value
         if (!settings) return;
+        _onChange = onChange;
 
         //get auto detection results:
         periodicallyGetDevices();
 
         //get devices:
-        const devices = await asyncSendTo('getDevices');
-        values2table('devices', tableDevices);
+        periodicallyGetExistingDevices();
 
         $('.value').each(function () {
             var $key = $(this);
@@ -93,17 +162,73 @@
         });
         onChange(false);
 
+        // initalize modal
+        $('.modal').modal();
+
+        //add by identifying ip
+        $("#btn-add-ip-device").on("click", async () => {
+            console.log("Add device button executed");
+            $("#add-ip-device").addClass('disabled');
+            $("#add-ip-device-spinner").removeClass('hide');
+            try {
+                const device = await asyncSendTo('identifyDevice', {
+                    ip: $("#device-ip").val(),
+                    pin: $("#device-pin").val()
+                });
+                console.log('Device from backend : ' + device);
+                const oldDevice = tableDevices.find(d => d.ip === device.ip);
+                if (oldDevice) {
+                    console.log("Device already present..");
+                    if (device.enabled && (!oldDevice.mac || !oldDevice.enabled)) {
+                        oldDevice.mac = device.mac;
+                        oldDevice.enabled = device.enabled;
+                        oldDevice.pin = device.pin;
+                    }
+                } else {
+                    tableDevices.push(device);
+                }
+                values2table('devices', tableDevices, _onChange);
+                if (!device.enabled) {
+                    $("#modal-error-message").modal("open");
+                }
+            } catch (e) {
+                console.log("Error:", e);
+                $("#modal-error-message").modal("open");
+            } finally {
+                $("#add-ip-device").removeClass('disabled');
+                $("#add-ip-device-spinner").addClass('hide');
+            }
+        });
+
+        //add manually:
+        $("#add-manual-device").on("click", async () => {
+            console.log("Add manual device button executed");
+            const device = {
+                name: "",
+                mac: "",
+                ip: "",
+                pin: "",
+                pollInterval: 0,
+                enabled: false
+            }
+            M.toast({html: "Please fill in MAC Address and IP. Or use Add by IP to only fill in IP and determine MAC."});
+            tableDevices.push(device);
+            values2table('devices', tableDevices, _onChange);
+        });
+
         // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
         if (M) M.updateTextFields();
     }
 
     async function sendDevices() {
         const tableDevices = table2values("devices");
-        await asyncSendTo("sendDevices", tableDevices);
+        console.log(tableDevices);
+        await asyncSendTo("sendDevices", {devices: tableDevices});
     }
 
     // This will be called by the admin adapter when the user presses the save button
     function save(callback) {
+        $("#add-ip-device-spinner").removeClass('hide');
         const obj = {};
         $('.value').each(function () {
             const $this = $(this);
@@ -114,7 +239,13 @@
             }
         });
 
-        sendDevices().then(() => {
+        sendDevices().then((result) => {
+            console.log("Send devices came back: ", result);
+            $("#add-ip-device-spinner").addClass('hide');
+            callback(obj);
+        }, (err) => {
+            console.log("Send devices had error: ", err);
+            $("#add-ip-device-spinner").addClass('hide');
             callback(obj);
         });
     }
@@ -123,72 +254,123 @@
 <body>
 <!-- you have to put your config page in a div with id adapter-container -->
 <div class="m adapter-container">
+
     <div class="row">
-        <div class="col s12">
-            <ul class="tabs">
-                <li class="tab col s2"><a href="#tab-main" class="translate active">Main settings</a></li>
-                <li class="tab col s2"><a href="#tab-devices" class="translate">addresses</a></li>
-            </ul>
+        <div class="input-field col s6 m4 l6">
+            <img src="mydlink.png" class="logo">
         </div>
+    </div>
 
-        <div id="tab-main" class="col s12 page">
-            <div class="row">
-                <div class="col s12 m4 l2">
-                    <img src="mydlink.png" class="logo">
-                </div>
-            </div>
+    <div class="row">
+        <div id="add-ip-device-spinner" class="progress s12 hide">
+            <div class="indeterminate"></div>
+        </div>
+    </div>
+    <div class="row">
+        <a id="add-auto-device"
+           class="table-button-add col s12 m12 l4 waves-effect waves-light btn btn-large blue modal-trigger"
+           data-target="modal-add-auto-device"><i class="large left material-icons">add_circle</i><div class="translate">addAutoDevice</div></a>
+        <a id="add-ip-device"
+           class="table-button-add col s12 m12 l4 waves-effect waves-light btn btn-large blue modal-trigger"
+           data-target="modal-add-device"><i class="large left material-icons">add_circle</i><div class="translate">addIpDevice</div>
+        </a>
+        <a id="add-manual-device"
+           class="table-button-add col s12 m12 l4 waves-effect waves-light btn btn-large blue"
+           data-target="devices"><i class="large left material-icons">add_circle</i><div class="translate">addManualDevice</div></a>
+    </div>
 
-            <div class="col s12 m4 l1">
-                <input class="value number" id="interval" size="5" maxlength="6" type="number"/>
-                <label class="translate" for="interval">interval</label>
+
+    <div class="row">
+        <div class="col s12" id="devices">
+            <div class="table-values-div">
+                <table class="table-values">
+                    <thead>
+                    <tr>
+                        <th data-name="name" style="width: auto" class="translate">name</th>
+                        <th data-name="mac" style="width: 150px" class="translate">mac</th>
+                        <th data-name="ip" style="width: 150px" class="translate">ipaddress</th>
+                        <th data-name="pin" style="width: 70px" class="translate">pin</th>
+                        <th data-name="pollInterval" style="width: 190px" class="translate">pollInterval</th>
+                        <th data-name="enabled" style="width: 70px" data-style="width: 70px" data-type="checkbox" class="translate">enabled</th>
+                        <th data-buttons="delete up down" style="width: 120px"></th>
+                    </tr>
+                    </thead>
+                </table>
             </div>
         </div>
+    </div>
 
-        <div id="tab-devices" class="col s12 page">
-            <div class="section">
-                <h5 class="translate">ConfiguredDevices</h5>
-            </div>
-
-            <div class="col s12" id="devices">
-                <div class="table-values-div">
-                    <table class="table-values">
-                        <thead>
-                        <tr>
-                            <th data-name="name" style="width: auto" class="translate">name</th>
-                            <th data-name="mac" style="width: 150px" class="translate">mac</th>
-                            <th data-name="ip" style="width: 150px" class="translate">ipaddress</th>
-                            <th data-name="pin" style="width: 70px" class="translate">pin</th>
-                            <th data-name="pollInterval" style="width: 190px" class="translate">pollInterval</th>
-                            <th data-name="enabled" style="width: 70px" data-style="width: 70px" data-type="checkbox" class="translate">enabled</th>
-                            <th data-buttons="delete up down" style="width: 120px"></th>
-                        </tr>
-                        </thead>
-                    </table>
-                </div>
-                <a class="btn-floating waves-effect waves-light blue table-button-add"><i class="material-icons">add</i></a>
-            </div>
-
-            <div class="section" style="margin-top: 50px;">
-                <h5 class="translate">detectedDevices</h5>
-                <p class="translate">autoDetectDescription</p>
-            </div>
-            <div class="col s12" id="detectedDevices">
-                <div class="table-values-div">
-                    <table class="table-values">
-                        <thead>
-                        <tr>
-                            <!-- <th data-name="alreadyPresent" style="width: 70px" data-style="width: 70px" data-type="checkbox" class="translate">alreadyInUse</th> -->
-                            <th data-name="name" style="width: 30%" class="translate" readOnly>name</th>
-                            <th data-name="mac" style="width: 30%" class="translate" readOnly>mac</th>
-                            <th data-name="ip" style="width: 30%" class="translate" readOnly>ipaddress</th>
-                            <th data-buttons="add" style="width: 120px"></th>
-                        </tr>
-                        </thead>
-                    </table>
+    <!-- Modal for auto detected devices -->
+    <div id="modal-add-auto-device" class="modal">
+        <div class="modal-content">
+            <h5 class="translate">detectedDevices</h5>
+            <p class="translate">autoDetectDescription</p>
+            <div class="row center">
+                <div class="col s12">
+                    <div class="table-values-div">
+                        <table class="table-values">
+                            <thead>
+                            <tr>
+                                <!-- <th data-name="alreadyPresent" style="width: 70px" data-style="width: 70px" data-type="checkbox" class="translate">alreadyInUse</th> -->
+                                <th data-name="name" style="width: 30%" class="translate" readOnly>model</th>
+                                <th data-name="mac" style="width: 30%" class="translate" readOnly>mac</th>
+                                <th data-name="ip" style="width: 30%" class="translate" readOnly>ipaddress</th>
+                                <th data-buttons="add" style="width: 120px"></th>
+                            </tr>
+                            </thead>
+                            <tbody id="detectedDevices"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Modal for auto detected devices -->
+
+    <!-- Modal for manual ip input -->
+    <div id="modal-add-device" class="modal">
+        <div class="modal-content">
+            <h5 class="translate center">addByIP</h5>
+            <p class="translate center">onlineMessage</p>
+            <div class="row center">
+                <div class="input-field col s3">
+                    <input placeholder="192.168.0.1" class="value" id="device-ip" type="text"></input>
+                    <label for="device-ip" class="translate">ipaddress</label>
+                </div>
+            </div>
+            <div class="row center">
+                <div class="input-field col s3">
+                    <input placeholder="123456" class="value" id="device-pin" type="text"></input>
+                    <label for="device-ip" class="translate">pin</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btn-add-ip-device"
+                    class="btn waves-effect waves-light modal-close modal-action translate">Add</button>
+            <button class="btn waves-effect waves-light modal-close modal-action translate"
+                    href="#!">Close</button>
+        </div>
+    </div>
+    <!-- Modal for manual ip input -->
+
+    <!-- Modal for error message -->
+    <div id="modal-error-message" class="modal">
+        <div class="content">
+            <h5 class="translate center red">Error</h5>
+            <div class="row center">
+                <p class="translate">errorIdentify</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="center">
+                <button class="btn waves-effect center waves-light modal-close modal-action translate"
+                        href="#!">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for error message -->
+
 </div>
 </body>
 </html>
