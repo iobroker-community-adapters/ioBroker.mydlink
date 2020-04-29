@@ -1,6 +1,6 @@
 {
   "name": "iobroker.mydlink",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "support mydlink plugs and sensort like dsp-w215 using HNAP protocol.",
   "author": {
     "name": "Garfonso",

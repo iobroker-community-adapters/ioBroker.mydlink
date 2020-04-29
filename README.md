@@ -43,7 +43,7 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 1.0.1 (2020-04-30)
 * Re-added device config to adapter config (in case objects get deleted).
 
 ### 1.0.0 (2020-04-30)
