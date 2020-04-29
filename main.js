@@ -457,10 +457,10 @@ class DlinkSmarthome extends utils.Adapter {
         const device = {
             client: {}, //filled later
             ip: tableDevice.ip,
-            pin: doDecrypt ? decrypt(this.secret, tableDevice.pin) : tableDevice.pin,
+            pin: doDecrypt && tableDevice.mac ? decrypt(this.secret, tableDevice.pin) : tableDevice.pin,
             pollInterval: tableDevice.pollInterval,
-            mac: tableDevice.mac.toUpperCase(),
-            id: idFromMac(tableDevice.mac),
+            mac: tableDevice.mac ? tableDevice.mac.toUpperCase() : '',
+            id: tableDevice.mac ? idFromMac(tableDevice.mac) : '',
             name: tableDevice.name,
             loggedIn: false,
             identified: false,
@@ -561,11 +561,16 @@ class DlinkSmarthome extends utils.Adapter {
         const configDevicesToAdd = [].concat(this.config.devices);
         this.log.debug('Got existing devices: ' + JSON.stringify(existingDevices, null, 2));
         this.log.debug('Got config devices: ' + JSON.stringify(configDevicesToAdd, null, 2));
+        let needUpdateConfig = false;
         for (const existingDevice of existingDevices) {
             let found = false;
             for (const configDevice of this.config.devices) {
                 // @ts-ignore
-                if (configDevice.mac === existingDevice.native.mac) {
+                needUpdateConfig = !configDevice.mac;
+                // @ts-ignore
+                if ((configDevice.mac && configDevice.mac === existingDevice.native.mac) ||
+                    // @ts-ignore
+                    (configDevice.ip === existingDevice.native.ip)) {
                     found = true;
                     configDevicesToAdd.splice(configDevicesToAdd.indexOf(configDevice), 1);
                 }
@@ -580,6 +585,7 @@ class DlinkSmarthome extends utils.Adapter {
             }
         }
 
+        //add non existing devices from config:
         for (const configDevice of configDevicesToAdd) {
             const device = this.createDeviceFromTable(configDevice, true);
             haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
@@ -587,6 +593,27 @@ class DlinkSmarthome extends utils.Adapter {
             await this.createNewDevice(device); //store device settings
             //keep config and client for later reference.
             this.devices.push(device);
+        }
+
+        //try to update config:
+        if (needUpdateConfig) {
+            const devices = [];
+            for (const device of this.devices) {
+                const configDevice = {
+                    ip: device.ip,
+                    mac: device.mac,
+                    pin: encrypt(this.secret, device.pin),
+                    pollInterval: device.pollInterval,
+                    enabled: device.enabled,
+                    name: device.name
+                };
+                devices.push(configDevice);
+            }
+            await this.extendForeignObjectAsync('system.adapter.' + this.namespace, {
+                native: {
+                    devices: devices
+                }
+            });
         }
 
         await this.setStateChangedAsync('info.connection', !haveActiveDevices, true); //if no active device -> make green.
