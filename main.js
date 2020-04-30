@@ -364,7 +364,7 @@ class DlinkSmarthome extends utils.Adapter {
         try {
             const loginResult = await device.client.login();
             if (loginResult === 'success') {
-                this.log.debug(device.name + ' successfully logged in. ' + JSON.stringify(loginResult));
+                this.log.debug(device.name + ' successfully logged in. ' + loginResult);
                 device.loggedIn = true;
                 device.loginErrorPrinted = false;
             } else {
@@ -693,7 +693,7 @@ class DlinkSmarthome extends utils.Adapter {
             //this.log.debug('Polling of ' + device.name + ' finished.');
         } catch (e) {
             if (device.ready) {
-                this.log.debug('Error during polling ' + device.name + ': ' + JSON.stringify(e, null, 2));
+                this.log.debug('Error during polling ' + device.name + ': ' + e.stack);
             }
             if (e.errno === 403) {
                 device.loggedIn = false; //login next polling.
@@ -783,7 +783,7 @@ class DlinkSmarthome extends utils.Adapter {
                         this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
                         await this.pollAndSetState(device.client.state, device.id + stateSuffix);
                     } catch(e) {
-                        this.log.error('Error while switching device ' + device.name + ': ' +  + JSON.stringify(e, null, 2));
+                        this.log.error('Error while switching device ' + device.name + ': ' +  + e.stack);
                     }
                     break; //can stop loop.
                 }
