@@ -42,6 +42,9 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+### __WORK IN PROGRESS__
+* Fixed potential crashes on network errors.
+
 ### 1.0.1 (2020-04-30)
 * Re-added device config to adapter config (in case objects get deleted).
 
