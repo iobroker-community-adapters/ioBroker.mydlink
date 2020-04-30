@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "news": {
+            "1.0.2": {
+                "en": "* Fixed potential crashes on network errors.",
+                "de": "* Mögliche Abstürze bei Netzwerkfehlern behoben.",
+                "ru": "* Исправлены возможные сбои при сетевых ошибках.",
+                "pt": "* Corrigidas falhas potenciais em erros de rede.",
+                "nl": "* Mogelijke crashes bij netwerkfouten opgelost.",
+                "fr": "* Correction de plantages potentiels sur les erreurs de réseau.",
+                "it": "* Risolti potenziali arresti anomali su errori di rete.",
+                "es": "* Se corrigieron posibles bloqueos en los errores de red.",
+                "pl": "* Naprawiono potencjalne awarie błędów sieci.",
+                "zh-cn": "*修复了因网络错误而导致的潜在崩溃。"
+            },
             "1.0.1": {
                 "en": "* Re-added device config to adapter config (in case objects get deleted).",
                 "de": "* Die Gerätekonfiguration wurde erneut zur Adapterkonfiguration hinzugefügt (falls Objekte gelöscht werden).",
