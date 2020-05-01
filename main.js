@@ -572,6 +572,7 @@ class DlinkSmarthome extends utils.Adapter {
                     (configDevice.ip === existingDevice.native.ip)) {
                     found = true;
                     configDevicesToAdd.splice(configDevicesToAdd.indexOf(configDevice), 1);
+                    break; //break on first copy -> will remove additional copies later.
                 }
             }
             if (found) {
@@ -587,11 +588,18 @@ class DlinkSmarthome extends utils.Adapter {
         //add non existing devices from config:
         for (const configDevice of configDevicesToAdd) {
             const device = this.createDeviceFromTable(configDevice, true);
-            haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
-            //call this here again, to make sure it happens.
-            await this.createNewDevice(device); //store device settings
-            //keep config and client for later reference.
-            this.devices.push(device);
+            this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
+            const oldDevice = this.devices.find(d => d.mac === device.mac);
+            if (oldDevice) {
+                this.log.info('Duplicate entry for ' + device.mac + ' in config. Trying to rectify. Restart will happen. Affected devices: ' + device.name + ' === ' + configDevice.name);
+                needUpdateConfig = true;
+            } else {
+                haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
+                //call this here again, to make sure it happens.
+                await this.createNewDevice(device); //store device settings
+                //keep config and client for later reference.
+                this.devices.push(device);
+            }
         }
 
         //try to update config:
