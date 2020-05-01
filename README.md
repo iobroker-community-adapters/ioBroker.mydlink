@@ -42,6 +42,9 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+### __WORK IN PROGRESS__
+* Fixed login/identification loop on (possibly) duplicate devices
+
 ### 1.0.2 (2020-04-30)
 * Fixed potential crashes on network errors.
 

@@ -278,8 +278,7 @@ class DlinkSmarthome extends utils.Adapter {
         //check if device is present:
         const oldDevice = this.devices.find(d => d.mac === settings.DeviceMacId.toUpperCase());
         if (oldDevice) {
-            this.log.warn('Device with MAC ' + oldDevice.mac + ' already present. Ignoring device ' + device.name);
-            return false;
+            this.log.warn('Device with MAC ' + oldDevice.mac + ' already present. ' + device.name + ' and ' + oldDevice.name + ' are the same device?');
         }
 
         if (device.mac && device.mac !== settings.DeviceMacId) {
