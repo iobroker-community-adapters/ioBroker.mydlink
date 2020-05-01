@@ -699,11 +699,28 @@ class DlinkSmarthome extends utils.Adapter {
             }
             //this.log.debug('Polling of ' + device.name + ' finished.');
         } catch (e) {
-            if (device.ready) {
-                this.log.debug('Error during polling ' + device.name + ': ' + e.stack);
+            let code;
+            if (e.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                //See if we are logged out -> login again on next poll.
+                //otherwise ignore and try again later?
+                if (e.response.status === 403) {
+                    device.loggedIn = false; //login next polling.
+                }
+                code = e.response.status;
+            } else if (e.request) {
+                // The request was made but no response was received
+                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                // http.ClientRequest in node.js
+                //probably ECONNRESET or Timeout -> e.code should be set.
+                code = e.code;
+            } else {
+                //something else...?
+                code = e.code;
             }
-            if (e.errno === 403) {
-                device.loggedIn = false; //login next polling.
+            if (device.ready) {
+                this.log.debug('Error during polling ' + device.name + ': ' + code + ' - ' + e.stack);
             }
             device.ready = false;
             await this.setStateChangedAsync(device.id + readySuffix, false, true);
