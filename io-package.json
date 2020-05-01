@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "news": {
+            "1.0.3": {
+                "en": "* Fixed login/identification loop on (possibly) duplicate devices",
+                "de": "* Anmelde- / Identifikationsschleife bei (möglicherweise) doppelten Geräten behoben",
+                "ru": "* Исправлена ошибка входа / идентификации на (возможно) дублирующих устройствах",
+                "pt": "* Corrigido loop de login / identificação em (possivelmente) dispositivos duplicados",
+                "nl": "* Vaste login / identificatielus op (mogelijk) dubbele apparaten",
+                "fr": "* Boucle de connexion / identification fixe sur (éventuellement) les appareils en double",
+                "it": "* Corretto il loop di login / identificazione su dispositivi (possibilmente) duplicati",
+                "es": "* Se corrigió el bucle de inicio de sesión / identificación en (posiblemente) dispositivos duplicados",
+                "pl": "* Naprawiono pętlę logowania / identyfikacji na (ewentualnie) zduplikowanych urządzeniach",
+                "zh-cn": "*修复（可能）重复设备上的登录/标识循环"
+            },
             "1.0.2": {
                 "en": "* Fixed potential crashes on network errors.",
                 "de": "* Mögliche Abstürze bei Netzwerkfehlern behoben.",
