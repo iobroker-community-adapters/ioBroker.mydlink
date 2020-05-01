@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "news": {
+            "1.0.4": {
+                "en": "* Improved connection keepAlive\r\n* Improved logging of network errors",
+                "de": "* Verbesserte Verbindung keepAlive\r\n* Verbesserte Protokollierung von Netzwerkfehlern",
+                "ru": "* Улучшено соединение keepAlive\r\n* Улучшено ведение журнала сетевых ошибок",
+                "pt": "* Conexão aprimorada keepAlive\r\n* Registro aprimorado de erros de rede",
+                "nl": "* Verbeterde verbinding keepAlive\r\n* Verbeterde logging van netwerkfouten",
+                "fr": "* Connexion améliorée keepAlive\r\n* Amélioration de la journalisation des erreurs réseau",
+                "it": "* Connessione migliorata keepAlive\r\n* Registrazione degli errori di rete migliorata",
+                "es": "* Conexión mejorada keepAlive\r\n* Registro mejorado de errores de red",
+                "pl": "* Ulepszone połączenie keepAlive\r\n* Ulepszone rejestrowanie błędów sieciowych",
+                "zh-cn": "*改进的连接keepAlive\r\n*改进的网络错误记录"
+            },
             "1.0.3": {
                 "en": "* Fixed login/identification loop on (possibly) duplicate devices",
                 "de": "* Anmelde- / Identifikationsschleife bei (möglicherweise) doppelten Geräten behoben",
