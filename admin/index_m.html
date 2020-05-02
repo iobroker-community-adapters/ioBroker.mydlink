@@ -185,6 +185,7 @@
                     }
                 } else {
                     tableDevices.push(device);
+                    _onChange(true);
                 }
                 values2table('devices', tableDevices, _onChange);
                 if (!device.enabled) {

@@ -296,6 +296,7 @@ class DlinkSmarthome extends utils.Adapter {
             this.log.warn('Device with MAC ' + oldDevice.mac + ' already present. ' + device.name + ' and ' + oldDevice.name + ' are the same device?');
         }
 
+        //convert old devices without MAC to new devices:
         if (device.mac && device.mac !== settings.DeviceMacId) {
             this.log.warn('Device mac differs from stored mac for ' + device.name);
         } else if (!device.mac) {
@@ -310,6 +311,11 @@ class DlinkSmarthome extends utils.Adapter {
             //delete old device:
             // @ts-ignore
             await this.deleteDeviceFull({id: oldId});
+        }
+
+        //for device identification by IP set name to model here:
+        if (!device.name) {
+            device.name = device.model;
         }
 
         const flags = deviceFlags[device.model];
@@ -452,10 +458,10 @@ class DlinkSmarthome extends utils.Adapter {
             client: {}, //filled later
             ip: ip,
             pin: pin,
-            pollInterval: 0,
+            pollInterval: 30000,
             mac: '',
             id: '',
-            name: ip,
+            name: '',
             loggedIn: false,
             identified: false,
             ready: false,
