@@ -120,8 +120,11 @@ class DlinkSmarthome extends utils.Adapter {
      * @returns {Promise<void>}
      */
     async createNewDevice(device) {
+        if (!device.id && device.mac) {
+            device.id = idFromMac(device.mac);
+        }
         if (!device.id) {
-            this.log.warn('Device ' + device.name + ' has empty ID, i.e. no MAC. Can not create device. Was device online, yet?');
+            this.log.warn('Could not create device ' + device.name + ' without MAC. Please check config or if device is online.');
             return;
         }
 
@@ -626,14 +629,7 @@ class DlinkSmarthome extends utils.Adapter {
             } else {
                 haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
                 //call this here again, to make sure it happens.
-                if (device.id || device.mac) {
-                    if (!device.id) {
-                        device.id = idFromMac(device.mac);
-                    }
-                    await this.createNewDevice(device); //store device settings
-                } else {
-                    this.log.warn('Could not create device ' + device.name + '. Is device online?');
-                }
+                await this.createNewDevice(device); //store device settings
                 //keep config and client for later reference.
                 this.devices.push(device);
             }
