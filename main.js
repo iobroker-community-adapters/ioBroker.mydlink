@@ -121,14 +121,21 @@ class DlinkSmarthome extends utils.Adapter {
      */
     async createNewDevice(device) {
         //also set the native part of the device:
-        await this.createDeviceAsync(device.id, {name: device.name}, {
-            ip: device.ip,
-            mac: device.mac,
-            pin: encrypt(this.secret, device.pin),
-            pollInterval: device.pollInterval,
-            enabled: device.enabled,
-            name: device.name
-        }, device);
+        await this.extendObjectAsync(device.id, {
+            type: 'device',
+            common: {
+                name: device.name
+            },
+            native: {
+                ip: device.ip,
+                mac: device.mac,
+                pin: encrypt(this.secret, device.pin),
+                pollInterval: device.pollInterval,
+                enabled: device.enabled,
+                name: device.name
+
+            }
+        });
         //create state object, for plug this is writable for sensor not.
         await this.setObjectNotExistsAsync(device.id + stateSuffix, {
             type: 'state',
@@ -293,7 +300,8 @@ class DlinkSmarthome extends utils.Adapter {
             await this.createNewDevice(device); //store device settings
 
             //delete old device:
-            await this.deleteDeviceFull(oldId);
+            // @ts-ignore
+            await this.deleteDeviceFull({id: oldId});
         }
 
         const flags = deviceFlags[device.model];
@@ -336,13 +344,21 @@ class DlinkSmarthome extends utils.Adapter {
 
     /**
      * deletes all objects of an device and the device itself (deleteDeviceAsync does not work somehow...?)
-     * @param {string} id
+     * @param {Device} device
      */
-    async deleteDeviceFull(id) {
+    async deleteDeviceFull(device) {
+        //stop device:
+        if (device.client && typeof device.client.close === 'function') {
+            device.client.close();
+        }
+        if (device.intervalHandle) {
+            clearTimeout(device.intervalHandle);
+        }
+
         try {
             const ids = await this.getObjectListAsync({
-                startkey: id,
-                endkey: id + '\u9999'
+                startkey: this.namespace + '.' + device.id,
+                endkey: this.namespace + '.' + device.id + '\u9999'
             });
             if (ids) {
                 for (const obj of ids.rows) {
@@ -350,7 +366,7 @@ class DlinkSmarthome extends utils.Adapter {
                 }
             }
         } catch (e) {
-            this.log.error('Error during deletion of ' + id + ': ' + e.stack);
+            this.log.error('Error during deletion of ' + device.id + ': ' + e.stack);
         }
     }
 
@@ -397,7 +413,7 @@ class DlinkSmarthome extends utils.Adapter {
         const device = {
             client: {}, //filled later
             ip: /** @type {string} */ (native.ip),
-            pin: native.mac ? decrypt(this.secret, native.pin) : /** @type {string} **/ (native.pin),
+            pin: (native.mac && !native.pinNotEncrypted) ? decrypt(this.secret, native.pin) : /** @type {string} **/ (native.pin),
             pollInterval: /** @type {number} */ (native.pollInterval),
             mac: native.mac ? /** @type {string} */ (native.mac).toUpperCase() : '',
             id: configDevice._id.split('.')[2], //for easier state updates -> depents on MAC. - remove adapter & instance
@@ -480,14 +496,14 @@ class DlinkSmarthome extends utils.Adapter {
      * @param {Device} device
      * @returns {Promise<boolean>}
      */
-    async startDevice(device) {
+    async startDevice(device){
         //if device was already started -> stop it.
         //(use case: ip did change or settings did change)
-        if (device.client && typeof device.client.close === 'function') {
-            device.client.close();
-        }
         if (device.intervalHandle) {
             clearTimeout(device.intervalHandle);
+        }
+        if (device.client && typeof device.client.close === 'function') {
+            device.client.close();
         }
 
         //interrogate enabled devices
@@ -571,23 +587,32 @@ class DlinkSmarthome extends utils.Adapter {
                     // @ts-ignore
                     (configDevice.ip === existingDevice.native.ip)) {
                     found = true;
+                    // @ts-ignore
+                    if (configDevice.pinNotEncrypted && configDevice.pin === existingDevice.native.pin) {
+                        existingDevice.native.pinNotEncrypted = true;
+                    }
                     configDevicesToAdd.splice(configDevicesToAdd.indexOf(configDevice), 1);
                     break; //break on first copy -> will remove additional copies later.
                 }
             }
+            const device = this.createDeviceFromConfig(existingDevice);
+            if (existingDevice.native.pinNotEncrypted) {
+                await this.createNewDevice(device); //store pin encrypted!
+                needUpdateConfig = true;
+            }
             if (found) {
-                const device = this.createDeviceFromConfig(existingDevice);
                 haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
                 //keep config and client for later reference.
                 this.devices.push(device);
             } else {
-                await this.deleteDeviceFull(existingDevice._id);
+                this.log.debug('Deleting ' + device.name);
+                await this.deleteDeviceFull(device);
             }
         }
 
         //add non existing devices from config:
         for (const configDevice of configDevicesToAdd) {
-            const device = this.createDeviceFromTable(configDevice, true);
+            const device = this.createDeviceFromTable(configDevice, !configDevice.pinNotEncrypted);
             this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
             const oldDevice = this.devices.find(d => d.mac === device.mac);
             if (oldDevice) {
@@ -883,17 +908,17 @@ class DlinkSmarthome extends utils.Adapter {
 
                             //remove not found devices:
                             if (!found || changed) {
-                                if (device.client && typeof device.client.close === 'function') {
-                                    device.client.close();
-                                }
                                 if (device.intervalHandle) {
                                     clearTimeout(device.intervalHandle);
+                                }
+                                if (device.client && typeof device.client.close === 'function') {
+                                    device.client.close();
                                 }
 
                                 //delete not found devices -> user deleted them from table
                                 if (!found) {
                                     this.log.debug(device.name + ' not in config anymore. Delete objects for ' + device.mac);
-                                    await this.deleteDeviceFull(device.id);
+                                    await this.deleteDeviceFull(device);
                                 } else {
                                     //device did change -> restart:
                                     await this.createNewDevice(device); //store device settings
