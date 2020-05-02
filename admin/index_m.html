@@ -52,18 +52,6 @@
         });
     }
 
-    function addRowToDevices(event) {
-        console.log("Button clicked! ", event);
-    }
-
-    function onChangeDetectedDevices(index, attr) {
-        console.log("OnChange: " + index + " - " + attr);
-    }
-
-    function onReadyDevices(event) {
-        console.log("OnReady: ", event);
-    }
-
     function macToId(mac) {
         return mac.replace(/:/g, '');
     }
@@ -231,18 +219,8 @@
         if (M) M.updateTextFields();
     }
 
-    async function sendDevices(obj) {
-        const tableDevices = table2values("devices");
-        obj.devices = tableDevices;
-        for (const device of obj.devices) {
-            device.pin = encrypt(secret, device.pin);
-        }
-        await asyncSendTo("sendDevices", {devices: tableDevices});
-    }
-
     // This will be called by the admin adapter when the user presses the save button
     function save(callback) {
-        $("#add-ip-device-spinner").removeClass('hide');
         const obj = {};
         $('.value').each(function () {
             const $this = $(this);
@@ -253,15 +231,13 @@
             }
         });
 
-        sendDevices(obj).then((result) => {
-            console.log("Send devices came back: ", result);
-            $("#add-ip-device-spinner").addClass('hide');
-            callback(obj);
-        }, (err) => {
-            console.log("Send devices had error: ", err);
-            $("#add-ip-device-spinner").addClass('hide');
-            callback(obj);
-        });
+        //store in adapter config again.
+        const tableDevices = table2values("devices");
+        obj.devices = tableDevices;
+        for (const device of obj.devices) {
+            device.pin = encrypt(secret, device.pin);
+        }
+        callback(obj);
     }
 </script>
 </head>

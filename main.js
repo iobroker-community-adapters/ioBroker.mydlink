@@ -626,7 +626,7 @@ class DlinkSmarthome extends utils.Adapter {
             } else {
                 haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
                 //call this here again, to make sure it happens.
-                if (device.identified || device.id || device.mac) {
+                if (device.id || device.mac) {
                     if (!device.id) {
                         device.id = idFromMac(device.mac);
                     }
@@ -886,80 +886,6 @@ class DlinkSmarthome extends utils.Adapter {
                         this.sendTo(obj.from, obj.command, tableDevices, obj.callback);
                     }
                     break;
-                }
-                case 'sendDevices': {
-                    try {
-                        const inCommingDevices = /** @type {Record<string, any>} */ (obj.message).devices || [];
-                        this.log.debug('Got devices: ' + JSON.stringify(inCommingDevices, null, 2));
-                        //decrypt here again, because UI encrypts in order to save in config:
-                        for (const dev of inCommingDevices) {
-                            dev.pin = decrypt(this.secret, dev.pin);
-                        }
-
-                        //loop over our devices -> kill what is not there anymore and update the others.
-                        for (const device of this.devices) {
-                            let found = false;
-                            let changed = false;
-                            for (const configDevice of inCommingDevices) {
-                                if (configDevice.mac.toUpperCase() === device.mac.toUpperCase()) {
-                                    found = true;
-                                    changed = configDevice.ip !== device.ip || configDevice.pin !== device.pin ||
-                                        configDevice.name !== device.name || configDevice.pollInterval !== device.pollInterval ||
-                                        configDevice.enabled !== device.enabled;
-                                    if (changed) {
-                                        device.ip = configDevice.ip;
-                                        device.pin = configDevice.pin;
-                                        device.name = configDevice.name;
-                                        device.pollInterval = configDevice.pollInterval;
-                                        device.enabled = configDevice.enabled;
-                                    }
-                                    configDevice.found = true;
-                                    break;
-                                }
-                            }
-
-                            //remove not found devices:
-                            if (!found || changed) {
-                                if (device.intervalHandle) {
-                                    clearTimeout(device.intervalHandle);
-                                }
-                                if (device.client && typeof device.client.close === 'function') {
-                                    device.client.close();
-                                }
-
-                                //delete not found devices -> user deleted them from table
-                                if (!found) {
-                                    this.log.debug(device.name + ' not in config anymore. Delete objects for ' + device.mac);
-                                    await this.deleteDeviceFull(device);
-                                } else {
-                                    //device did change -> restart:
-                                    await this.createNewDevice(device); //store device settings
-                                    await this.startDevice(device); //will also store new parameters.
-                                }
-                            }
-                        }
-
-                        //add new devices:
-                        for (const device of inCommingDevices) {
-                            if (!device.found) {
-                                if (!device.mac || !device.pin || !device.ip) {
-                                    this.log.error('Incomplete device: ' + JSON.stringify(device, null, 2));
-                                    continue;
-                                }
-                                this.log.debug('New device ' + JSON.stringify(device, null, 2));
-                                const fullDevice = this.createDeviceFromTable(device, false);
-                                await this.createNewDevice(fullDevice);
-                                await this.startDevice(fullDevice);
-                            }
-                        }
-                    } catch (e) {
-                        this.log.error('Error during processing config: ' + e.stack);
-                    } finally {
-                        if (obj.callback) {
-                            this.sendTo(obj.from, obj.command, 'success', obj.callback);
-                        }
-                    }
-                    break; //end switch clause.
                 }
                 case 'identifyDevice': {
                     const params = /** @type {Record<string, any>} */ (obj.message);
