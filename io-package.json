@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.6",
+        "version": "1.0.7",
         "news": {
+            "1.0.7": {
+                "en": "* Made saving config more robust and direct again.\r\n* Made identify by IP more robust and allows saving right away. \r\n* Prevent saving if devices without PIN are configured.",
+                "de": "* Das Speichern der Konfiguration wurde wieder robuster und direkter.\r\n* Identifiziert durch IP robuster und ermöglicht sofortiges Speichern.\r\n* Verhindern Sie das Speichern, wenn Geräte ohne PIN konfiguriert sind.",
+                "ru": "* Сделано сохранение конфигурации более надежным и прямым снова.\r\n* Сделана идентификация по IP более надежной и позволяет экономить сразу.\r\n* Запретить сохранение, если настроены устройства без PIN.",
+                "pt": "* Tornou a configuração de economia mais robusta e direta novamente.\r\n* Tornou a identificação por IP mais robusta e permite salvar imediatamente.\r\n* Evite salvar se dispositivos sem PIN estiverem configurados.",
+                "nl": "* Besparingsconfiguratie weer robuuster en direct gemaakt.\r\n* Identificatie door IP robuuster gemaakt en direct opslaan mogelijk.\r\n* Voorkom besparing als apparaten zonder pincode zijn geconfigureerd.",
+                "fr": "* Rendre la configuration de sauvegarde plus robuste et plus directe.\r\n* Fait identifier par IP plus robuste et permet d'économiser tout de suite.\r\n* Empêchez l'enregistrement si des appareils sans code PIN sont configurés.",
+                "it": "* Ha reso la configurazione di salvataggio più robusta e diretta di nuovo.\r\n* Ha reso l'identificazione tramite IP più robusta e consente il salvataggio immediato.\r\n* Impedisci il salvataggio se sono configurati dispositivi senza PIN.",
+                "es": "* Se hizo la configuración de guardado más robusta y directa nuevamente\r\n* Se identificó por IP más robusto y permite guardar de inmediato.\r\n* Evite guardar si los dispositivos sin PIN están configurados.",
+                "pl": "* Poprawiono konfigurację zapisywania, która jest bardziej niezawodna i bezpośrednia.\r\n* Ulepszono identyfikację za pomocą adresu IP i umożliwia natychmiastowe oszczędzanie.\r\n* Zapobiegaj zapisywaniu, jeśli skonfigurowano urządzenia bez kodu PIN.",
+                "zh-cn": "*使保存配置更加可靠和直接。\r\n*通过IP进行识别的功能更加强大，可以立即进行保存。\r\n*如果配置了没有PIN的设备，请防止保存。"
+            },
             "1.0.6": {
                 "en": "* Prevent creation of empty devices (MYDLINK-6)",
                 "de": "* Verhindern Sie die Erstellung leerer Geräte (MYDLINK-6)",

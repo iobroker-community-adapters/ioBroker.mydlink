@@ -42,7 +42,7 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 1.0.7 (2020-05-02)
 * Made saving config more robust and direct again.
 * Made identify by IP more robust and allows saving right away. 
 * Prevent saving if devices without PIN are configured.
