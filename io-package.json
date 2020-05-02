@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.4",
+        "version": "1.0.5",
         "news": {
+            "1.0.5": {
+                "en": "* Fixed possible issue with device ids.\r\n* Improved device creation\r\n* Adjusted for discovery adapter that not yet stores passwords encrypted.",
+                "de": "* Mögliches Problem mit Geräte-IDs behoben.\r\n* Verbesserte Geräteerstellung\r\n* Angepasst für den Erkennungsadapter, der noch keine verschlüsselten Passwörter speichert.",
+                "ru": "* Исправлена возможная проблема с идентификаторами устройств.\r\n* Улучшено создание устройства\r\n* С учетом адаптера обнаружения, который еще не хранит зашифрованные пароли.",
+                "pt": "* Corrigido possível problema com os IDs do dispositivo.\r\n* Melhor criação de dispositivos\r\n* Ajustado para o adaptador de descoberta que ainda não armazena senhas criptografadas.",
+                "nl": "* Mogelijk probleem met apparaat-ID's opgelost.\r\n* Verbeterde apparaatcreatie\r\n* Aangepast voor zoekadapter die wachtwoorden nog niet versleuteld opslaat.",
+                "fr": "* Correction d'un problème possible avec les identifiants des appareils.\r\n* Amélioration de la création d'appareils\r\n* Adapté pour l'adaptateur de découverte qui ne stocke pas encore les mots de passe cryptés.",
+                "it": "* Risolto possibile problema con ID dispositivo.\r\n* Creazione del dispositivo migliorata\r\n* Modificato per l'adattatore di individuazione che non memorizza ancora le password crittografate.",
+                "es": "* Se corrigió un posible problema con los identificadores del dispositivo.\r\n* Creación mejorada de dispositivos\r\n* Ajustado para el adaptador de descubrimiento que aún no almacena contraseñas cifradas.",
+                "pl": "* Naprawiono możliwy problem z identyfikatorami urządzeń.\r\n* Ulepszone tworzenie urządzeń\r\n* Dostosowano do adaptera wykrywania, który nie przechowuje jeszcze zaszyfrowanych haseł.",
+                "zh-cn": "*修复了设备ID可能出现的问题。\r\n*改进的设备创建\r\n*针对尚未存储加密密码的发现适配器进行了调整。"
+            },
             "1.0.4": {
                 "en": "* Improved connection keepAlive\r\n* Improved logging of network errors",
                 "de": "* Verbesserte Verbindung keepAlive\r\n* Verbesserte Protokollierung von Netzwerkfehlern",
