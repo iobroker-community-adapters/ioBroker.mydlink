@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.5",
+        "version": "1.0.6",
         "news": {
+            "1.0.6": {
+                "en": "* Prevent creation of empty devices (MYDLINK-6)",
+                "de": "* Verhindern Sie die Erstellung leerer Geräte (MYDLINK-6)",
+                "ru": "* Предотвращение создания пустых устройств (MYDLINK-6)",
+                "pt": "* Impedir a criação de dispositivos vazios (MYDLINK-6)",
+                "nl": "* Voorkom het aanmaken van lege apparaten (MYDLINK-6)",
+                "fr": "* Empêcher la création d'appareils vides (MYDLINK-6)",
+                "it": "* Impedisci la creazione di dispositivi vuoti (MYDLINK-6)",
+                "es": "* Evitar la creación de dispositivos vacíos (MYDLINK-6)",
+                "pl": "* Zapobiegaj tworzeniu pustych urządzeń (MYDLINK-6)",
+                "zh-cn": "*防止创建空设备（MYDLINK-6）"
+            },
             "1.0.5": {
                 "en": "* Fixed possible issue with device ids.\r\n* Improved device creation\r\n* Adjusted for discovery adapter that not yet stores passwords encrypted.",
                 "de": "* Mögliches Problem mit Geräte-IDs behoben.\r\n* Verbesserte Geräteerstellung\r\n* Angepasst für den Erkennungsadapter, der noch keine verschlüsselten Passwörter speichert.",

@@ -42,7 +42,7 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 1.0.6 (2020-05-02)
 * Prevent creation of empty devices (MYDLINK-6)
 
 ### 1.0.5 (2020-05-02)
