@@ -20,6 +20,22 @@
 <!-- you have to define 2 functions in the global scope: -->
 <script type="text/javascript">
     let secret;
+    const errors = [
+        'errorIdentify',
+        'errorDevicePresent',
+        'errorDeviceWithoutPin'
+    ];
+    function showError(id) {
+        for (const errorId of errors) {
+            if (errorId === id) {
+                $('#' + errorId).removeClass('hide');
+            } else {
+                $('#' + errorId).addClass('hide');
+            }
+        }
+        $("#modal-error-message").modal("open");
+    }
+
     function encrypt(key, value) {
         let result = '';
         for (let i = 0; i < value.length; ++i) {
@@ -123,6 +139,7 @@
         if (dirty) {
             values2table('devices', tableDevices, _onChange);
         }
+        //setTimeout(periodicallyGetExistingDevices, 1000);
     }
 
 
@@ -185,15 +202,15 @@
                     }
                 } else {
                     tableDevices.push(device);
-                    _onChange(true);
                 }
+                _onChange(true);
                 values2table('devices', tableDevices, _onChange);
                 if (!device.enabled) {
-                    $("#modal-error-message").modal("open");
+                    showError('errorIdentifyDevice');
                 }
             } catch (e) {
                 console.log("Error:", e);
-                $("#modal-error-message").modal("open");
+                showError('errorIdentifyDevice');
             } finally {
                 $("#add-ip-device").removeClass('disabled');
                 $("#add-ip-device-spinner").addClass('hide');
@@ -235,6 +252,13 @@
         //store in adapter config again.
         const tableDevices = table2values("devices");
         obj.devices = tableDevices;
+        //check for devices without pin:
+        for (const device of obj.devices) {
+            if (!device.pin) {
+                showError('errorDeviceWithoutPin');
+                return;
+            }
+        }
         for (const device of obj.devices) {
             device.pin = encrypt(secret, device.pin);
         }
@@ -350,7 +374,9 @@
         <div class="content">
             <h5 class="translate center red">Error</h5>
             <div class="row center">
-                <p class="translate">errorIdentify</p>
+                <p id="errorIdentify" class="translate hide">errorIdentify</p>
+                <p id="errorDevicePresent" class="translate hide">errorDevicePresent</p>
+                <p id="errorDeviceWithoutPin" class="translate hide">errorDeviceWithoutPin</p>
             </div>
         </div>
         <div class="row">

@@ -369,6 +369,14 @@ class DlinkSmarthome extends utils.Adapter {
             clearTimeout(device.intervalHandle);
         }
 
+        //check if detected device:
+        for (const ip of Object.keys(this.detectedDevices)) {
+            const dectDevice = this.detectedDevices[ip];
+            if (dectDevice.mac === device.id) {
+                dectDevice.alreadyPresent = false;
+            }
+        }
+
         try {
             const ids = await this.getObjectListAsync({
                 startkey: this.namespace + '.' + device.id,

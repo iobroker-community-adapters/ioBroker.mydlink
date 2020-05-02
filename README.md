@@ -43,7 +43,9 @@ The adapter does not interfere with the use of the app.
 
 ## Changelog
 ### __WORK IN PROGRESS__
-* 
+* Made saving config more robust and direct again.
+* Made identify by IP more robust and allows saving right away. 
+* Prevent saving if devices without PIN are configured.
 
 ### 1.0.6 (2020-05-02)
 * Prevent creation of empty devices (MYDLINK-6)

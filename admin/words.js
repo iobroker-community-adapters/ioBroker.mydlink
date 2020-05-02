@@ -281,5 +281,17 @@ systemDictionary = {
         'es': 'Agregar dispositivo manualmente',
         'pl': 'Dodaj urządzenie ręcznie',
         'zh-cn': '手动添加设备'
+    },
+    'errorDeviceWithoutPin': {
+        'en': 'At least one device has no PIN configured. Without PIN no control is possible. Please either enter PIN or delete incomplete device.',
+        'de': 'Für mindestens ein Gerät ist keine PIN konfiguriert. Ohne PIN ist keine Steuerung möglich. Bitte geben Sie entweder die PIN ein oder löschen Sie das unvollständige Gerät.',
+        'ru': 'По крайней мере, на одном устройстве не настроен PIN-код. Без PIN никакой контроль невозможен. Пожалуйста, введите PIN-код или удалите неполное устройство.',
+        'pt': 'Pelo menos um dispositivo não possui um PIN configurado. Sem PIN, nenhum controle é possível. Digite o PIN ou exclua o dispositivo incompleto.',
+        'nl': 'Ten minste één apparaat heeft geen pincode geconfigureerd. Zonder pincode is geen controle mogelijk. Voer een pincode in of verwijder een onvolledig apparaat.',
+        'fr': "Au moins un appareil n'a pas de code PIN configuré. Sans code PIN, aucun contrôle n'est possible. Veuillez saisir le code PIN ou supprimer l'appareil incomplet.",
+        'it': 'Almeno un dispositivo non ha un PIN configurato. Senza PIN non è possibile alcun controllo. Inserisci il PIN o elimina il dispositivo incompleto.',
+        'es': 'Al menos un dispositivo no tiene PIN configurado. Sin PIN no hay control posible. Ingrese el PIN o elimine el dispositivo incompleto.',
+        'pl': 'Co najmniej jedno urządzenie nie ma skonfigurowanego kodu PIN. Bez PIN kontrola nie jest możliwa. Wprowadź kod PIN lub usuń niekompletne urządzenie.',
+        'zh-cn': '至少一台设备未配置PIN。如果没有PIN，则无法控制。请输入PIN或删除不完整的设备。'
     }
 };
