@@ -42,7 +42,7 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 1.0.8 (2020-05-05)
 * Fixed switching, was broken in some circumstances by id changes.
 
 ### 1.0.7 (2020-05-02)

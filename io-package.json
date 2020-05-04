@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.7",
+        "version": "1.0.8",
         "news": {
+            "1.0.8": {
+                "en": "* Fixed switching, was broken in some circumstances by id changes.",
+                "de": "* Das Umschalten wurde behoben und wurde unter bestimmten Umständen durch ID-Änderungen unterbrochen.",
+                "ru": "* Исправлено переключение, было прервано в некоторых случаях изменениями id.",
+                "pt": "* A comutação fixa foi interrompida em algumas circunstâncias pelas alterações de identificação.",
+                "nl": "* Vaste schakeling, werd in sommige gevallen verbroken door id-wijzigingen.",
+                "fr": "* La commutation fixe a été interrompue dans certaines circonstances par des changements d'ID.",
+                "it": "* Risolto il problema, in alcune circostanze è stato interrotto da modifiche dell'ID.",
+                "es": "* Cambio fijo, se rompió en algunas circunstancias por cambios de identificación.",
+                "pl": "* Naprawiono przełączanie, w niektórych okolicznościach zostało przerwane przez zmiany identyfikatora.",
+                "zh-cn": "*固定切换，在某些情况下会因ID更改而中断。"
+            },
             "1.0.7": {
                 "en": "* Made saving config more robust and direct again.\r\n* Made identify by IP more robust and allows saving right away. \r\n* Prevent saving if devices without PIN are configured.",
                 "de": "* Das Speichern der Konfiguration wurde wieder robuster und direkter.\r\n* Identifiziert durch IP robuster und ermöglicht sofortiges Speichern.\r\n* Verhindern Sie das Speichern, wenn Geräte ohne PIN konfiguriert sind.",
