@@ -840,7 +840,7 @@ class DlinkSmarthome extends utils.Adapter {
         if (state.ack === false) {
             //find devices:
             for (const device of this.devices) {
-                const devId = device.id + stateSuffix;
+                const devId = this.namespace + '.' + device.id + stateSuffix;
                 if (id === devId) {
                     //found device:
                     this.log.debug('Found device to switch.');

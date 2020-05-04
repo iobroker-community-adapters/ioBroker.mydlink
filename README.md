@@ -42,6 +42,9 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+### __WORK IN PROGRESS__
+* Fixed switching, was broken in some circumstances by id changes.
+
 ### 1.0.7 (2020-05-02)
 * Made saving config more robust and direct again.
 * Made identify by IP more robust and allows saving right away. 
