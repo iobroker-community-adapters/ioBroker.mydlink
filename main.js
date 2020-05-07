@@ -675,7 +675,7 @@ class DlinkSmarthome extends utils.Adapter {
 
     /**
      * Poll a value, compare it to the value already set and if different, set value in DB.
-     * @param pollFunc - function to use for polling
+     * @param pollFunc - function to use for polling / or set state
      * @param id - state Id
      * @returns {Promise<boolean>} //true if change did happen.
      */
@@ -686,12 +686,36 @@ class DlinkSmarthome extends utils.Adapter {
         }
         if (value === 'ERROR') {
             //something went wrong... maybe can not read that setting at all?
-            throw 'Error during reading ' + id;
+            throw new Error('Error during reading ' + id);
         }
 
         const result = await this.setStateChangedAsync(id, value, true);
         // @ts-ignore
         return !result.notChanged;
+    }
+
+    /**
+     * Get code from network error.
+     * @param {Record<string, any>} e
+     * @returns {number}
+     */
+    processNetworkError(e) {
+        if (e.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            //See if we are logged out -> login again on next poll.
+            //otherwise ignore and try again later?
+            return e.response.status;
+        } else if (e.request) {
+            // The request was made but no response was received
+            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+            // http.ClientRequest in node.js
+            //probably ECONNRESET or Timeout -> e.code should be set.
+            return e.code;
+        } else {
+            //something else...?
+            return e.code;
+        }
     }
 
     /**
@@ -746,25 +770,9 @@ class DlinkSmarthome extends utils.Adapter {
             }
             //this.log.debug('Polling of ' + device.name + ' finished.');
         } catch (e) {
-            let code;
-            if (e.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                //See if we are logged out -> login again on next poll.
-                //otherwise ignore and try again later?
-                if (e.response.status === 403) {
-                    device.loggedIn = false; //login next polling.
-                }
-                code = e.response.status;
-            } else if (e.request) {
-                // The request was made but no response was received
-                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-                // http.ClientRequest in node.js
-                //probably ECONNRESET or Timeout -> e.code should be set.
-                code = e.code;
-            } else {
-                //something else...?
-                code = e.code;
+            const code = this.processNetworkError(e);
+            if (code === 403) {
+                device.loggedIn = false; //login next polling.
             }
             if (device.ready) {
                 this.log.debug('Error during polling ' + device.name + ': ' + code + ' - ' + e.stack);
@@ -854,7 +862,11 @@ class DlinkSmarthome extends utils.Adapter {
                         this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
                         await this.pollAndSetState(device.client.state, device.id + stateSuffix);
                     } catch(e) {
-                        this.log.error('Error while switching device ' + device.name + ': ' + e.stack);
+                        const code = this.processNetworkError(e);
+                        if (code === 403) {
+                            device.loggedIn = false; //login next polling.
+                        }
+                        this.log.error('Error while switching device ' + device.name + ': ' + code + ' - ' + e.stack);
                     }
                     break; //can stop loop.
                 }
