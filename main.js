@@ -858,6 +858,9 @@ class DlinkSmarthome extends utils.Adapter {
                     }
 
                     try {
+                        if (!device.loggedIn) {
+                            await this.loginDevice(device);
+                        }
                         await switchFunc();
                         this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
                         await this.pollAndSetState(device.client.state, device.id + stateSuffix);
