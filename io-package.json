@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.8",
+        "version": "1.0.9",
         "news": {
+            "1.0.9": {
+                "en": "* Fixed: changes in configuration were not respected once devices were created\r\n* Fixed: re-login to device on switching if polling is disabled\r\n* Fixed: Error output on switching now more informative",
+                "de": "* Behoben: Konfigurationsänderungen wurden nach dem Erstellen der Geräte nicht berücksichtigt\r\n* Behoben: Beim Umschalten erneut am Gerät anmelden, wenn die Abfrage deaktiviert ist\r\n* Behoben: Fehlerausgabe beim Umschalten jetzt informativer",
+                "ru": "* Исправлено: изменения в конфигурации не учитывались при создании устройств\r\n* Исправлено: повторный вход в устройство при переключении, если опрос отключен\r\n* Исправлено: ошибка вывода при переключении теперь более информативна",
+                "pt": "* Corrigido: alterações na configuração não eram respeitadas após a criação dos dispositivos\r\n* Corrigido: re-login no dispositivo ao alternar se a pesquisa estiver desativada\r\n* Corrigido: Saída de erro ao alternar agora mais informativo",
+                "nl": "* Opgelost: configuratiewijzigingen werden niet gerespecteerd nadat apparaten waren gemaakt\r\n* Opgelost: opnieuw inloggen bij apparaat bij schakelen als polling is uitgeschakeld\r\n* Opgelost: foutuitvoer bij schakelen nu informatiever",
+                "fr": "* Corrigé: les changements de configuration n'étaient pas respectés une fois les appareils créés\r\n* Corrigé: se reconnecter à l'appareil lors de la commutation si l'interrogation est désactivée\r\n* Correction: sortie d'erreur lors de la commutation maintenant plus informative",
+                "it": "* Risolto: le modifiche alla configurazione non venivano rispettate dopo la creazione dei dispositivi\r\n* Risolto: accedere nuovamente al dispositivo al momento della commutazione se il polling è disabilitato\r\n* Risolto: errore durante la commutazione ora più informativo",
+                "es": "* Solucionado: los cambios en la configuración no se respetaron una vez que se crearon los dispositivos\r\n* Solucionado: reiniciar sesión en el dispositivo al cambiar si el sondeo está deshabilitado\r\n* Solucionado: salida de error al cambiar ahora más informativo",
+                "pl": "* Naprawiono: zmiany konfiguracji nie były przestrzegane po utworzeniu urządzeń\r\n* Naprawiono: ponowne logowanie do urządzenia przy przełączaniu, jeśli odpytywanie jest wyłączone\r\n* Naprawiono: Błąd wyjścia przy przełączaniu teraz bardziej informacyjny",
+                "zh-cn": "*修正：创建设备后，配置更改不被接受\r\n*固定：如果禁用轮询，则在切换时重新登录到设备\r\n*修正：切换时错误输出现在更加有用"
+            },
             "1.0.8": {
                 "en": "* Fixed switching, was broken in some circumstances by id changes.",
                 "de": "* Das Umschalten wurde behoben und wurde unter bestimmten Umständen durch ID-Änderungen unterbrochen.",
