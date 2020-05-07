@@ -141,7 +141,6 @@ class DlinkSmarthome extends utils.Adapter {
                 pollInterval: device.pollInterval,
                 enabled: device.enabled,
                 name: device.name
-
             }
         });
         //create state object, for plug this is writable for sensor not.
@@ -558,7 +557,7 @@ class DlinkSmarthome extends utils.Adapter {
         if (device.enabled) {
             let interval = device.pollInterval;
             if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
-                this.log.debug('Start polling for ' + device.name);
+                this.log.debug('Start polling for ' + device.name + ' with interval ' + interval);
                 result = true; //only use yellow/green states if polling at least one device.
                 if (interval < 500) {
                     this.log.warn('Increasing poll rate to twice per second. Please check device config.');
@@ -607,19 +606,23 @@ class DlinkSmarthome extends utils.Adapter {
                 // @ts-ignore
                 if ((configDevice.mac && configDevice.mac === existingDevice.native.mac) ||
                     // @ts-ignore
-                    (configDevice.ip === existingDevice.native.ip)) {
+                    (!configDevice.mac && configDevice.ip === existingDevice.native.ip)) {
                     found = true;
-                    // @ts-ignore
-                    if (configDevice.pinNotEncrypted && configDevice.pin === existingDevice.native.pin) {
-                        existingDevice.native.pinNotEncrypted = true;
+
+                    //copy all data from config, because now only config is changed from config dialog.
+                    for (const key of Object.keys(configDevice)) {
+                        existingDevice.native[key] = configDevice[key] || existingDevice.native[key]; //copy all fields.
                     }
+                    // @ts-ignore
+                    existingDevice.native.pinNotEncrypted = !configDevice.mac;
+
                     configDevicesToAdd.splice(configDevicesToAdd.indexOf(configDevice), 1);
                     break; //break on first copy -> will remove additional copies later.
                 }
             }
             const device = this.createDeviceFromConfig(existingDevice);
+            await this.createNewDevice(device); //store new config.
             if (existingDevice.native.pinNotEncrypted) {
-                await this.createNewDevice(device); //store pin encrypted!
                 needUpdateConfig = true;
             }
             if (found) {
