@@ -854,7 +854,7 @@ class DlinkSmarthome extends utils.Adapter {
                         this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
                         await this.pollAndSetState(device.client.state, device.id + stateSuffix);
                     } catch(e) {
-                        this.log.error('Error while switching device ' + device.name + ': ' +  + e.stack);
+                        this.log.error('Error while switching device ' + device.name + ': ' + e.stack);
                     }
                     break; //can stop loop.
                 }
