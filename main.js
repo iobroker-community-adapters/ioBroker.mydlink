@@ -533,7 +533,7 @@ class DlinkSmarthome extends utils.Adapter {
         if (device.enabled) {
             //create the soapclient
             device.client = createSoapClient({
-                user: 'Admin',
+                user: 'admin',
                 password: device.pin,
                 url: 'http://' + device.ip + '/HNAP1'
             }); //no https, sadly.
