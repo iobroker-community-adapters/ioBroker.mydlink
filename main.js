@@ -407,7 +407,7 @@ class DlinkSmarthome extends utils.Adapter {
                 }
             }
         } catch (e) {
-            if (e.code !== 403) {
+            if (e.code !== 403 && e.code !== 'ECONNABORTED' && e.code !== 'ENOTFOUND' && e.code !== 'ECONNREFUSED' && e.code !== 'ECONNRESET') {
                 this.log.error(device.name + ' returned ' + e.code + ' error on login. Please report this log to developer: ' + e.body);
                 if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
                     const sentryInstance = this.getPluginInstance('sentry');
