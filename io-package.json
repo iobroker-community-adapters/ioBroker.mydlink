@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.9",
+        "version": "1.0.10",
         "news": {
+            "1.0.10": {
+                "en": "Returned to login with user \"Admin\"\nTried to add more debug for incompatible devices.",
+                "de": "Zurück zum Login mit Benutzer \"Admin\"\nEs wurde versucht, mehr Debug für inkompatible Geräte hinzuzufügen.",
+                "ru": "Вернулся для входа в систему с пользователем \"Admin\"\nПопытался добавить больше отладки для несовместимых устройств.",
+                "pt": "Retornado para fazer login com o usuário \"Admin\"\nTentei adicionar mais depuração para dispositivos incompatíveis.",
+                "nl": "Keerde terug naar inloggen met gebruiker \"Admin\"\nProbeerde meer foutopsporing toe te voegen voor incompatibele apparaten.",
+                "fr": "Retour à la connexion avec l'utilisateur \"Admin\"\nJ'ai essayé d'ajouter plus de débogage pour les appareils incompatibles.",
+                "it": "Restituito per accedere con l'utente \"Admin\"\nHo provato ad aggiungere altro debug per dispositivi incompatibili.",
+                "es": "Regresó al inicio de sesión con el usuario \"Admin\"\nIntenté agregar más depuración para dispositivos incompatibles.",
+                "pl": "Wrócił do logowania z użytkownikiem „Administrator”\nPróbowałem dodać więcej debugowania dla niekompatybilnych urządzeń.",
+                "zh-cn": "返回以用户“ Admin”登录\n尝试为不兼容的设备添加更多调试。"
+            },
             "1.0.9": {
                 "en": "* Fixed: changes in configuration were not respected once devices were created\r\n* Fixed: re-login to device on switching if polling is disabled\r\n* Fixed: Error output on switching now more informative",
                 "de": "* Behoben: Konfigurationsänderungen wurden nach dem Erstellen der Geräte nicht berücksichtigt\r\n* Behoben: Beim Umschalten erneut am Gerät anmelden, wenn die Abfrage deaktiviert ist\r\n* Behoben: Fehlerausgabe beim Umschalten jetzt informativer",
