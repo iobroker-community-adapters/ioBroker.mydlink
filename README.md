@@ -42,6 +42,14 @@ delayed by polling interval (can be set in config).
 The adapter does not interfere with the use of the app.
 
 ## Changelog
+<!-- 
+	Placeholder for next versions (this needs to be indented):
+	### __WORK IN PROGRESS__
+-->
+### __WORK IN PROGRESS__
+* Returned to login with user "Admin"
+* Tried to add more debug for incompatible devices.
+
 ### 1.0.9 (2020-05-07)
 * Fixed: changes in configuration were not respected once devices were created
 * Fixed: re-login to device on switching if polling is disabled

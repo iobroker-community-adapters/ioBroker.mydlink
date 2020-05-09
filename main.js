@@ -342,11 +342,7 @@ class DlinkSmarthome extends utils.Adapter {
                         }
                         Sentry.captureMessage('Unknown-Device ' + device.model, 'info'); // Level 'info'
                     });
-                } else {
-                    this.log.error('No sentry plugin?');
                 }
-            } else {
-                this.log.error('No plugin support, yet?');
             }
         }
 
@@ -411,6 +407,22 @@ class DlinkSmarthome extends utils.Adapter {
                 }
             }
         } catch (e) {
+            if (e.code !== 403) {
+                this.log.error(device.name + ' returned ' + e.code + ' error on login. Please report this log to developer: ' + e.body);
+                if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
+                    const sentryInstance = this.getPluginInstance('sentry');
+                    if (sentryInstance) {
+                        const Sentry = sentryInstance.getSentryObject();
+                        Sentry && Sentry.withScope(scope => {
+                            scope.setLevel('error');
+                            scope.setExtra('body', e.body);
+                            scope.setExtra('device', device);
+                            Sentry.captureMessage(e.code + '-error on login', 'error');
+                        });
+                    }
+                }
+            }
+
             if (!device.loginErrorPrinted) {
                 this.log.debug('Login error: ' +  e.stack);
                 this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.stack);
@@ -445,7 +457,7 @@ class DlinkSmarthome extends utils.Adapter {
             intervalHandle: undefined,
             loginErrorPrinted: false,
             created: true,
-            model: '',
+            model: native.model || '',
             flags: {},
             enabled: /** @type {boolean} */ (native.enabled)
         };
@@ -532,7 +544,7 @@ class DlinkSmarthome extends utils.Adapter {
         if (device.enabled) {
             //create the soapclient
             device.client = createSoapClient({
-                user: 'admin',
+                user: 'Admin',
                 password: device.pin,
                 url: 'http://' + device.ip + '/HNAP1'
             }); //no https, sadly.
@@ -1018,6 +1030,10 @@ class DlinkSmarthome extends utils.Adapter {
                 this.detectedDevices[device.ip] = device;
                 const oldDevice = this.devices.find(d => d.mac === device.mac);
                 if (oldDevice) {
+                    //update model, if differs.
+                    if (oldDevice.model !== device.type) {
+                        oldDevice.model = device.type;
+                    }
                     //found device we already know. Let's check ip.
                     if (device.ip !== oldDevice.ip) {
                         oldDevice.ip = device.ip;
