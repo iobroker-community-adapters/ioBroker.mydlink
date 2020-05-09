@@ -46,6 +46,9 @@ The adapter does not interfere with the use of the app.
 	Placeholder for next versions (this needs to be indented):
 	### __WORK IN PROGRESS__
 -->
+### __WORK IN PROGRESS__
+* Tried to add even more information in case device seems incompatible
+
 ### 1.0.10 (2020-05-10)
 * Returned to login with user "Admin"
 * Tried to add more debug for incompatible devices.
