@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.10",
+        "version": "1.0.11",
         "news": {
+            "1.0.11": {
+                "en": "Tried to add even more information in case device seems incompatible",
+                "de": "Es wurde versucht, noch mehr Informationen hinzuzufügen, falls das Gerät nicht kompatibel erscheint",
+                "ru": "Попытка добавить еще больше информации, если устройство кажется несовместимым",
+                "pt": "Tentou adicionar ainda mais informações caso o dispositivo pareça incompatível",
+                "nl": "Probeerde nog meer informatie toe te voegen voor het geval het apparaat incompatibel lijkt",
+                "fr": "J'ai essayé d'ajouter encore plus d'informations au cas où l'appareil semble incompatible",
+                "it": "Ho provato ad aggiungere ulteriori informazioni nel caso in cui il dispositivo sembri incompatibile",
+                "es": "Intenté agregar aún más información en caso de que el dispositivo parezca incompatible",
+                "pl": "Próbowałem dodać jeszcze więcej informacji, jeśli urządzenie wydaje się niezgodne",
+                "zh-cn": "试图添加更多信息以防设备看起来不兼容"
+            },
             "1.0.10": {
                 "en": "Returned to login with user \"Admin\"\nTried to add more debug for incompatible devices.",
                 "de": "Zurück zum Login mit Benutzer \"Admin\"\nEs wurde versucht, mehr Debug für inkompatible Geräte hinzuzufügen.",
