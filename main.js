@@ -407,15 +407,16 @@ class DlinkSmarthome extends utils.Adapter {
                 }
             }
         } catch (e) {
-            if (e.code !== 403 && e.code !== 'ECONNABORTED' && e.code !== 'ENOTFOUND' && e.code !== 'ECONNREFUSED' && e.code !== 'ECONNRESET') {
-                this.log.error(device.name + ' returned ' + e.code + ' error on login. Please report this log to developer: ' + e.body);
+            const code = this.processNetworkError(e);
+            if (code !== 403 && code !== 'ECONNABORTED' && code !== 'ENOTFOUND' && code !== 'ECONNREFUSED' && code !== 'ECONNRESET') {
+                this.log.error(device.name + ' returned ' + code + ' error on login. Please report this log to developer: ' + (e.response ? e.response.body : e.body));
                 if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
                     const sentryInstance = this.getPluginInstance('sentry');
                     if (sentryInstance) {
                         const Sentry = sentryInstance.getSentryObject();
                         Sentry && Sentry.withScope(scope => {
                             scope.setLevel('error');
-                            scope.setExtra('body', e.body);
+                            scope.setExtra('body', e.response ? e.response.body : e.body);
                             scope.setExtra('device', device);
                             Sentry.captureMessage(e.code + '-error on login', 'error');
                         });
@@ -457,7 +458,7 @@ class DlinkSmarthome extends utils.Adapter {
             intervalHandle: undefined,
             loginErrorPrinted: false,
             created: true,
-            model: native.model || '',
+            model: /** @type {string} */ (native.model || ''),
             flags: {},
             enabled: /** @type {boolean} */ (native.enabled)
         };
@@ -712,7 +713,7 @@ class DlinkSmarthome extends utils.Adapter {
     /**
      * Get code from network error.
      * @param {Record<string, any>} e
-     * @returns {number}
+     * @returns {number|string}
      */
     processNetworkError(e) {
         if (e.response) {
