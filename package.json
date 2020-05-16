@@ -23,6 +23,7 @@
     "@types/iobroker": "^3.0.6",
     "axios": "^0.19.2",
     "mdns-discovery": "^0.2.6",
+    "ws": "^7.3.0",
     "xmldom": "^0.3.0"
   },
   "devDependencies": {
