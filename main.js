@@ -395,7 +395,7 @@ class DlinkSmarthome extends utils.Adapter {
     async loginDevice(device) {
         try {
             const loginResult = await device.client.login();
-            if (loginResult === 'success') {
+            if (loginResult === true) {
                 this.log.debug(device.name + ' successfully logged in. ' + loginResult);
                 device.loggedIn = true;
                 device.loginErrorPrinted = false;
@@ -868,16 +868,12 @@ class DlinkSmarthome extends utils.Adapter {
                 if (id === devId) {
                     //found device:
                     this.log.debug('Found device to switch.');
-                    let switchFunc = device.client.off;
-                    if (state.val) {
-                        switchFunc = device.client.on;
-                    }
 
                     try {
                         if (!device.loggedIn) {
                             await this.loginDevice(device);
                         }
-                        await switchFunc();
+                        await device.client.switch(state.val);
                         this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
                         await this.pollAndSetState(device.client.state, device.id + stateSuffix);
                     } catch(e) {
