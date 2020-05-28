@@ -990,6 +990,9 @@ class DlinkSmarthome extends utils.Adapter {
             //this.log.debug('Ignoring false detection? -> ' + entry.ip + ' - ' + entry.name);
             return;
         }
+        if (entry.name === '_dcp._tcp.local') {
+            this.log.debug('Got new detection: ' + JSON.stringify(entry, null, 2));
+        }
 
         //this.log.debug('Got discovery: ' + JSON.stringify(entry, null, 2));
         if (entry.TXT && entry.TXT.data) {

@@ -46,6 +46,9 @@ The adapter does not interfere with the use of the app.
 	Placeholder for next versions (this needs to be indented):
 	### __WORK IN PROGRESS__
 -->
+### __WORK IN PROGRESS__
+* Added Support for w115 (and maybe other never myDlink devices, might even do *something* with cameras)
+
 ### 1.0.11 (2020-05-10)
 * Tried to add even more information in case device seems incompatible
 
