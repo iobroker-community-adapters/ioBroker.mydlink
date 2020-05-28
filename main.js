@@ -961,7 +961,7 @@ class DlinkSmarthome extends utils.Adapter {
     autoDetect() {
         this.mdns = new Mdns({
             timeout: 0, //0 == stay active??
-            name: [ '_dhnap._tcp.local' ],
+            name: [ '_dhnap._tcp.local', '_dcp._tcp.', 'DSP-W115-6C09._dcp._tcp.local' ],
             find: '*',
             broadcast: true
         });
@@ -986,7 +986,7 @@ class DlinkSmarthome extends utils.Adapter {
         }
 
         //somehow starts to detect fritzbox later on??
-        if (entry.name !== '_dhnap._tcp.local') {
+        if (entry.name !== '_dhnap._tcp.local' && entry.name !== '_dcp._tcp.local') {
             //this.log.debug('Ignoring false detection? -> ' + entry.ip + ' - ' + entry.name);
             return;
         }
