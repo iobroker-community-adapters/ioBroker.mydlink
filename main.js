@@ -23,6 +23,7 @@ const deviceFlags = require('./lib/deviceFlags');
 // Load your modules here, e.g.:
 // const fs = require('fs');
 const createSoapClient = require('./lib/soapclient.js');
+const WebSocketClient = require('dlink_websocketclient');
 
 const readySuffix = '.ready';
 const enabledSuffix = '.enabled';
@@ -80,6 +81,7 @@ function idFromMac(mac) {
  * @property {string} model Model name of hardware device
  * @property {Record<string, boolean>} flags determine what features the hardware has
  * @property {boolean} enabled true if device should be talked too.
+ * @property {boolean} useWebSocket true if device uses webSocket client instead of soapclient.
  */
 
 class DlinkSmarthome extends utils.Adapter {
@@ -140,7 +142,8 @@ class DlinkSmarthome extends utils.Adapter {
                 pin: encrypt(this.secret, device.pin),
                 pollInterval: device.pollInterval,
                 enabled: device.enabled,
-                name: device.name
+                name: device.name,
+                useWebSocket: device.useWebSocket
             }
         });
         //create state object, for plug this is writable for sensor not.
@@ -394,6 +397,21 @@ class DlinkSmarthome extends utils.Adapter {
      */
     async loginDevice(device) {
         try {
+            if (device.useWebSocket) {
+                device.client = new WebSocketClient({
+                    ip: device.ip,
+                    pin: device.pin,
+                    log: console.debug
+                });
+            } else {
+                //create the soapclient
+                device.client = createSoapClient({
+                    user: 'Admin',
+                    password: device.pin,
+                    url: 'http://' + device.ip + '/HNAP1'
+                }); //no https, sadly.
+            }
+
             const loginResult = await device.client.login();
             if (loginResult === true) {
                 this.log.debug(device.name + ' successfully logged in. ' + loginResult);
@@ -451,7 +469,8 @@ class DlinkSmarthome extends utils.Adapter {
             created: true,
             model: /** @type {string} */ (native.model || ''),
             flags: {},
-            enabled: /** @type {boolean} */ (native.enabled)
+            enabled: /** @type {boolean} */ (native.enabled),
+            useWebSocket: /** @type {boolean} */ (native.useWebSocket)
         };
 
         return device;
@@ -481,7 +500,8 @@ class DlinkSmarthome extends utils.Adapter {
             created: true,
             model: '',
             flags: {},
-            enabled: true
+            enabled: true,
+            useWebSocket: false
         };
 
         return device;
@@ -510,7 +530,8 @@ class DlinkSmarthome extends utils.Adapter {
             created: true,
             model: '',
             flags: {},
-            enabled: tableDevice.enabled
+            enabled: tableDevice.enabled,
+            useWebSocket: false
         };
 
         return device;
@@ -534,13 +555,6 @@ class DlinkSmarthome extends utils.Adapter {
         //interrogate enabled devices
         //this will get MAC for manually configured devices.
         if (device.enabled) {
-            //create the soapclient
-            device.client = createSoapClient({
-                user: 'Admin',
-                password: device.pin,
-                url: 'http://' + device.ip + '/HNAP1'
-            }); //no https, sadly.
-
             //login:
             await this.loginDevice(device);
 
@@ -666,7 +680,8 @@ class DlinkSmarthome extends utils.Adapter {
                     pin: encrypt(this.secret, device.pin),
                     pollInterval: device.pollInterval,
                     enabled: device.enabled,
-                    name: device.name
+                    name: device.name,
+                    useWebSocket: device.useWebSocket
                 };
                 devices.push(configDevice);
             }
