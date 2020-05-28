@@ -696,10 +696,7 @@ class DlinkSmarthome extends utils.Adapter {
      * @returns {Promise<boolean>} //true if change did happen.
      */
     async pollAndSetState(pollFunc, id) {
-        let value = await pollFunc();
-        if (value === 'OK') {
-            value = true; //for ready
-        }
+        const value = await pollFunc();
         if (value === 'ERROR') {
             //something went wrong... maybe can not read that setting at all?
             throw new Error('Error during reading ' + id);
