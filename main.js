@@ -408,27 +408,18 @@ class DlinkSmarthome extends utils.Adapter {
             }
         } catch (e) {
             const code = this.processNetworkError(e);
-            if (code !== 403 && code !== 'ECONNABORTED' && code !== 'ENOTFOUND' && code !== 'ECONNREFUSED' && code !== 'ECONNRESET') {
-                this.log.error(device.name + ' returned ' + code + ' error on login. Please report this log to developer: ' + (e.response ? e.response.body : e.body));
-                if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
-                    const sentryInstance = this.getPluginInstance('sentry');
-                    if (sentryInstance) {
-                        const Sentry = sentryInstance.getSentryObject();
-                        Sentry && Sentry.withScope(scope => {
-                            scope.setLevel('error');
-                            scope.setExtra('body', e.response ? e.response.body : e.body);
-                            scope.setExtra('device', device);
-                            Sentry.captureMessage(e.code + '-error on login', 'error');
-                        });
-                    }
-                }
+            if (!device.useWebSocket && code === 500 && e.response && e.response.data && e.response.data.indexOf('not implemented') >= 0) { //let's try websocket.
+                device.client.close();
+                device.useWebSocket = true;
+                return this.loginDevice(device);
             }
 
             if (!device.loginErrorPrinted) {
-                this.log.debug('Login error: ' +  e.stack);
+                this.log.debug('Login error: ' + e.stack);
                 this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.stack);
                 device.loginErrorPrinted = true;
             }
+
             device.loggedIn = false;
         }
         return device.loggedIn;
