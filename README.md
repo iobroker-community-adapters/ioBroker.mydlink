@@ -48,6 +48,7 @@ The adapter does not interfere with the use of the app.
 -->
 ### __WORK IN PROGRESS__
 * Added Support for w115 (and maybe other never myDlink devices, might even do *something* with cameras)
+* Fix relogin to device (i.e. when device was restarted during adapter runtime) 
 
 ### 1.0.11 (2020-05-10)
 * Tried to add even more information in case device seems incompatible
