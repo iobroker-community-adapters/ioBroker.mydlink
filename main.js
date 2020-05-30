@@ -983,7 +983,7 @@ class DlinkSmarthome extends utils.Adapter {
     autoDetect() {
         this.mdns = new Mdns({
             timeout: 0, //0 == stay active??
-            name: [ '_dhnap._tcp.local', '_dcp._tcp.', 'DSP-W115-6C09._dcp._tcp.local' ],
+            name: [ '_dhnap._tcp.local', '_dcp._tcp.' ],
             find: '*',
             broadcast: true
         });
