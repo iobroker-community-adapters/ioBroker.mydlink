@@ -21,7 +21,7 @@
     "@iobroker/adapter-core": "^2.4.0",
     "@iobroker/plugin-sentry": "^1.1.2",
     "axios": "^0.19.2",
-    "dlink_websocketclient": "^0.2.1",
+    "dlink_websocketclient": "^0.3.0",
     "mdns-discovery": "^0.2.6",
     "xmldom": "^0.3.0"
   },
