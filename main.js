@@ -289,20 +289,32 @@ class DlinkSmarthome extends utils.Adapter {
      */
     async identifyDevice(device) {
         //get device settings, which returns model name and firmware version. So we know what states to create.
-        const settings = await device.client.getDeviceSettings();
-        this.log.debug(device.name + ' returned following device settings: ' + JSON.stringify(settings, null, 2));
-        device.model = settings.ModelName;
+        let mac;
+        let canSwitch;
+        if (device.useWebSocket) {
+            //is mac striped of :
+            const id = device.client.getDeviceId();
+            mac = id.match(/.{2}/g).join(':').toUpperCase(); //add back the :.
+            canSwitch = true;
+        } else {
+            const settings = await device.client.getDeviceSettings();
+            this.log.debug(device.name + ' returned following device settings: ' + JSON.stringify(settings, null, 2));
+            device.model = settings.ModelName;
+            mac = settings.DeviceMacId.toUpperCase();
+            canSwitch = device.model.toUpperCase().includes('DSP') || (settings.ModuleTypes.find(t => t.indexOf('Plug') >= 0)); //if is socket, probably can switch on/off
+        }
+
         //check if device is present:
-        const oldDevice = this.devices.find(d => d.mac === settings.DeviceMacId.toUpperCase());
-        if (oldDevice) {
+        const oldDevice = this.devices.find(d => d.mac === mac);
+        if (oldDevice && oldDevice !== device) {
             this.log.warn('Device with MAC ' + oldDevice.mac + ' already present. ' + device.name + ' and ' + oldDevice.name + ' are the same device?');
         }
 
         //convert old devices without MAC to new devices:
-        if (device.mac && device.mac !== settings.DeviceMacId) {
+        if (device.mac && device.mac !== mac) {
             this.log.warn('Device mac differs from stored mac for ' + device.name);
         } else if (!device.mac) {
-            device.mac = settings.DeviceMacId.toUpperCase();
+            device.mac = mac;
             //do that here to allow conversion from old devices.
             const oldId = device.id;
             device.id = idFromMac(device.mac);
@@ -320,31 +332,39 @@ class DlinkSmarthome extends utils.Adapter {
             device.name = device.model;
         }
 
-        const flags = deviceFlags[device.model];
+        const flags = device.model ? deviceFlags[device.model] : false;
         if (flags) {
-            device.flags = flags;
+            device.flags = /** @type {Record<string, boolean>} */ (flags);
         } else {
+            //should work for most devices, including DSP-W115 which might not have model, yet.
             device.flags = {
-                canSwitchOnOff: (settings.ModuleTypes.find(t => t.indexOf('Plug') >= 0)), //if is socket, probably can switch on/off
+                canSwitchOnOff: canSwitch,
                 hasTemp: false,
                 hasPower: false,
                 hasTotalPower: false,
                 hasLastDetected: false
             };
-            //report unknown device:
-            const xmls = await device.client.getDeviceDescriptionXML();
-            this.log.info('Found new device, please report the following (full log from file, please) to developer: ' + JSON.stringify(xmls, null, 2));
-            if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
-                const sentryInstance = this.getPluginInstance('sentry');
-                if (sentryInstance) {
-                    const Sentry = sentryInstance.getSentryObject();
-                    Sentry && Sentry.withScope(scope => {
-                        scope.setLevel('info');
-                        for (const key of Object.keys(xmls)) {
-                            scope.setExtra(key, xmls[key]);
-                        }
-                        Sentry.captureMessage('Unknown-Device ' + device.model, 'info'); // Level 'info'
-                    });
+            if (device.model) {
+                let xmls;
+                if (device.useWebSocket) {
+                    xmls = 'UNKNOWN WEBSOCKET DEVICE: ' + device.model;
+                } else {
+                    //report unknown device:
+                    xmls = await device.client.getDeviceDescriptionXML();
+                }
+                this.log.info('Found new device, please report the following (full log from file, please) to developer: ' + JSON.stringify(xmls, null, 2));
+                if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
+                    const sentryInstance = this.getPluginInstance('sentry');
+                    if (sentryInstance) {
+                        const Sentry = sentryInstance.getSentryObject();
+                        Sentry && Sentry.withScope(scope => {
+                            scope.setLevel('info');
+                            for (const key of Object.keys(xmls)) {
+                                scope.setExtra(key, xmls[key]);
+                            }
+                            Sentry.captureMessage('Unknown-Device ' + device.model, 'info'); // Level 'info'
+                        });
+                    }
                 }
             }
         }
