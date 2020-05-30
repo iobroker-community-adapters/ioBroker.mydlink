@@ -450,13 +450,16 @@ class DlinkSmarthome extends utils.Adapter {
                 return this.loginDevice(device);
             }
 
-            if (!device.loginErrorPrinted) {
+            if (!device.loginErrorPrinted && e.code !== 'ETIMEDOUT') {
                 this.log.debug('Login error: ' + e.stack);
                 this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.stack);
                 device.loginErrorPrinted = true;
             }
 
             device.loggedIn = false;
+            if (device.useWebSocket || !device.pollInterval) {
+                device.intervalHandle = setTimeout(() => this.startDevice(device), 10000); //retry here if no polling.
+            }
         }
         return device.loggedIn;
     }
@@ -528,6 +531,7 @@ class DlinkSmarthome extends utils.Adapter {
     /**
      * Creates full device from configuration table:
      * @param {Record<string, any>} tableDevice
+     * @param {boolean} [doDecrypt] if false will not decrypt pin here. Defaults to false.
      * @returns {Device}
      */
     createDeviceFromTable(tableDevice, doDecrypt = false) {
@@ -553,6 +557,30 @@ class DlinkSmarthome extends utils.Adapter {
         };
 
         return device;
+    }
+
+    /**
+     * errorHandler for socket errors with webSocketClient
+     * @param {Device} device
+     * @param {number|undefined} [code] possible error code
+     * @param {Object|undefined} [err] possible error object
+     */
+    async errorHandler(device, code, err) {
+        await this.setStateAsync(device.id + readySuffix, false, true);
+        if (code || err) {
+            this.log.debug(device.name + ': Socket error: ' + code + ' - ' + err ? err.stack : err);
+        } else {
+            this.log.debug(device.name + ': Socket closed.');
+        }
+        this.stopDevice(device);
+        device.ready = false;
+        //abuse unused intervalHandle here.
+        if (device.intervalHandle) {
+            clearTimeout(device.intervalHandle);
+        }
+        device.intervalHandle = setTimeout(() => {
+            this.startDevice(device);
+        }, 10000);
     }
 
     /**
@@ -586,20 +614,36 @@ class DlinkSmarthome extends utils.Adapter {
         //start polling if device is enabled (do this after all is setup).
         let result = false;
         if (device.enabled) {
-            let interval = device.pollInterval;
-            if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
-                this.log.debug('Start polling for ' + device.name + ' with interval ' + interval);
-                result = true; //only use yellow/green states if polling at least one device.
-                if (interval < 500) {
-                    this.log.warn('Increasing poll rate to twice per second. Please check device config.');
-                    interval = 500; //polling twice every second should be enough, right?
-                }
-                device.pollInterval = interval;
-                // @ts-ignore
-                device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
-                    device.pollInterval);
+            if (device.useWebSocket) {
+                //event listener:
+                device.client.on('switched', val => {
+                    this.log.debug('Event from device.');
+                    this.setStateAsync(device.id + stateSuffix, val, true);
+                });
+                //error handling:
+                device.client.on('error', (code, error) => this.errorHandler(device, code, error));
+                device.client.on('close', () => this.errorHandler(device));
+                await this.setStateAsync(device.id + readySuffix, true, true);
+                device.ready = true;
+                this.log.debug('Setup device event listener.');
+                const state = await device.client.state();
+                await this.setStateChangedAsync(device.id + stateSuffix, state, true);
             } else {
-                this.log.debug('Polling of ' + device.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
+                let interval = device.pollInterval;
+                if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
+                    this.log.debug('Start polling for ' + device.name + ' with interval ' + interval);
+                    result = true; //only use yellow/green states if polling at least one device.
+                    if (interval < 500) {
+                        this.log.warn('Increasing poll rate to twice per second. Please check device config.');
+                        interval = 500; //polling twice every second should be enough, right?
+                    }
+                    device.pollInterval = interval;
+                    // @ts-ignore
+                    device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
+                        device.pollInterval);
+                } else {
+                    this.log.debug('Polling of ' + device.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
+                }
             }
         }
 
