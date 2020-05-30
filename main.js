@@ -417,7 +417,7 @@ class DlinkSmarthome extends utils.Adapter {
                 device.client = new WebSocketClient({
                     ip: device.ip,
                     pin: device.pin,
-                    keepAlive: Math.max(device.pollInterval / 1000, 5),
+                    keepAlive: device.pollInterval / 1000,
                     useTelnetForToken: device.pin === 'TELNET',
                     log: console.debug
                 });
@@ -452,7 +452,7 @@ class DlinkSmarthome extends utils.Adapter {
 
             if (!device.loginErrorPrinted && e.code !== 'ETIMEDOUT') {
                 this.log.debug('Login error: ' + e.stack);
-                this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.stack);
+                this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.code + ' - ' + e.stack);
                 device.loginErrorPrinted = true;
             }
 
