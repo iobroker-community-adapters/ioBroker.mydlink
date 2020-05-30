@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.11",
+        "version": "1.1.0",
         "news": {
+            "1.1.0": {
+                "en": "Added Support for w115 (and maybe other never myDlink devices, might even do *something* with cameras)\nFix relogin to device (i.e. when device was restarted during adapter runtime) \nFix error when switching a socket.",
+                "de": "Unterstützung für w115 hinzugefügt (und vielleicht andere, niemals myDlink-Geräte, könnten sogar *etwas* mit Kameras tun) \nBehebung der erneuten Anmeldung am Gerät (d. H. Wenn das Gerät zur Laufzeit des Adapters neu gestartet wurde)\nFehler beim Umschalten einer Steckdose behoben.",
+                "ru": "Добавлена поддержка w115 (и, возможно, других, не относящихся к myDlink устройств, может даже что-то делать с камерами)\nИсправлена повторная регистрация на устройстве (то есть, когда устройство было перезапущено во время работы адаптера)\nИсправлена ошибка при переключении сокета.",
+                "pt": "Adicionado suporte para o w115 (e talvez outros dispositivos nunca myDlink, podem até fazer *algo* com câmeras) \nCorrigir login novamente no dispositivo (ou seja, quando o dispositivo foi reiniciado durante o tempo de execução do adaptador)\nCorrija o erro ao trocar um soquete.",
+                "nl": "Ondersteuning toegevoegd voor w115 (en misschien andere nooit myDlink-apparaten, kunnen zelfs *iets* doen met camera's) \nOpnieuw inloggen op apparaat repareren (d.w.z. wanneer het apparaat opnieuw werd opgestart tijdens de runtime van de adapter)\nFout oplossen bij het wisselen van een stopcontact.",
+                "fr": "Ajout de la prise en charge de w115 (et peut-être que d'autres appareils jamais myDlink peuvent même faire *quelque chose* avec des caméras) \nCorrection de la reconnexion à l'appareil (c'est-à-dire lorsque l'appareil a été redémarré pendant l'exécution de l'adaptateur)\nCorrection d'une erreur lors du changement de socket.",
+                "it": "Aggiunto supporto per w115 (e forse altri dispositivi mai myDlink, potrebbe persino fare *qualcosa* con le fotocamere) \nCorrezione del nuovo accesso al dispositivo (ad es. Al riavvio del dispositivo durante il runtime dell'adattatore)\nErrore di correzione durante la commutazione di un socket.",
+                "es": "Soporte adicional para w115 (y tal vez otros dispositivos que nunca sean myDlink, incluso podrían hacer *algo* con las cámaras) \nSe corrigió el inicio de sesión en el dispositivo (es decir, cuando el dispositivo se reinició durante el tiempo de ejecución del adaptador)\nSoluciona el error al cambiar un zócalo.",
+                "pl": "Dodano wsparcie dla w115 (i może inne urządzenia nigdy myDlink, mogą nawet *zrobić* z kamerami) \nNapraw ponowne logowanie do urządzenia (tj. Kiedy urządzenie zostało zrestartowane podczas działania adaptera)\nNapraw błąd podczas przełączania gniazda.",
+                "zh-cn": "新增了对w115的支持（也许还有其他从未使用过的myDlink设备，甚至可以对相机进行某些操作）\n修复重新登录到设备（即在适配器运行时重新启动设备时）\n解决切换插座时的错误。"
+            },
             "1.0.11": {
                 "en": "Tried to add even more information in case device seems incompatible",
                 "de": "Es wurde versucht, noch mehr Informationen hinzuzufügen, falls das Gerät nicht kompatibel erscheint",
