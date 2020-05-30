@@ -381,12 +381,7 @@ class DlinkSmarthome extends utils.Adapter {
      */
     async deleteDeviceFull(device) {
         //stop device:
-        if (device.client && typeof device.client.close === 'function') {
-            device.client.close();
-        }
-        if (device.intervalHandle) {
-            clearTimeout(device.intervalHandle);
-        }
+        this.stopDevice(device);
 
         //check if detected device:
         for (const ip of Object.keys(this.detectedDevices)) {
@@ -566,12 +561,7 @@ class DlinkSmarthome extends utils.Adapter {
     async startDevice(device){
         //if device was already started -> stop it.
         //(use case: ip did change or settings did change)
-        if (device.intervalHandle) {
-            clearTimeout(device.intervalHandle);
-        }
-        if (device.client && typeof device.client.close === 'function') {
-            device.client.close();
-        }
+        this.stopDevice(device);
 
         //interrogate enabled devices
         //this will get MAC for manually configured devices.
@@ -829,6 +819,22 @@ class DlinkSmarthome extends utils.Adapter {
             device.pollInterval);
     }
 
+    stopDevice(device) {
+        if (device.client && typeof device.client.removeAllListeners === 'function') {
+            device.client.removeAllListeners('switch');
+            device.client.removeAllListeners('error');
+            device.client.removeAllListeners('close');
+        }
+        if (device.intervalHandle) {
+            clearInterval(device.intervalHandle);
+        }
+        if (device.client && typeof device.client.disconnect === 'function') {
+            device.client.disconnect();
+        }
+        device.ready = false;
+        device.loggedIn = false;
+    }
+
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      * @param {() => void} callback
@@ -837,12 +843,7 @@ class DlinkSmarthome extends utils.Adapter {
         try {
             this.log.debug('Stop polling');
             for (const device of this.devices) {
-                if (device.intervalHandle) {
-                    clearInterval(device.intervalHandle);
-                }
-                if (device.client && typeof device.client.close === 'function') {
-                    device.client.close();
-                }
+                this.stopDevice(device);
             }
             if (this.mdns && typeof this.mdns.close === 'function') {
                 this.mdns.close();
