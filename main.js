@@ -417,6 +417,8 @@ class DlinkSmarthome extends utils.Adapter {
                 device.client = new WebSocketClient({
                     ip: device.ip,
                     pin: device.pin,
+                    keepAlive: Math.max(device.pollInterval / 1000, 5),
+                    useTelnetForToken: device.pin === 'TELNET',
                     log: console.debug
                 });
             } else {
