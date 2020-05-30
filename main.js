@@ -900,7 +900,7 @@ class DlinkSmarthome extends utils.Adapter {
                         }
                         await device.client.switch(state.val);
                         this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
-                        await this.pollAndSetState(device.client.state, device.id + stateSuffix);
+                        await this.pollAndSetState(device.client.state.bind(device.client), device.id + stateSuffix);
                     } catch(e) {
                         const code = this.processNetworkError(e);
                         if (code === 403) {
