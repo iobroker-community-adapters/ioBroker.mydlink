@@ -143,6 +143,7 @@ class DlinkSmarthome extends utils.Adapter {
                 pollInterval: device.pollInterval,
                 enabled: device.enabled,
                 name: device.name,
+                model: device.model,
                 useWebSocket: device.useWebSocket
             }
         });
@@ -701,6 +702,7 @@ class DlinkSmarthome extends utils.Adapter {
                     pollInterval: device.pollInterval,
                     enabled: device.enabled,
                     name: device.name,
+                    model: device.model,
                     useWebSocket: device.useWebSocket
                 };
                 devices.push(configDevice);
@@ -1011,7 +1013,16 @@ class DlinkSmarthome extends utils.Adapter {
             return;
         }
         if (entry.name === '_dcp._tcp.local') {
-            this.log.debug('Got new detection: ' + JSON.stringify(entry, null, 2));
+            //this.log.debug('Got new detection: ' + JSON.stringify(entry, null, 2));
+        }
+
+        const device = this.devices.find(device => device.ip === entry.ip);
+        if (device) {
+            if (!device.model && device.useWebSocket && entry.PTR && entry.PTR.data) {
+                this.log.debug('Got model ' + entry.PTR.data.substring(0, 8) + ' for ' + device.ip);
+                device.model = entry.PTR.data.substring(0, 8);
+                this.createNewDevice(device); //store model in config.
+            }
         }
 
         //this.log.debug('Got discovery: ' + JSON.stringify(entry, null, 2));
