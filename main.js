@@ -443,7 +443,7 @@ class DlinkSmarthome extends utils.Adapter {
         } catch (e) {
             const code = this.processNetworkError(e);
             if (!device.useWebSocket && code === 500 && e.response && e.response.data && e.response.data.indexOf('not implemented') >= 0) { //let's try websocket.
-                device.client.close();
+                device.client.disconnect();
                 device.useWebSocket = true;
                 return this.loginDevice(device);
             }
