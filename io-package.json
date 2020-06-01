@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "news": {
+            "1.1.1": {
+                "en": "Improved auto detection of DSP-W115 (but mdns seems very unreliable whit that device)\nUI should never delete user devices",
+                "de": "Verbesserte automatische Erkennung von DSP-W115 (aber mdns scheint mit diesem Gerät sehr unzuverlässig zu sein)\nDie Benutzeroberfläche sollte niemals Benutzergeräte löschen",
+                "ru": "Улучшено автоматическое обнаружение DSP-W115 (но mdns кажется очень ненадежным с этим устройством)\nПользовательский интерфейс никогда не должен удалять пользовательские устройства",
+                "pt": "Detecção automática aprimorada do DSP-W115 (mas os mdns parecem muito confiáveis com esse dispositivo)\nA interface do usuário nunca deve excluir dispositivos do usuário",
+                "nl": "Verbeterde automatische detectie van DSP-W115 (maar mdns lijkt erg onbetrouwbaar met dat apparaat)\nGebruikersinterface mag nooit gebruikersapparaten verwijderen",
+                "fr": "Amélioration de la détection automatique du DSP-W115 (mais les MDN semblent très peu fiables avec cet appareil)\nL'interface utilisateur ne doit jamais supprimer les appareils des utilisateurs",
+                "it": "Rilevamento automatico migliorato di DSP-W115 (ma mdns sembra molto inaffidabile con quel dispositivo)\nL'interfaccia utente non dovrebbe mai eliminare i dispositivi utente",
+                "es": "Detección automática mejorada de DSP-W115 (pero mdns parece muy poco confiable con ese dispositivo)\nLa interfaz de usuario nunca debe eliminar dispositivos de usuario",
+                "pl": "Poprawione automatyczne wykrywanie DSP-W115 (ale mdns wydaje się bardzo zawodny z tym urządzeniem)\nInterfejs użytkownika nigdy nie powinien usuwać urządzeń użytkowników",
+                "zh-cn": "改进了对DSP-W115的自动检测（但是，该设备的mdns似乎非常不可靠）\n用户界面绝对不能删除用户设备"
+            },
             "1.1.0": {
                 "en": "Added Support for w115 (and maybe other never myDlink devices, might even do *something* with cameras)\nFix relogin to device (i.e. when device was restarted during adapter runtime) \nFix error when switching a socket.",
                 "de": "Unterstützung für w115 hinzugefügt (und vielleicht andere, niemals myDlink-Geräte, könnten sogar *etwas* mit Kameras tun) \nBehebung der erneuten Anmeldung am Gerät (d. H. Wenn das Gerät zur Laufzeit des Adapters neu gestartet wurde)\nFehler beim Umschalten einer Steckdose behoben.",
@@ -182,10 +194,6 @@
             "0.0.2": {
                 "en": "moved to iobroker-community-adapters",
                 "de": "zu iobroker-community-adapters umgezogen"
-            },
-            "0.0.1": {
-                "en": "first test version ",
-                "de": "erste test version "
             }
         },
         "title": "mydlink",
