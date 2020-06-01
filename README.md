@@ -61,6 +61,10 @@ Now you should enter `TELNET` as Pin and the adapter will retrieve the required 
 	Placeholder for next versions (this needs to be indented):
 	### __WORK IN PROGRESS__
 -->
+### __WORK IN PROGRESS__
+* Improved auto detection of DSP-W115 (but mdns seems very unreliable whit that device)
+* UI should never delete user devices
+
 ### 1.1.0 (2020-05-31)
 * Added Support for w115 (and maybe other never myDlink devices, might even do *something* with cameras)
 * Fix relogin to device (i.e. when device was restarted during adapter runtime) 
