@@ -293,5 +293,17 @@ systemDictionary = {
         'es': 'Al menos un dispositivo no tiene PIN configurado. Sin PIN no hay control posible. Ingrese el PIN o elimine el dispositivo incompleto.',
         'pl': 'Co najmniej jedno urządzenie nie ma skonfigurowanego kodu PIN. Bez PIN kontrola nie jest możliwa. Wprowadź kod PIN lub usuń niekompletne urządzenie.',
         'zh-cn': '至少一台设备未配置PIN。如果没有PIN，则无法控制。请输入PIN或删除不完整的设备。'
+    },
+    'errorDeviceDuplicate': {
+        'en': 'Error, two devices have the same MAC. Please remove the duplicates.',
+        'de': 'Fehler, zwei Geräte haben den gleichen MAC. Bitte entfernen Sie die Duplikate.',
+        'ru': 'Ошибка, два устройства имеют одинаковый MAC. Пожалуйста, удалите дубликаты.',
+        'pt': 'Erro, dois dispositivos têm o mesmo MAC. Por favor, remova as duplicatas.',
+        'nl': 'Fout, twee apparaten hebben dezelfde MAC. Verwijder de duplicaten.',
+        'fr': 'Erreur, deux appareils ont le même MAC. Veuillez supprimer les doublons.',
+        'it': 'Errore, due dispositivi hanno lo stesso MAC. Rimuovi i duplicati.',
+        'es': 'Error, dos dispositivos tienen el mismo MAC. Por favor, elimine los duplicados.',
+        'pl': 'Błąd, dwa urządzenia mają ten sam MAC. Usuń duplikaty.',
+        'zh-cn': '错误，两个设备具有相同的MAC。请删除重复项。'
     }
 };

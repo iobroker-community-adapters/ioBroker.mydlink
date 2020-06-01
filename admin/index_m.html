@@ -22,7 +22,7 @@
     let secret;
     const errors = [
         'errorIdentify',
-        'errorDevicePresent',
+        'errorDeviceDuplicate',
         'errorDeviceWithoutPin'
     ];
     function showError(id) {
@@ -89,6 +89,7 @@
 
         result = $("#" + id + "-add").on('click', function () {
             console.log("Clicked on " + device.mac + "!");
+            const tableDevices = table2values('devices');
             const oldDevice = tableDevices.find(d => d.mac === device.mac);
             if (!oldDevice) {
                 tableDevices.push({
@@ -110,6 +111,7 @@
     const presentDevices = [];
     async function periodicallyGetDevices() {
         const detectedDevices = await asyncSendTo('discovery');
+        const tableDevices = table2values('devices');
         for (const device of detectedDevices) {
             let oldDevice = tableDevices.find(d => d.mac === device.mac);
             if (!oldDevice) {
@@ -124,9 +126,9 @@
         setTimeout(periodicallyGetDevices, 1000);
     }
 
-    const tableDevices = [];
     async function periodicallyGetExistingDevices() {
         const devices = await asyncSendTo('getDevices');
+        const tableDevices = table2values('devices');
         let dirty = false;
         for (const device of devices) {
             const oldDevice = tableDevices.find(d => d.mac === device.mac);
@@ -192,6 +194,7 @@
                     pin: $("#device-pin").val()
                 });
                 console.log('Device from backend : ' + device);
+                const tableDevices = table2values('devices');
                 const oldDevice = tableDevices.find(d => d.ip === device.ip);
                 if (oldDevice) {
                     console.log("Device already present..");
@@ -206,11 +209,11 @@
                 _onChange(true);
                 values2table('devices', tableDevices, _onChange);
                 if (!device.enabled) {
-                    showError('errorIdentifyDevice');
+                    showError('errorIdentify');
                 }
             } catch (e) {
                 console.log("Error:", e);
-                showError('errorIdentifyDevice');
+                showError('errorIdentify');
             } finally {
                 $("#add-ip-device").removeClass('disabled');
                 $("#add-ip-device-spinner").addClass('hide');
@@ -229,6 +232,7 @@
                 enabled: false
             }
             M.toast({html: "Please fill in MAC Address and IP. Or use Add by IP to only fill in IP and determine MAC."});
+            const tableDevices = table2values('devices');
             tableDevices.push(device);
             values2table('devices', tableDevices, _onChange);
         });
@@ -257,6 +261,12 @@
             if (!device.pin) {
                 showError('errorDeviceWithoutPin');
                 return;
+            }
+            for (const device2 of obj.devices) {
+                if (device !== device && device.mac === device2.mac) {
+                    showError('errorDeviceDuplicate')
+                    return;
+                }
             }
         }
         for (const device of obj.devices) {
@@ -375,7 +385,7 @@
             <h5 class="translate center red">Error</h5>
             <div class="row center">
                 <p id="errorIdentify" class="translate hide">errorIdentify</p>
-                <p id="errorDevicePresent" class="translate hide">errorDevicePresent</p>
+                <p id="errorDeviceDuplicate" class="translate hide">errorDeviceDuplicate</p>
                 <p id="errorDeviceWithoutPin" class="translate hide">errorDeviceWithoutPin</p>
             </div>
         </div>
