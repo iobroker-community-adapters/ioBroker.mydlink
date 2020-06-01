@@ -61,7 +61,7 @@ Now you should enter `TELNET` as Pin and the adapter will retrieve the required 
 	Placeholder for next versions (this needs to be indented):
 	### __WORK IN PROGRESS__
 -->
-### __WORK IN PROGRESS__
+### 1.1.2 (2020-06-01)
 * fixed two possible crashes with offline / wrong devices.
 
 ### 1.1.1 (2020-06-01)

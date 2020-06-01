@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.1",
+        "version": "1.1.2",
         "news": {
+            "1.1.2": {
+                "en": "fixed two possible crashes with offline / wrong devices.",
+                "de": "Zwei mögliche Abstürze mit Offline- / falschen Geräten wurden behoben.",
+                "ru": "исправлены два возможных сбоя с отключенными / неправильными устройствами.",
+                "pt": "Corrigido duas possíveis falhas com dispositivos offline / incorretos.",
+                "nl": "twee mogelijke crashes opgelost met offline / verkeerde apparaten.",
+                "fr": "correction de deux plantages possibles avec des appareils hors ligne / incorrects.",
+                "it": "risolti due possibili arresti anomali con dispositivi offline / errati.",
+                "es": "Se corrigieron dos posibles bloqueos con dispositivos fuera de línea / incorrectos.",
+                "pl": "naprawiono dwie możliwe awarie urządzeń offline / niewłaściwych.",
+                "zh-cn": "修复了离线/错误设备可能导致的两次崩溃。"
+            },
             "1.1.1": {
                 "en": "Improved auto detection of DSP-W115 (but mdns seems very unreliable whit that device)\nUI should never delete user devices",
                 "de": "Verbesserte automatische Erkennung von DSP-W115 (aber mdns scheint mit diesem Gerät sehr unzuverlässig zu sein)\nDie Benutzeroberfläche sollte niemals Benutzergeräte löschen",
@@ -190,10 +202,6 @@
             "0.0.3": {
                 "en": "use setStateChanged instead of polling state before writing,\nminor clean ups.",
                 "de": "Interne Optimierungen."
-            },
-            "0.0.2": {
-                "en": "moved to iobroker-community-adapters",
-                "de": "zu iobroker-community-adapters umgezogen"
             }
         },
         "title": "mydlink",
