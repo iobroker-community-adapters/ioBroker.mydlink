@@ -431,6 +431,11 @@ class DlinkSmarthome extends utils.Adapter {
             }
 
             const loginResult = await device.client.login();
+            if (device.useWebSocket) {
+                const state = await device.client.state();
+                await this.setStateChangedAsync(device.id + stateSuffix, state, true);
+            }
+
             if (loginResult === true) {
                 this.log.debug(device.name + ' successfully logged in. ' + loginResult);
                 device.loggedIn = true;
@@ -626,8 +631,6 @@ class DlinkSmarthome extends utils.Adapter {
                 await this.setStateAsync(device.id + readySuffix, true, true);
                 device.ready = true;
                 this.log.debug('Setup device event listener.');
-                const state = await device.client.state();
-                await this.setStateChangedAsync(device.id + stateSuffix, state, true);
             } else {
                 let interval = device.pollInterval;
                 if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
@@ -1032,7 +1035,7 @@ class DlinkSmarthome extends utils.Adapter {
             timeout: 0, //0 == stay active??
             name: [ '_dhnap._tcp.local', '_dcp._tcp.local' ],
             find: '*',
-            broadcast: true
+            broadcast: false
         });
 
         this.log.debug('Auto detection started');
@@ -1093,22 +1096,27 @@ class DlinkSmarthome extends utils.Adapter {
                     useTelnetForToken: false,
                     log: console.debug
                 });
-                await newDevice.client.login();
-                newDevice.id = newDevice.client.getDeviceId().toUpperCase();
-                if (newDevice.id) {
-                    // @ts-ignore
-                    newDevice.mac = newDevice.id.match(/.{2}/g).join(':');
-                    this.detectedDevices[newDevice.ip] = {
-                        ip: newDevice.ip,
-                        name: entry.name,
-                        type: model,
-                        mac: newDevice.mac,
-                        mydlink: true,
-                        useWebSocket: true,
-                        alreadyPresent: !!device
-                    };
+                try {
+                    await newDevice.client.login();
+                    newDevice.id = newDevice.client.getDeviceId().toUpperCase();
+                    if (newDevice.id) {
+                        // @ts-ignore
+                        newDevice.mac = newDevice.id.match(/.{2}/g).join(':');
+                        this.detectedDevices[newDevice.ip] = {
+                            ip: newDevice.ip,
+                            name: entry.name,
+                            type: model,
+                            mac: newDevice.mac,
+                            mydlink: true,
+                            useWebSocket: true,
+                            alreadyPresent: !!device
+                        };
+                    }
+                } catch (e) {
+                    this.log.debug('Could not identify websocket device: ' + e.stack);
+                } finally {
+                    this.stopDevice(newDevice);
                 }
-                this.stopDevice(newDevice);
             }
         }
 
