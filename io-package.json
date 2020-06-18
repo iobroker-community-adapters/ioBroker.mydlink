@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.2",
+        "version": "1.1.3",
         "news": {
+            "1.1.3": {
+                "en": "fixed: if error during login, polling would stop.\nfixed: can now update device name from config again\nchange: read devices from config in UI again\nchange: in UI do not create +-Button if detected device is already in devices table.",
+                "de": "behoben: Wenn beim Anmelden ein Fehler auftrat, wurde die Abfrage beendet.\nBehoben: Kann jetzt den Gerätenamen aus der Konfiguration erneut aktualisieren\nändern: Geräte aus der Konfiguration in der Benutzeroberfläche erneut lesen\nÄnderung: Erstellen Sie in der Benutzeroberfläche keine + -Taste, wenn sich das erkannte Gerät bereits in der Gerätetabelle befindet.",
+                "ru": "исправлено: если ошибка во время входа в систему, опрос будет остановлен.\nисправлено: теперь можно обновить имя устройства из конфигурации снова\nизменить: снова прочитать устройства из конфигурации в пользовательском интерфейсе\nизменить: в пользовательском интерфейсе не создавать + кнопку +, если обнаруженное устройство уже находится в таблице устройств.",
+                "pt": "corrigido: se ocorrer um erro durante o login, a pesquisa será interrompida.\ncorrigido: agora pode atualizar o nome do dispositivo a partir da configuração novamente\nchange: ler dispositivos da configuração na interface do usuário novamente\nalteração: na interface do usuário, não crie o botão +-se o dispositivo detectado já estiver na tabela de dispositivos.",
+                "nl": "opgelost: als er een fout optreedt tijdens het inloggen, stopt de polling.\nopgelost: kan de apparaatnaam nu opnieuw vanuit de configuratie bijwerken\nverandering: lees opnieuw apparaten van config in UI\nwijzigen: maak in de gebruikersinterface geen + -knop als het gedetecteerde apparaat al in de apparaattabel staat.",
+                "fr": "corrigé: en cas d'erreur lors de la connexion, l'interrogation s'arrêtait.\ncorrigé: peut désormais mettre à jour le nom du périphérique à partir de la configuration\nchangement: lire à nouveau les périphériques de la configuration dans l'interface utilisateur\nchangement: dans l'interface utilisateur, ne créez pas de bouton + si le périphérique détecté est déjà dans la table des périphériques.",
+                "it": "risolto: se l'errore durante l'accesso, il polling si fermava.\nrisolto: ora è possibile aggiornare nuovamente il nome del dispositivo dalla configurazione\nmodifica: legge nuovamente i dispositivi dalla configurazione nell'interfaccia utente\nmodifica: nell'interfaccia utente non creare + -Button se il dispositivo rilevato è già nella tabella dei dispositivi.",
+                "es": "corregido: si se produce un error durante el inicio de sesión, la encuesta se detendrá.\ncorregido: ahora puede actualizar el nombre del dispositivo desde la configuración nuevamente\ncambio: lea los dispositivos desde la configuración en la interfaz de usuario nuevamente\ncambio: en la interfaz de usuario no cree + -Button si el dispositivo detectado ya está en la tabla de dispositivos.",
+                "pl": "naprawiono: jeśli błąd podczas logowania, odpytywanie przestało działać\nnaprawiono: można teraz ponownie zaktualizować nazwę urządzenia z konfiguracji\nzmiana: ponownie odczytaj urządzenia z konfiguracji w interfejsie użytkownika\nzmień: w interfejsie użytkownika nie twórz + -Przycisk, jeśli wykryte urządzenie znajduje się już w tabeli urządzeń.",
+                "zh-cn": "固定：如果登录期间出错，轮询将停止。\n固定：现在可以再次从配置更新设备名称\n更改：再次从用户界面中的配置读取设备\n更改：如果检测到的设备已在设备表中，则在UI中不要创建+按钮。"
+            },
             "1.1.2": {
                 "en": "fixed two possible crashes with offline / wrong devices.",
                 "de": "Zwei mögliche Abstürze mit Offline- / falschen Geräten wurden behoben.",
@@ -198,10 +210,6 @@
             "0.0.4": {
                 "en": "added pollInterval option on per device basis.\nadded no_motion field to motion sensors.",
                 "de": "poll interval kann jetzt für jedes Gerät einzeln festgelegt werden.\nneues no_motion feld für Bewegungsmelder."
-            },
-            "0.0.3": {
-                "en": "use setStateChanged instead of polling state before writing,\nminor clean ups.",
-                "de": "Interne Optimierungen."
             }
         },
         "title": "mydlink",
