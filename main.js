@@ -489,7 +489,7 @@ class DlinkSmarthome extends utils.Adapter {
             pollInterval: /** @type {number} */ (native.pollInterval),
             mac: native.mac ? /** @type {string} */ (native.mac).toUpperCase() : '',
             id: configDevice._id.split('.')[2], //for easier state updates -> depents on MAC. - remove adapter & instance
-            name: configDevice.common.name, //for easier logging
+            name: /** @type {string} */ (native.name), //for easier logging
             loggedIn: false,
             identified: false,
             ready: false,
@@ -692,7 +692,7 @@ class DlinkSmarthome extends utils.Adapter {
 
                     //copy all data from config, because now only config is changed from config dialog.
                     for (const key of Object.keys(configDevice)) {
-                        existingDevice.native[key] = configDevice[key] || existingDevice.native[key]; //copy all fields.
+                        existingDevice.native[key] = configDevice[key]; //copy all fields.
                     }
                     // @ts-ignore
                     existingDevice.native.pinNotEncrypted = !configDevice.mac;
