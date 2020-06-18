@@ -60,6 +60,7 @@ Now you should enter `TELNET` as Pin and the adapter will retrieve the required 
 <!-- 
 	Placeholder for next versions (this needs to be indented):
 	### __WORK IN PROGRESS__
+	npm install @alcalzone/release-script
 -->
 ### __WORK IN PROGRESS__
 * fixed: if error during login, polling would stop.
