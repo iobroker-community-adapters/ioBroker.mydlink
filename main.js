@@ -442,7 +442,7 @@ class DlinkSmarthome extends utils.Adapter {
                 device.loginErrorPrinted = false;
             } else {
                 if (!device.loginErrorPrinted) {
-                    this.log.debug('Login error: soapclient returned ' + loginResult);
+                    this.log.debug('Login error: soapclient returned ' + loginResult + ' - this should not really happen.');
                     this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected.');
                     device.loginErrorPrinted = true;
                 }
@@ -455,14 +455,17 @@ class DlinkSmarthome extends utils.Adapter {
                 return this.loginDevice(device);
             }
 
-            if (!device.loginErrorPrinted && e.code !== 'ETIMEDOUT') {
-                this.log.debug('Login error: ' + e.stack);
+            this.log.debug('Login error: ' + e.stack);
+            if (!device.loginErrorPrinted && e.code !== 'ETIMEDOUT' && e.code !== 'ECONNABORTED' && e.code !== 'ECONNRESET') {
                 this.log.error(device.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.code + ' - ' + e.stack);
                 device.loginErrorPrinted = true;
             }
 
             device.loggedIn = false;
-            if (device.useWebSocket || !device.pollInterval) {
+            if (device.useWebSocket || !device.pollInterval) { //if no polling takes place, need to retry login!
+                if (device.intervalHandle) {
+                    clearTimeout(device.intervalHandle);
+                }
                 device.intervalHandle = setTimeout(() => this.startDevice(device), 10000); //retry here if no polling.
             }
         }
@@ -807,48 +810,47 @@ class DlinkSmarthome extends utils.Adapter {
         //this.log.debug('Polling ' + device.name);
         try {
             if (!device.loggedIn) {
-                const result = await this.loginDevice(device);
-                if (!result) {
-                    return;
-                }
+                await this.loginDevice(device);
             }
-            if (!device.identified) {
+            if (device.loggedIn && !device.identified) {
                 await this.identifyDevice(device);
             }
-            await this.pollAndSetState(device.client.isDeviceReady, device.id + readySuffix);
-            //poll ready will throw error if not ready.
-            device.ready = true;
-            await this.setStateChangedAsync('info.connection', true, true);
-            if (device.flags.canSwitchOnOff) {
-                await this.pollAndSetState(device.client.state, device.id + stateSuffix);
-            }
-            if (device.flags.hasLastDetected) {
-                const detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
-                if (detectionHappened) {
-                    //always set state to true, for new detections.
-                    await this.setStateAsync(device.id + stateSuffix, detectionHappened, true);
-                } else {
-                    await this.setStateChangedAsync(device.id + stateSuffix, false, true);
+            if (device.loggedIn && device.identified) {
+                await this.pollAndSetState(device.client.isDeviceReady, device.id + readySuffix);
+                //poll ready will throw error if not ready.
+                device.ready = true;
+                await this.setStateChangedAsync('info.connection', true, true);
+                if (device.flags.canSwitchOnOff) {
+                    await this.pollAndSetState(device.client.state, device.id + stateSuffix);
                 }
+                if (device.flags.hasLastDetected) {
+                    const detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
+                    if (detectionHappened) {
+                        //always set state to true, for new detections.
+                        await this.setStateAsync(device.id + stateSuffix, detectionHappened, true);
+                    } else {
+                        await this.setStateChangedAsync(device.id + stateSuffix, false, true);
+                    }
 
-                //fill no detection variable:
-                const lastDetection = await this.getStateAsync(device.id + lastDetectedSuffix);
-                if (lastDetection) {
-                    //@ts-ignore -> we already check for null / undefined???
-                    const noMotion = Math.round((Date.now() - /** @type {number} */ lastDetection.val) / 1000);
-                    await this.setStateChangedAsync(device.id + noMotionSuffix, noMotion, true);
+                    //fill no detection variable:
+                    const lastDetection = await this.getStateAsync(device.id + lastDetectedSuffix);
+                    if (lastDetection) {
+                        //@ts-ignore -> we already check for null / undefined???
+                        const noMotion = Math.round((Date.now() - /** @type {number} */ lastDetection.val) / 1000);
+                        await this.setStateChangedAsync(device.id + noMotionSuffix, noMotion, true);
+                    }
                 }
+                if (device.flags.hasTemp) {
+                    await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix);
+                }
+                if (device.flags.hasPower) {
+                    await this.pollAndSetState(device.client.consumption, device.id + powerSuffix);
+                }
+                if (device.flags.hasTotalPower) {
+                    await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix);
+                }
+                //this.log.debug('Polling of ' + device.name + ' finished.');
             }
-            if (device.flags.hasTemp) {
-                await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix);
-            }
-            if (device.flags.hasPower) {
-                await this.pollAndSetState(device.client.consumption, device.id + powerSuffix);
-            }
-            if (device.flags.hasTotalPower) {
-                await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix);
-            }
-            //this.log.debug('Polling of ' + device.name + ' finished.');
         } catch (e) {
             const code = this.processNetworkError(e);
             if (code === 403 || device.ready) {
