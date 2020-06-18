@@ -978,10 +978,8 @@ class DlinkSmarthome extends utils.Adapter {
                         const devices = [];
                         for (const key of Object.keys(this.detectedDevices)) {
                             const device = this.detectedDevices[key];
-                            if (!device.alreadyPresent) {
-                                device.readOnly = true;
-                                devices.push(device);
-                            }
+                            device.readOnly = true;
+                            devices.push(device);
                         }
                         this.sendTo(obj.from, obj.command, devices, obj.callback);
                     }

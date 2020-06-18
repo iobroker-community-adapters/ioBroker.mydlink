@@ -111,39 +111,16 @@
     const presentDevices = [];
     async function periodicallyGetDevices() {
         const detectedDevices = await asyncSendTo('discovery');
-        const tableDevices = table2values('devices');
         for (const device of detectedDevices) {
-            let oldDevice = tableDevices.find(d => d.mac === device.mac);
+            const oldDevice = presentDevices.find(d => d.mac === device.mac);
             if (!oldDevice) {
-                oldDevice = presentDevices.find(d => d.mac === device.mac);
-                if (!oldDevice) {
-                    console.log("New device: " + device.ip);
-                    addDeviceToTable(device);
-                    presentDevices.push(device);
-                }
+                console.log("New device: " + device.ip);
+                addDeviceToTable(device);
+                presentDevices.push(device);
             }
         }
         setTimeout(periodicallyGetDevices, 1000);
     }
-
-    async function periodicallyGetExistingDevices() {
-        const devices = await asyncSendTo('getDevices');
-        const tableDevices = table2values('devices');
-        let dirty = false;
-        for (const device of devices) {
-            const oldDevice = tableDevices.find(d => d.mac === device.mac);
-            if (!oldDevice) {
-                console.log("New device: " + device.ip);
-                dirty = true;
-                tableDevices.push(device);
-            }
-        }
-        if (dirty) {
-            values2table('devices', tableDevices, _onChange);
-        }
-        //setTimeout(periodicallyGetExistingDevices, 1000);
-    }
-
 
     let _onChange;
     // This will be called by the admin adapter when the settings page loads
@@ -152,15 +129,19 @@
         if (!settings) return;
         _onChange = onChange;
 
-        socket.emit('getObject', 'system.config', function (err, obj) {
-            secret = (obj.native ? obj.native.secret : '') || 'RJaeBLRPwvPfh5O';
-        });
+        const obj = await asyncEmit('getObject', 'system.config');
+        secret = (obj.native ? obj.native.secret : '') || 'RJaeBLRPwvPfh5O';
 
         //get auto detection results:
         periodicallyGetDevices();
 
         //get devices:
-        periodicallyGetExistingDevices();
+        //periodicallyGetExistingDevices();
+        //nope -> load from config once again.
+        for (const device of settings.devices) {
+            device.pin = decrypt(secret, device.pin);
+        }
+        values2table('devices', settings.devices, _onChange);
 
         $('.value').each(function () {
             var $key = $(this);
