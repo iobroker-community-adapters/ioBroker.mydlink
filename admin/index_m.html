@@ -73,39 +73,44 @@
     }
 
     function addDeviceToTable(device) {
-        const id = macToId(device.mac)
+        const tableDevices = table2values('devices');
+        const id = macToId(device.mac);
+        const devicePresent = !!tableDevices.find(d => d.mac === device.mac);
         const button = '<a class="btn-floating waves-effect waves-light blue" id="' + id + '-add" class="values-buttons"><i class="material-icons">add</i></a>';
         const parts = [];
         parts.push('<tr id="' + id + '">');
         parts.push('<td><span id="' + id + '-model">' + device.type + '</span></td>');
         parts.push('<td><span id="' + id + '-mac">' + device.mac + '</span></td>');
         parts.push('<td><span id="' + id + '-ip">' + device.ip + '</span></td>');
-        parts.push('<td><span id="' + id + '-add">' + (device.alreadyPresent ? "&nbsp;" : button) + '</span></td>');
+        parts.push('<td><span id="' + id + '-add-span">' + (devicePresent ? "&nbsp;" : button) + '</span></td>');
         parts.push("</tr>");
 
         const html = parts.join("\n");
 
         let result = $("#detectedDevices").append(html);
 
-        result = $("#" + id + "-add").on('click', function () {
-            console.log("Clicked on " + device.mac + "!");
-            const tableDevices = table2values('devices');
-            const oldDevice = tableDevices.find(d => d.mac === device.mac);
-            if (!oldDevice) {
-                tableDevices.push({
-                    name: device.type,
-                    mac: device.mac,
-                    ip: device.ip,
-                    pin: device.pin,
-                    pollInterval: 30000,
-                    enabled: true
-                });
-                $("#" + id).remove();
-                values2table('devices', tableDevices, _onChange);
-            } else {
-                M.toast({html: "Device already present."});
-            }
-        });
+        const buttonElement = $("#" + id + "-add");
+        if (buttonElement) {
+            result = buttonElement.on('click', function () {
+                console.log("Clicked on " + device.mac + "!");
+                const tableDevices = table2values('devices');
+                const oldDevice = tableDevices.find(d => d.mac === device.mac);
+                if (!oldDevice) {
+                    tableDevices.push({
+                        name: device.type,
+                        mac: device.mac,
+                        ip: device.ip,
+                        pin: device.pin,
+                        pollInterval: 30000,
+                        enabled: true
+                    });
+                    $("#" + id).remove();
+                    values2table('devices', tableDevices, _onChange);
+                } else {
+                    M.toast({html: "Device already present."});
+                }
+            });
+        }
     }
 
     const presentDevices = [];
