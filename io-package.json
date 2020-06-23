@@ -248,6 +248,9 @@
             "mydlink",
             "dsp-w215"
         ],
+        "docs": {
+            "de": "docs/de/README.md"
+        },
         "compact": true,
         "materialize": true,
         "supportCustoms": false,
