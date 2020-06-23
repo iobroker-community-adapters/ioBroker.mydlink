@@ -62,6 +62,9 @@ Now you should enter `TELNET` as Pin and the adapter will retrieve the required 
 	### __WORK IN PROGRESS__
 	npm install @alcalzone/release-script
 -->
+### __WORK IN PROGRESS__
+* fixed: sometimes state was always reported as true.
+
 ### 1.1.3 (2020-06-18)
 * fixed: if error during login, polling would stop.
 * fixed: can now update device name from config again
