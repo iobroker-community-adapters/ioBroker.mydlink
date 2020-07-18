@@ -22,10 +22,12 @@ jobs:
 
         strategy:
             matrix:
-                node-version: [12.x]
+                node-version: [14.x]
 
         steps:
-            - uses: actions/checkout@v1
+            - name: Checkout code
+              uses: actions/checkout@v2
+
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v1
               with:
@@ -52,7 +54,9 @@ jobs:
                 os: [ubuntu-latest, windows-latest, macos-latest]
 
         steps:
-            - uses: actions/checkout@v1
+            - name: Checkout code
+              uses: actions/checkout@v2
+
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v1
               with:
@@ -72,9 +76,9 @@ jobs:
               if: startsWith(runner.OS, 'windows')
               run: set DEBUG=testing:* & npm run test:integration
 
-    # TODO: To enable automatic npm releases, create a token on npmjs.org
-    # Enter this token as a GitHub secret (with name NPM_TOKEN) in the repository options
-    # Then uncomment the following block:
+# TODO: To enable automatic npm releases, create a token on npmjs.org
+# Enter this token as a GitHub secret (with name NPM_TOKEN) in the repository options
+# Then uncomment the following block:
 
     # Deploys the final package to NPM
     deploy:
@@ -90,20 +94,46 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                node-version: [12.x]
+                node-version: [14.x]
 
         steps:
-            - uses: actions/checkout@v1
+            - name: Checkout code
+              uses: actions/checkout@v2
+
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v1
               with:
                   node-version: ${{ matrix.node-version }}
+
+            - name: Extract the version and commit body from the tag
+              # The body may be multiline, therefore newlines and % need to be escaped
+              run: |
+                  VERSION="${{ github.ref }}"
+                  VERSION=${VERSION##*/v}
+                  echo "::set-env name=VERSION::$VERSION"
+                  BODY=$(git show -s --format=%b)
+                  BODY="${BODY//'%'/'%25'}"
+                  BODY="${BODY//$'\n'/'%0A'}"
+                  BODY="${BODY//$'\r'/'%0D'}"
+                  echo "::set-env name=BODY::$BODY"
 
             - name: Publish package to npm
               run: |
                   npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
                   npm whoami
                   npm publish
+
+            - name: Create Github Release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ github.ref }}
+                  release_name: Release v${{ env.VERSION }}
+                  draft: false
+                  # Prerelease versions create prereleases on Github
+                  prerelease: ${{ contains(env.VERSION, '-') }}
+                  body: ${{ env.BODY }}
 
     # Dummy job for skipped builds - without this, github reports the build as failed
     skip-ci:
@@ -112,3 +142,4 @@ jobs:
         steps:
             - name: Skip build
               run: echo "Build skipped!"
+
