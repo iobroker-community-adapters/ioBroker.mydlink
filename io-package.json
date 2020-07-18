@@ -1,8 +1,68 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.0.11",
+        "version": "1.1.4",
         "news": {
+            "1.1.4": {
+                "en": "fixed: sometimes state was always reported as true.",
+                "de": "behoben: Manchmal wurde der Status immer als wahr gemeldet.",
+                "ru": "исправлено: иногда состояние всегда сообщалось как истинное.",
+                "pt": "corrigido: às vezes, o estado sempre era relatado como verdadeiro.",
+                "nl": "opgelost: soms werd de staat altijd als waar gemeld.",
+                "fr": "fixe: parfois l'état était toujours signalé comme vrai.",
+                "it": "risolto: a volte lo stato veniva sempre segnalato come vero.",
+                "es": "fijo: a veces el estado siempre se informaba como verdadero.",
+                "pl": "naprawiono: czasami stan zawsze był zgłaszany jako prawdziwy.",
+                "zh-cn": "已修正：有时状态始终被报告为true。"
+            },
+            "1.1.3": {
+                "en": "fixed: if error during login, polling would stop.\nfixed: can now update device name from config again\nchange: read devices from config in UI again\nchange: in UI do not create +-Button if detected device is already in devices table.",
+                "de": "behoben: Wenn beim Anmelden ein Fehler auftrat, wurde die Abfrage beendet.\nBehoben: Kann jetzt den Gerätenamen aus der Konfiguration erneut aktualisieren\nändern: Geräte aus der Konfiguration in der Benutzeroberfläche erneut lesen\nÄnderung: Erstellen Sie in der Benutzeroberfläche keine + -Taste, wenn sich das erkannte Gerät bereits in der Gerätetabelle befindet.",
+                "ru": "исправлено: если ошибка во время входа в систему, опрос будет остановлен.\nисправлено: теперь можно обновить имя устройства из конфигурации снова\nизменить: снова прочитать устройства из конфигурации в пользовательском интерфейсе\nизменить: в пользовательском интерфейсе не создавать + кнопку +, если обнаруженное устройство уже находится в таблице устройств.",
+                "pt": "corrigido: se ocorrer um erro durante o login, a pesquisa será interrompida.\ncorrigido: agora pode atualizar o nome do dispositivo a partir da configuração novamente\nchange: ler dispositivos da configuração na interface do usuário novamente\nalteração: na interface do usuário, não crie o botão +-se o dispositivo detectado já estiver na tabela de dispositivos.",
+                "nl": "opgelost: als er een fout optreedt tijdens het inloggen, stopt de polling.\nopgelost: kan de apparaatnaam nu opnieuw vanuit de configuratie bijwerken\nverandering: lees opnieuw apparaten van config in UI\nwijzigen: maak in de gebruikersinterface geen + -knop als het gedetecteerde apparaat al in de apparaattabel staat.",
+                "fr": "corrigé: en cas d'erreur lors de la connexion, l'interrogation s'arrêtait.\ncorrigé: peut désormais mettre à jour le nom du périphérique à partir de la configuration\nchangement: lire à nouveau les périphériques de la configuration dans l'interface utilisateur\nchangement: dans l'interface utilisateur, ne créez pas de bouton + si le périphérique détecté est déjà dans la table des périphériques.",
+                "it": "risolto: se l'errore durante l'accesso, il polling si fermava.\nrisolto: ora è possibile aggiornare nuovamente il nome del dispositivo dalla configurazione\nmodifica: legge nuovamente i dispositivi dalla configurazione nell'interfaccia utente\nmodifica: nell'interfaccia utente non creare + -Button se il dispositivo rilevato è già nella tabella dei dispositivi.",
+                "es": "corregido: si se produce un error durante el inicio de sesión, la encuesta se detendrá.\ncorregido: ahora puede actualizar el nombre del dispositivo desde la configuración nuevamente\ncambio: lea los dispositivos desde la configuración en la interfaz de usuario nuevamente\ncambio: en la interfaz de usuario no cree + -Button si el dispositivo detectado ya está en la tabla de dispositivos.",
+                "pl": "naprawiono: jeśli błąd podczas logowania, odpytywanie przestało działać\nnaprawiono: można teraz ponownie zaktualizować nazwę urządzenia z konfiguracji\nzmiana: ponownie odczytaj urządzenia z konfiguracji w interfejsie użytkownika\nzmień: w interfejsie użytkownika nie twórz + -Przycisk, jeśli wykryte urządzenie znajduje się już w tabeli urządzeń.",
+                "zh-cn": "固定：如果登录期间出错，轮询将停止。\n固定：现在可以再次从配置更新设备名称\n更改：再次从用户界面中的配置读取设备\n更改：如果检测到的设备已在设备表中，则在UI中不要创建+按钮。"
+            },
+            "1.1.2": {
+                "en": "fixed two possible crashes with offline / wrong devices.",
+                "de": "Zwei mögliche Abstürze mit Offline- / falschen Geräten wurden behoben.",
+                "ru": "исправлены два возможных сбоя с отключенными / неправильными устройствами.",
+                "pt": "Corrigido duas possíveis falhas com dispositivos offline / incorretos.",
+                "nl": "twee mogelijke crashes opgelost met offline / verkeerde apparaten.",
+                "fr": "correction de deux plantages possibles avec des appareils hors ligne / incorrects.",
+                "it": "risolti due possibili arresti anomali con dispositivi offline / errati.",
+                "es": "Se corrigieron dos posibles bloqueos con dispositivos fuera de línea / incorrectos.",
+                "pl": "naprawiono dwie możliwe awarie urządzeń offline / niewłaściwych.",
+                "zh-cn": "修复了离线/错误设备可能导致的两次崩溃。"
+            },
+            "1.1.1": {
+                "en": "Improved auto detection of DSP-W115 (but mdns seems very unreliable whit that device)\nUI should never delete user devices",
+                "de": "Verbesserte automatische Erkennung von DSP-W115 (aber mdns scheint mit diesem Gerät sehr unzuverlässig zu sein)\nDie Benutzeroberfläche sollte niemals Benutzergeräte löschen",
+                "ru": "Улучшено автоматическое обнаружение DSP-W115 (но mdns кажется очень ненадежным с этим устройством)\nПользовательский интерфейс никогда не должен удалять пользовательские устройства",
+                "pt": "Detecção automática aprimorada do DSP-W115 (mas os mdns parecem muito confiáveis com esse dispositivo)\nA interface do usuário nunca deve excluir dispositivos do usuário",
+                "nl": "Verbeterde automatische detectie van DSP-W115 (maar mdns lijkt erg onbetrouwbaar met dat apparaat)\nGebruikersinterface mag nooit gebruikersapparaten verwijderen",
+                "fr": "Amélioration de la détection automatique du DSP-W115 (mais les MDN semblent très peu fiables avec cet appareil)\nL'interface utilisateur ne doit jamais supprimer les appareils des utilisateurs",
+                "it": "Rilevamento automatico migliorato di DSP-W115 (ma mdns sembra molto inaffidabile con quel dispositivo)\nL'interfaccia utente non dovrebbe mai eliminare i dispositivi utente",
+                "es": "Detección automática mejorada de DSP-W115 (pero mdns parece muy poco confiable con ese dispositivo)\nLa interfaz de usuario nunca debe eliminar dispositivos de usuario",
+                "pl": "Poprawione automatyczne wykrywanie DSP-W115 (ale mdns wydaje się bardzo zawodny z tym urządzeniem)\nInterfejs użytkownika nigdy nie powinien usuwać urządzeń użytkowników",
+                "zh-cn": "改进了对DSP-W115的自动检测（但是，该设备的mdns似乎非常不可靠）\n用户界面绝对不能删除用户设备"
+            },
+            "1.1.0": {
+                "en": "Added Support for w115 (and maybe other never myDlink devices, might even do *something* with cameras)\nFix relogin to device (i.e. when device was restarted during adapter runtime) \nFix error when switching a socket.",
+                "de": "Unterstützung für w115 hinzugefügt (und vielleicht andere, niemals myDlink-Geräte, könnten sogar *etwas* mit Kameras tun) \nBehebung der erneuten Anmeldung am Gerät (d. H. Wenn das Gerät zur Laufzeit des Adapters neu gestartet wurde)\nFehler beim Umschalten einer Steckdose behoben.",
+                "ru": "Добавлена поддержка w115 (и, возможно, других, не относящихся к myDlink устройств, может даже что-то делать с камерами)\nИсправлена повторная регистрация на устройстве (то есть, когда устройство было перезапущено во время работы адаптера)\nИсправлена ошибка при переключении сокета.",
+                "pt": "Adicionado suporte para o w115 (e talvez outros dispositivos nunca myDlink, podem até fazer *algo* com câmeras) \nCorrigir login novamente no dispositivo (ou seja, quando o dispositivo foi reiniciado durante o tempo de execução do adaptador)\nCorrija o erro ao trocar um soquete.",
+                "nl": "Ondersteuning toegevoegd voor w115 (en misschien andere nooit myDlink-apparaten, kunnen zelfs *iets* doen met camera's) \nOpnieuw inloggen op apparaat repareren (d.w.z. wanneer het apparaat opnieuw werd opgestart tijdens de runtime van de adapter)\nFout oplossen bij het wisselen van een stopcontact.",
+                "fr": "Ajout de la prise en charge de w115 (et peut-être que d'autres appareils jamais myDlink peuvent même faire *quelque chose* avec des caméras) \nCorrection de la reconnexion à l'appareil (c'est-à-dire lorsque l'appareil a été redémarré pendant l'exécution de l'adaptateur)\nCorrection d'une erreur lors du changement de socket.",
+                "it": "Aggiunto supporto per w115 (e forse altri dispositivi mai myDlink, potrebbe persino fare *qualcosa* con le fotocamere) \nCorrezione del nuovo accesso al dispositivo (ad es. Al riavvio del dispositivo durante il runtime dell'adattatore)\nErrore di correzione durante la commutazione di un socket.",
+                "es": "Soporte adicional para w115 (y tal vez otros dispositivos que nunca sean myDlink, incluso podrían hacer *algo* con las cámaras) \nSe corrigió el inicio de sesión en el dispositivo (es decir, cuando el dispositivo se reinició durante el tiempo de ejecución del adaptador)\nSoluciona el error al cambiar un zócalo.",
+                "pl": "Dodano wsparcie dla w115 (i może inne urządzenia nigdy myDlink, mogą nawet *zrobić* z kamerami) \nNapraw ponowne logowanie do urządzenia (tj. Kiedy urządzenie zostało zrestartowane podczas działania adaptera)\nNapraw błąd podczas przełączania gniazda.",
+                "zh-cn": "新增了对w115的支持（也许还有其他从未使用过的myDlink设备，甚至可以对相机进行某些操作）\n修复重新登录到设备（即在适配器运行时重新启动设备时）\n解决切换插座时的错误。"
+            },
             "1.0.11": {
                 "en": "Tried to add even more information in case device seems incompatible",
                 "de": "Es wurde versucht, noch mehr Informationen hinzuzufügen, falls das Gerät nicht kompatibel erscheint",
@@ -158,22 +218,6 @@
             "0.0.5": {
                 "en": "fixed config files for release in latest repository.",
                 "de": "Konfigurationsdateien für eine Veröffentlichung im repository aufgeräumt"
-            },
-            "0.0.4": {
-                "en": "added pollInterval option on per device basis.\nadded no_motion field to motion sensors.",
-                "de": "poll interval kann jetzt für jedes Gerät einzeln festgelegt werden.\nneues no_motion feld für Bewegungsmelder."
-            },
-            "0.0.3": {
-                "en": "use setStateChanged instead of polling state before writing,\nminor clean ups.",
-                "de": "Interne Optimierungen."
-            },
-            "0.0.2": {
-                "en": "moved to iobroker-community-adapters",
-                "de": "zu iobroker-community-adapters umgezogen"
-            },
-            "0.0.1": {
-                "en": "first test version ",
-                "de": "erste test version "
             }
         },
         "title": "mydlink",
@@ -204,6 +248,9 @@
             "mydlink",
             "dsp-w215"
         ],
+        "docs": {
+            "de": "docs/de/README.md"
+        },
         "compact": true,
         "materialize": true,
         "supportCustoms": false,
