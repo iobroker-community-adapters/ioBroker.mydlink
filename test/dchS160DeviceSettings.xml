@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetDeviceSettingsResponse xmlns="http://purenetworks.com/HNAP1/">
+            <GetDeviceSettingsResult>OK</GetDeviceSettingsResult>
+            <Type>ConnectedHomeClient</Type>
+            <DeviceName>Wasser</DeviceName>
+            <VendorName>D-Link</VendorName>
+            <ModelDescription>D-Link Water Detector</ModelDescription>
+            <ModelName>DCH-S160</ModelName>
+            <DeviceMacId>1C:5F:2B:B3:EA:77</DeviceMacId>
+            <FirmwareVersion>1.23</FirmwareVersion>
+            <FirmwareRegion>Default</FirmwareRegion>
+            <LatestFirmwareVersion>1.23</LatestFirmwareVersion>
+            <HardwareVersion>A2</HardwareVersion>
+            <HNAPVersion>0124</HNAPVersion>
+            <PresentationURL>http://dch.local</PresentationURL>
+            <CAPTCHA>false</CAPTCHA>
+            <ModuleTypes>
+                <string>Environmental Sensor</string>
+            </ModuleTypes>
+            <SOAPActions>
+                <string>http://purenetworks.com/HNAP1/Reboot</string>
+                <string>http://purenetworks.com/HNAP1/SetFactoryDefault</string>
+                <string>http://purenetworks.com/HNAP1/IsDeviceReady</string>
+                <string>http://purenetworks.com/HNAP1/GetDeviceSettings</string>
+                <string>http://purenetworks.com/HNAP1/SetDeviceSettings</string>
+                <string>http://purenetworks.com/HNAP1/GetDeviceSettings2</string>
+                <string>http://purenetworks.com/HNAP1/SetDeviceSettings2</string>
+                <string>http://purenetworks.com/HNAP1/GetGroupSettings</string>
+                <string>http://purenetworks.com/HNAP1/SetGroupSettings</string>
+                <string>http://purenetworks.com/HNAP1/GetSystemLogs</string>
+                <string>http://purenetworks.com/HNAP1/CleanSystemLogs</string>
+                <string>http://purenetworks.com/HNAP1/GetModuleSchedule</string>
+                <string>http://purenetworks.com/HNAP1/SetModuleSchedule</string>
+                <string>http://purenetworks.com/HNAP1/GetModuleEnabled</string>
+                <string>http://purenetworks.com/HNAP1/SetModuleEnabled</string>
+                <string>http://purenetworks.com/HNAP1/GetModuleProfile</string>
+                <string>http://purenetworks.com/HNAP1/SetModuleProfile</string>
+                <string>http://purenetworks.com/HNAP1/GetModuleSOAPActions</string>
+                <string>http://purenetworks.com/HNAP1/GetTimeSettings</string>
+                <string>http://purenetworks.com/HNAP1/SetTimeSettings</string>
+                <string>http://purenetworks.com/HNAP1/GetModuleGroup</string>
+                <string>http://purenetworks.com/HNAP1/SetModuleGroup</string>
+                <string>http://purenetworks.com/HNAP1/GetScheduleSettings</string>
+                <string>http://purenetworks.com/HNAP1/SetScheduleSettings</string>
+                <string>http://purenetworks.com/HNAP1/GetRecursiveSchedule</string>
+                <string>http://purenetworks.com/HNAP1/SetRecursiveSchedule</string>
+                <string>http://purenetworks.com/HNAP1/GetFirmwareStatus</string>
+                <string>http://purenetworks.com/HNAP1/GetFirmwareValidation</string>
+                <string>http://purenetworks.com/HNAP1/StartFirmwareDownload</string>
+                <string>http://purenetworks.com/HNAP1/PollingFirmwareDownload</string>
+                <string>http://purenetworks.com/HNAP1/CheckNewFirmware</string>
+                <string>http://purenetworks.com/HNAP1/SettriggerADIC</string>
+                <string>http://purenetworks.com/HNAP1/GetInternetSettings</string>
+                <string>http://purenetworks.com/HNAP1/GetCurrentInternetStatus</string>
+                <string>http://purenetworks.com/HNAP1/GetWLanRadios</string>
+                <string>http://purenetworks.com/HNAP1/SetTriggerWirelessSiteSurvey</string>
+                <string>http://purenetworks.com/HNAP1/GetSiteSurvey</string>
+                <string>http://purenetworks.com/HNAP1/SetAPClientSettings</string>
+                <string>http://purenetworks.com/HNAP1/GetAPClientSettings</string>
+            </SOAPActions>
+            <SubDeviceURLs></SubDeviceURLs>
+        </GetDeviceSettingsResponse>
+    </soap:Body>
+</soap:Envelope>
