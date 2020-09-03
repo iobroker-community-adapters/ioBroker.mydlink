@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.4",
+        "version": "1.1.5",
         "news": {
+            "1.1.5": {
+                "en": "Add: support for DCH-S160 water detector added (needs polling, linke motion detector).",
+                "de": "Hinzufügen: Unterstützung für DCH-S160 Wasserdetektor hinzugefügt (muss abgefragt werden, linker Bewegungsmelder).",
+                "ru": "Добавлено: добавлена поддержка датчика воды DCH-S160 (требуется опрос, датчик движения Linke).",
+                "pt": "Adicionar: suporte para detector de água DCH-S160 adicionado (precisa de sondagem, detector de movimento linear).",
+                "nl": "Toevoegen: ondersteuning voor DCH-S160 waterdetector toegevoegd (polling vereist, linke bewegingsdetector).",
+                "fr": "Ajout: prise en charge du détecteur d'eau DCH-S160 ajoutée (interrogation requise, détecteur de mouvement linke).",
+                "it": "Aggiunto: aggiunto il supporto per il rilevatore di acqua DCH-S160 (necessita di polling, rilevatore di movimento lineare).",
+                "es": "Agregar: se agregó soporte para el detector de agua DCH-S160 (necesita sondeo, detector de movimiento linke).",
+                "pl": "Dodaj: dodano obsługę czujnika wody DCH-S160 (wymaga odpytywania, czujnik ruchu linke).",
+                "zh-cn": "添加：添加了对DCH-S160水检测器的支持（需要轮询，链接运动检测器）。"
+            },
             "1.1.4": {
                 "en": "fixed: sometimes state was always reported as true.",
                 "de": "behoben: Manchmal wurde der Status immer als wahr gemeldet.",
@@ -214,10 +226,6 @@
             "0.0.6": {
                 "en": "prevent removement of custom details in objects",
                 "de": "verhindere, dass eingestellte details an Objekten überschrieben werden"
-            },
-            "0.0.5": {
-                "en": "fixed config files for release in latest repository.",
-                "de": "Konfigurationsdateien für eine Veröffentlichung im repository aufgeräumt"
             }
         },
         "title": "mydlink",
