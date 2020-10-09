@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.5",
+        "version": "1.1.6",
         "news": {
+            "1.1.6": {
+                "en": "fixed: prevent error message with new mydlink plugs on switch",
+                "de": "behoben: Fehlermeldung mit neuen mydlink-Steckern am Schalter verhindern",
+                "ru": "исправлено: предотвращение появления сообщения об ошибке с новыми разъемами mydlink на переключателе",
+                "pt": "corrigido: evitar mensagem de erro com novos plugues mydlink na chave",
+                "nl": "opgelost: voorkom foutmelding met nieuwe mydlink-pluggen op schakelaar",
+                "fr": "corrigé: empêcher le message d'erreur avec de nouvelles prises mydlink sur le commutateur",
+                "it": "risolto: impedisce il messaggio di errore con i nuovi plug mydlink sull'interruttore",
+                "es": "solucionado: evitar mensajes de error con nuevos enchufes mydlink en el interruptor",
+                "pl": "naprawiono: zapobiegaj wyświetlaniu komunikatu o błędzie z nowymi wtyczkami mydlink na przełączniku",
+                "zh-cn": "固定：防止错误消息与交换机上的新mydlink插头"
+            },
             "1.1.5": {
                 "en": "Add: support for DCH-S160 water detector added (needs polling, linke motion detector).",
                 "de": "Hinzufügen: Unterstützung für DCH-S160 Wasserdetektor hinzugefügt (muss abgefragt werden, linker Bewegungsmelder).",
@@ -222,10 +234,6 @@
             "0.0.7": {
                 "en": "added info.connection state, silenced repeated error messages",
                 "de": "info.connection state hinzugefügt, wiederholte Fehlermeldungen unterdrückt"
-            },
-            "0.0.6": {
-                "en": "prevent removement of custom details in objects",
-                "de": "verhindere, dass eingestellte details an Objekten überschrieben werden"
             }
         },
         "title": "mydlink",
