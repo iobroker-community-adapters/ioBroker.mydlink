@@ -62,7 +62,7 @@ Now you should enter `TELNET` as Pin and the adapter will retrieve the required 
 	### __WORK IN PROGRESS__
 	npm install @alcalzone/release-script
 -->
-### __WORK IN PROGRESS__
+### 1.1.7 (2020-10-09)
 * fixed: prevent error message with new mydlink plugs on switch
 
 ### 1.1.6 (2020-10-09)
