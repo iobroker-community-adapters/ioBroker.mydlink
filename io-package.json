@@ -286,7 +286,7 @@
         ],
         "plugins": {
             "sentry": {
-                "dsn": "https://f3bd9039fcf9447a97efcc52d8f8b349@o377092.ingest.sentry.io/5198728",
+                "dsn": "https://9fb94599ef264055b318c7a06962af3e@sentry.iobroker.net/104",
                 "pathWhitelist": [
                     "@iobroker",
                     "iobroker.js-controller",
