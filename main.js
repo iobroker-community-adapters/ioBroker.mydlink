@@ -418,7 +418,7 @@ class DlinkSmarthome extends utils.Adapter {
                     ip: device.ip,
                     pin: device.pin,
                     keepAlive: 5,
-                    useTelnetForToken: device.pin === 'TELNET',
+                    useTelnetForToken: device.pin.toUpperCase() === 'TELNET',
                     log: console.debug
                 });
             } else {
