@@ -39,3 +39,4 @@ tests.unit(path.join(__dirname, '..'), {
         adapter.getDevicesAsync.returns(Promise.resolve([]));
     }
 });
+
