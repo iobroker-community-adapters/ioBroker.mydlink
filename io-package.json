@@ -247,11 +247,27 @@
         "title": "mydlink",
         "titleLang": {
             "en": "mydlink",
-            "de": "mydlink"
+            "de": "mydlink",
+            "ru": "mydlink",
+            "pt": "mydlink",
+            "nl": "mydlink",
+            "fr": "mydlink",
+            "it": "mydlink",
+            "es": "mydlink",
+            "pl": "mydlink",
+            "zh-cn": "mydlink"
         },
         "desc": {
             "en": "connects mydlink plugs and sensors to ioBroker",
-            "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker"
+            "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker",
+            "ru": "подключает разъемы и датчики mydlink к ioBroker",
+            "pt": "conecta plugues e sensores do mydlink ao ioBroker",
+            "nl": "verbindt mydlink-stekkers en sensoren met ioBroker",
+            "fr": "connecte les connecteurs et capteurs mydlink à ioBroker",
+            "it": "collega connettori e sensori mydlink a ioBroker",
+            "es": "conecta enchufes y sensores mydlink a ioBroker",
+            "pl": "łączy wtyczki i czujniki mydlink z ioBroker",
+            "zh-cn": "将mydlink插头和传感器连接到ioBroker"
         },
         "authors": [
             "Garfonso <garfonso@mobo.info>"
@@ -281,7 +297,7 @@
         "messagebox": true,
         "dependencies": [
             {
-                "js-controller": ">=1.5.11"
+                "js-controller": ">=2.0.0"
             }
         ],
         "plugins": {
@@ -306,6 +322,14 @@
     },
     "objects": [],
     "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
         {
             "_id": "info.connection",
             "type": "state",
