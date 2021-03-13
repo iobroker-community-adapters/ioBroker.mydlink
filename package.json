@@ -22,7 +22,7 @@
     "axios": "^0.21.1",
     "dlink_websocketclient": "^0.4.1",
     "mdns-discovery": "^0.2.6",
-    "xmldom": "^0.4.0"
+    "xmldom": "^0.5.0"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^1.8.3",
