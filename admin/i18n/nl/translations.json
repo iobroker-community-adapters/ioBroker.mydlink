@@ -1,9 +1,9 @@
 {
     "Add": "Toevoegen",
-    "Close": "Sluiten",
+    "Close": "Sluiten zodra klaar",
     "ConfiguredDevices": "Geconfigureerde apparaten",
     "Error": "Fout",
-    "active": "Active",
+    "active": "Actief",
     "addAutoDevice": "Voeg gedetecteerd apparaat toe",
     "addByIP": "Toevoegen via IP",
     "addIpDevice": "Voeg apparaat toe via IP",
