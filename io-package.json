@@ -279,12 +279,14 @@
         "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
         "loglevel": "info",
         "mode": "daemon",
-        "type": "hardware",
+        "type": "iot-systems",
         "connectionType": "local",
         "dataSource": "poll",
         "keywords": [
             "mydlink",
-            "dsp-w215"
+            "dsp-w215",
+            "dsp-w115",
+            "dch-s150"
         ],
         "docs": {
             "de": "docs/de/README.md",
