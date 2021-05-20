@@ -71,6 +71,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 -->
 ### __WORK IN PROGRESS__
 * added: `telnet` token is now case insensitive
+* fixed: prevent object missing warning on new devices
 
 ### 1.1.7 (2020-10-09)
 * fixed: prevent error message with new mydlink plugs on switch
