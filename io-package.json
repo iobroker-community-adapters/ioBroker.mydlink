@@ -257,6 +257,7 @@
             "pl": "mydlink",
             "zh-cn": "mydlink"
         },
+        "tier": 2,
         "desc": {
             "en": "connects mydlink plugs and sensors to ioBroker",
             "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker",
