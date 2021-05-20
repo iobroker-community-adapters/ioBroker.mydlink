@@ -725,6 +725,9 @@ class DlinkSmarthome extends utils.Adapter {
                 this.log.info('Duplicate entry for ' + device.mac + ' in config. Trying to rectify. Restart will happen. Affected devices: ' + device.name + ' === ' + configDevice.name);
                 needUpdateConfig = true;
             } else {
+                //make sure objects are created:
+                await this.createNewDevice(device);
+
                 haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
                 //call this here again, to make sure it happens.
                 await this.createNewDevice(device); //store device settings
