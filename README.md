@@ -3,10 +3,10 @@
 
 [![NPM version](https://img.shields.io/npm/v/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
-[![Dependency Status](https://status.david-dm.org/gh/iobroker-community-adapters/iobroker.mydlink.svg)](https://david-dm.org/iobroker-community-adapters/iobroker.mydlink)
-[![Translation status](https://weblate.iobroker.net/widgets/adapters/-/mydlink/svg-badge.svg)](https://weblate.iobroker.net/engage/adapters/?utm_source=widget)
 ![Number of Installations (latest)](https://iobroker.live/badges/mydlink-installed.svg)
 ![Number of Installations (stable)](https://iobroker.live/badges/mydlink-stable.svg)
+[![Dependency Status](https://status.david-dm.org/gh/iobroker-community-adapters/iobroker.mydlink.svg)](https://david-dm.org/iobroker-community-adapters/iobroker.mydlink)
+[![Translation status](https://weblate.iobroker.net/widgets/adapters/-/mydlink/svg-badge.svg)](https://weblate.iobroker.net/engage/adapters/?utm_source=widget)
 
 [![NPM](https://nodei.co/npm/iobroker.mydlink.png?downloads=true)](https://nodei.co/npm/iobroker.mydlink/)
 
