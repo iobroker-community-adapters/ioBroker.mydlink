@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.8",
+        "version": "1.1.9",
         "news": {
+            "1.1.9": {
+                "en": "updated translations",
+                "de": "aktualisierte Übersetzungen",
+                "ru": "обновленные переводы",
+                "pt": "traduções atualizadas",
+                "nl": "bijgewerkte vertalingen",
+                "fr": "traductions mises à jour",
+                "it": "traduzioni aggiornate",
+                "es": "traducciones actualizadas",
+                "pl": "zaktualizowane tłumaczenia",
+                "zh-cn": "更新的翻译"
+            },
             "1.1.8": {
                 "en": "added: `telnet` token is now case insensitive\nfixed: prevent object missing warning on new devices",
                 "de": "hinzugefügt: `Telnet` Token ist jetzt unabhängig von Groß- und Kleinschreibung\nbehoben: Verhindert, dass auf neuen Geräten eine Warnung zum Fehlen eines Objekts angezeigt wird",
@@ -230,18 +242,6 @@
                 "es": "* Se corrigieron posibles bloqueos en los errores de red.",
                 "pl": "* Naprawiono potencjalne awarie błędów sieci.",
                 "zh-cn": "*修复了因网络错误而导致的潜在崩溃。"
-            },
-            "1.0.1": {
-                "en": "* Re-added device config to adapter config (in case objects get deleted).",
-                "de": "* Die Gerätekonfiguration wurde erneut zur Adapterkonfiguration hinzugefügt (falls Objekte gelöscht werden).",
-                "ru": "* Повторно добавлена конфигурация устройства в конфигурацию адаптера (на случай, если объекты будут удалены).",
-                "pt": "* Adicionou novamente a configuração do dispositivo à configuração do adaptador (caso os objetos sejam excluídos).",
-                "nl": "* Apparaatconfiguratie opnieuw toegevoegd aan adapterconfiguratie (voor het geval objecten worden verwijderd).",
-                "fr": "* Ajout de la configuration du périphérique à la configuration de l'adaptateur (au cas où les objets seraient supprimés).",
-                "it": "* Re-aggiunto la configurazione del dispositivo alla configurazione dell'adattatore (nel caso in cui gli oggetti vengano eliminati).",
-                "es": "* Se volvió a agregar la configuración del dispositivo a la configuración del adaptador (en caso de que los objetos se eliminen).",
-                "pl": "* Ponownie dodano konfigurację urządzenia do konfiguracji adaptera (w przypadku usunięcia obiektów).",
-                "zh-cn": "*将设备配置重新添加到适配器配置（以防对象被删除）。"
             }
         },
         "title": "mydlink",

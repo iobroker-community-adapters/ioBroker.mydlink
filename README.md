@@ -69,7 +69,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	### __WORK IN PROGRESS__
 	npm install @alcalzone/release-script
 -->
-### __WORK IN PROGRESS__
+### 1.1.9 (2021-05-23)
 * updated translations
 
 ### 1.1.8 (2021-05-20)
