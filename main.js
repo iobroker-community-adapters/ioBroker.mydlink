@@ -25,7 +25,7 @@ const deviceFlags = require('./lib/deviceFlags');
 const createSoapClient = require('./lib/soapclient.js');
 const WebSocketClient = require('dlink_websocketclient');
 
-const readySuffix = '.ready';
+const unreachableSuffix = '.unreachable';
 const enabledSuffix = '.enabled';
 const stateSuffix = '.state';
 const powerSuffix = '.currentPower';
@@ -259,7 +259,7 @@ class DlinkSmarthome extends utils.Adapter {
                 common: {
                     name: 'state',
                     type: 'boolean',
-                    role: 'indicator',
+                    role: 'sensor.motion',
                     read: true,
                     write: false
                 },
@@ -270,17 +270,18 @@ class DlinkSmarthome extends utils.Adapter {
         }
 
         //have ready indicator:
-        await this.setObjectNotExistsAsync(device.id + readySuffix, {
+        await this.setObjectNotExistsAsync(device.id + unreachableSuffix, {
             type: 'state',
             common: {
-                name: 'ready',
+                name: 'unreach',
                 type: 'boolean',
-                role: 'indicator',
+                role: 'indicator.maintenance.unreach',
                 read: true,
                 write: false
             },
             native: {}
         });
+        await this.delObjectAsync(device.id + '.ready');
     }
 
     /**
@@ -574,7 +575,7 @@ class DlinkSmarthome extends utils.Adapter {
      * @param {Object|undefined} [err] possible error object
      */
     async errorHandler(device, code, err) {
-        await this.setStateAsync(device.id + readySuffix, false, true);
+        await this.setStateAsync(device.id + unreachableSuffix, true, true);
         if (code || err) {
             this.log.debug(device.name + ': Socket error: ' + code + ' - ' + err ? err.stack : err);
         } else {
@@ -631,7 +632,7 @@ class DlinkSmarthome extends utils.Adapter {
                 //error handling:
                 device.client.on('error', (code, error) => this.errorHandler(device, code, error));
                 device.client.on('close', () => this.errorHandler(device));
-                await this.setStateAsync(device.id + readySuffix, true, true);
+                await this.setStateAsync(device.id + unreachableSuffix, false, true);
                 device.ready = true;
                 this.log.debug('Setup device event listener.');
             } else {
@@ -766,9 +767,10 @@ class DlinkSmarthome extends utils.Adapter {
      * Poll a value, compare it to the value already set and if different, set value in DB.
      * @param pollFunc - function to use for polling / or set state
      * @param id - state Id
+     * @param {{number: boolean, invert: boolean}} [flags] convert to number or invert boolean
      * @returns {Promise<boolean>} //true if change did happen.
      */
-    async pollAndSetState(pollFunc, id, number = false) {
+    async pollAndSetState(pollFunc, id, flags = {number: false, invert: false}) {
         let value = await pollFunc();
         if (value === 'ERROR') {
             //something went wrong... maybe can not read that setting at all?
@@ -777,8 +779,12 @@ class DlinkSmarthome extends utils.Adapter {
             value = false;
         } else if (value === 'true') {
             value = true;
-        } else if (typeof value === 'string' && number) {
+        } else if (typeof value === 'string' && flags.number) {
             value = Number(value); //prevent wrong type warnings.
+        }
+
+        if (flags.invert) {
+            value = !value;
         }
 
         const result = await this.setStateChangedAsync(id, value, true);
@@ -825,7 +831,7 @@ class DlinkSmarthome extends utils.Adapter {
                 await this.identifyDevice(device);
             }
             if (device.loggedIn && device.identified) {
-                await this.pollAndSetState(device.client.isDeviceReady, device.id + readySuffix);
+                await this.pollAndSetState(device.client.isDeviceReady, device.id + unreachableSuffix, {invert: true});
                 //poll ready will throw error if not ready.
                 device.ready = true;
                 await this.setStateChangedAsync('info.connection', true, true);
@@ -850,13 +856,13 @@ class DlinkSmarthome extends utils.Adapter {
                     }
                 }
                 if (device.flags.hasTemp) {
-                    await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix, true);
+                    await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix, {number: true});
                 }
                 if (device.flags.hasPower) {
-                    await this.pollAndSetState(device.client.consumption, device.id + powerSuffix, true);
+                    await this.pollAndSetState(device.client.consumption, device.id + powerSuffix, {number: true});
                 }
                 if (device.flags.hasTotalPower) {
-                    await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix, true);
+                    await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix, {number: true});
                 }
                 //this.log.debug('Polling of ' + device.name + ' finished.');
             }
@@ -867,7 +873,7 @@ class DlinkSmarthome extends utils.Adapter {
             }
             this.log.debug('Error during polling ' + device.name + ': ' + code + ' - ' + e.stack + ' - ' + e.body);
             device.ready = false;
-            await this.setStateChangedAsync(device.id + readySuffix, false, true);
+            await this.setStateChangedAsync(device.id + unreachableSuffix, true, true);
 
             let connected = false;
             this.devices.forEach((device) => { connected = connected || device.ready; }); //turn green if at least one device is ready = reachable.
