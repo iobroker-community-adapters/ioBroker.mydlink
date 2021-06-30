@@ -274,7 +274,7 @@ class DlinkSmarthome extends utils.Adapter {
             type: 'state',
             common: {
                 name: 'ready',
-                type: 'number',
+                type: 'boolean',
                 role: 'indicator',
                 read: true,
                 write: false
