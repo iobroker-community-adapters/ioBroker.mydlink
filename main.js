@@ -483,7 +483,7 @@ class DlinkSmarthome extends utils.Adapter {
         const native = configDevice.native;
 
         //internal configuration:
-        const device = {
+        return {
             client: {}, //filled later
             ip: /** @type {string} */ (native.ip),
             pin: (native.mac && !native.pinNotEncrypted) ? decrypt(this.secret, native.pin) : /** @type {string} **/ (native.pin),
@@ -502,8 +502,6 @@ class DlinkSmarthome extends utils.Adapter {
             enabled: /** @type {boolean} */ (native.enabled),
             useWebSocket: /** @type {boolean} */ (native.useWebSocket)
         };
-
-        return device;
     }
 
     /**
@@ -514,7 +512,7 @@ class DlinkSmarthome extends utils.Adapter {
      */
     createDeviceFromIpAndPin(ip, pin) {
         //internal configuration:
-        const device = {
+        return {
             client: {}, //filled later
             ip: ip,
             pin: pin,
@@ -533,8 +531,6 @@ class DlinkSmarthome extends utils.Adapter {
             enabled: true,
             useWebSocket: false
         };
-
-        return device;
     }
 
     /**
@@ -545,7 +541,7 @@ class DlinkSmarthome extends utils.Adapter {
      */
     createDeviceFromTable(tableDevice, doDecrypt = false) {
         //internal configuration:
-        const device = {
+        return {
             client: {}, //filled later
             ip: tableDevice.ip,
             pin: doDecrypt && tableDevice.mac ? decrypt(this.secret, tableDevice.pin) : tableDevice.pin,
@@ -564,8 +560,6 @@ class DlinkSmarthome extends utils.Adapter {
             enabled: tableDevice.enabled,
             useWebSocket: false
         };
-
-        return device;
     }
 
     /**
@@ -767,7 +761,7 @@ class DlinkSmarthome extends utils.Adapter {
      * Poll a value, compare it to the value already set and if different, set value in DB.
      * @param pollFunc - function to use for polling / or set state
      * @param id - state Id
-     * @param {{number: boolean, invert: boolean}} [flags] convert to number or invert boolean
+     * @param {Record<string, boolean>} [flags] convert to number or invert boolean
      * @returns {Promise<boolean>} //true if change did happen.
      */
     async pollAndSetState(pollFunc, id, flags = {number: false, invert: false}) {
@@ -901,7 +895,6 @@ class DlinkSmarthome extends utils.Adapter {
 
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
-     * @param {() => void} callback
      */
     onUnload(callback) {
         try {
