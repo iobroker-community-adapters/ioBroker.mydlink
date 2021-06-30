@@ -66,9 +66,12 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 ## Changelog
 <!-- 
 	Placeholder for next versions (this needs to be indented):
-	### __WORK IN PROGRESS__
+	### **WORK IN PROGRESS**
 	npm install @alcalzone/release-script
 -->
+### **WORK IN PROGRESS**
+* fix type warnings
+
 ### 1.1.9 (2021-05-23)
 * updated translations
 
