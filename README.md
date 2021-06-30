@@ -71,6 +71,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 -->
 ### **WORK IN PROGRESS**
 * fix type warnings
+* updated translations and dependencies
 
 ### 1.1.9 (2021-05-23)
 * updated translations
