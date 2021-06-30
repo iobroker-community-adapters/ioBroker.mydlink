@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.10",
+        "version": "1.1.11",
         "news": {
+            "1.1.11": {
+                "en": "adjusted types & roles to type-detector.",
+                "de": "Angepasste Typen & Rollen an Typ-Detektor.",
+                "ru": "скорректированные типы и роли для детектора типа.",
+                "pt": "tipos e funções ajustados para detector de tipo.",
+                "nl": "aangepaste typen & rollen naar type-detector.",
+                "fr": "types et rôles ajustés au détecteur de type.",
+                "it": "tipi e ruoli adattati al tipo-rilevatore.",
+                "es": "tipos y roles ajustados al detector de tipos.",
+                "pl": "dostosowane typy i role do detektora typów.",
+                "zh-cn": "将类型和角色调整为类型检测器。"
+            },
             "1.1.10": {
                 "en": "fix type warnings\nupdated translations and dependencies",
                 "de": "Typwarnungen beheben\naktualisierte Übersetzungen und Abhängigkeiten",
@@ -230,18 +242,6 @@
                 "es": "* Conexión mejorada keepAlive\r\n* Registro mejorado de errores de red",
                 "pl": "* Ulepszone połączenie keepAlive\r\n* Ulepszone rejestrowanie błędów sieciowych",
                 "zh-cn": "*改进的连接keepAlive\r\n*改进的网络错误记录"
-            },
-            "1.0.3": {
-                "en": "* Fixed login/identification loop on (possibly) duplicate devices",
-                "de": "* Anmelde- / Identifikationsschleife bei (möglicherweise) doppelten Geräten behoben",
-                "ru": "* Исправлена ошибка входа / идентификации на (возможно) дублирующих устройствах",
-                "pt": "* Corrigido loop de login / identificação em (possivelmente) dispositivos duplicados",
-                "nl": "* Vaste login / identificatielus op (mogelijk) dubbele apparaten",
-                "fr": "* Boucle de connexion / identification fixe sur (éventuellement) les appareils en double",
-                "it": "* Corretto il loop di login / identificazione su dispositivi (possibilmente) duplicati",
-                "es": "* Se corrigió el bucle de inicio de sesión / identificación en (posiblemente) dispositivos duplicados",
-                "pl": "* Naprawiono pętlę logowania / identyfikacji na (ewentualnie) zduplikowanych urządzeniach",
-                "zh-cn": "*修复（可能）重复设备上的登录/标识循环"
             }
         },
         "title": "mydlink",
