@@ -768,7 +768,7 @@ class DlinkSmarthome extends utils.Adapter {
      * @param id - state Id
      * @returns {Promise<boolean>} //true if change did happen.
      */
-    async pollAndSetState(pollFunc, id) {
+    async pollAndSetState(pollFunc, id, number = false) {
         let value = await pollFunc();
         if (value === 'ERROR') {
             //something went wrong... maybe can not read that setting at all?
@@ -777,6 +777,8 @@ class DlinkSmarthome extends utils.Adapter {
             value = false;
         } else if (value === 'true') {
             value = true;
+        } else if (typeof value === 'string' && number) {
+            value = Number(value); //prevent wrong type warnings.
         }
 
         const result = await this.setStateChangedAsync(id, value, true);
@@ -848,13 +850,13 @@ class DlinkSmarthome extends utils.Adapter {
                     }
                 }
                 if (device.flags.hasTemp) {
-                    await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix);
+                    await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix, true);
                 }
                 if (device.flags.hasPower) {
-                    await this.pollAndSetState(device.client.consumption, device.id + powerSuffix);
+                    await this.pollAndSetState(device.client.consumption, device.id + powerSuffix, true);
                 }
                 if (device.flags.hasTotalPower) {
-                    await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix);
+                    await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix, true);
                 }
                 //this.log.debug('Polling of ' + device.name + ' finished.');
             }
