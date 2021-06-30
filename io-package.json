@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.9",
+        "version": "1.1.10",
         "news": {
+            "1.1.10": {
+                "en": "fix type warnings\nupdated translations and dependencies",
+                "de": "Typwarnungen beheben\naktualisierte Übersetzungen und Abhängigkeiten",
+                "ru": "исправить предупреждения типа\nобновленные переводы и зависимости",
+                "pt": "corrigir avisos de tipo\ntraduções atualizadas e dependências",
+                "nl": "type waarschuwingen repareren\nbijgewerkte vertalingen en afhankelijkheden",
+                "fr": "avertissements de type de correction\ntraductions et dépendances mises à jour",
+                "it": "correggere gli avvisi di tipo\ntraduzioni e dipendenze aggiornate",
+                "es": "corregir advertencias de tipo\ntraducciones y dependencias actualizadas",
+                "pl": "Ostrzeżenia o poprawkach\nzaktualizowane tłumaczenia i zależności",
+                "zh-cn": "修复类型警告\n更新的翻译和依赖项"
+            },
             "1.1.9": {
                 "en": "updated translations",
                 "de": "aktualisierte Übersetzungen",
@@ -230,18 +242,6 @@
                 "es": "* Se corrigió el bucle de inicio de sesión / identificación en (posiblemente) dispositivos duplicados",
                 "pl": "* Naprawiono pętlę logowania / identyfikacji na (ewentualnie) zduplikowanych urządzeniach",
                 "zh-cn": "*修复（可能）重复设备上的登录/标识循环"
-            },
-            "1.0.2": {
-                "en": "* Fixed potential crashes on network errors.",
-                "de": "* Mögliche Abstürze bei Netzwerkfehlern behoben.",
-                "ru": "* Исправлены возможные сбои при сетевых ошибках.",
-                "pt": "* Corrigidas falhas potenciais em erros de rede.",
-                "nl": "* Mogelijke crashes bij netwerkfouten opgelost.",
-                "fr": "* Correction de plantages potentiels sur les erreurs de réseau.",
-                "it": "* Risolti potenziali arresti anomali su errori di rete.",
-                "es": "* Se corrigieron posibles bloqueos en los errores de red.",
-                "pl": "* Naprawiono potencjalne awarie błędów sieci.",
-                "zh-cn": "*修复了因网络错误而导致的潜在崩溃。"
             }
         },
         "title": "mydlink",
