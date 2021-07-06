@@ -1,4 +1,4 @@
-![Logo](admin/mydlink.png)
+<!-- ![Logo](admin/mydlink.png)-->
 # ioBroker.mydlink
 
 [![NPM version](https://img.shields.io/npm/v/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
