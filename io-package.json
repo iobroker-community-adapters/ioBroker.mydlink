@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.11",
+        "version": "1.1.12",
         "news": {
+            "1.1.12": {
+                "en": "Update translations",
+                "de": "Übersetzungen aktualisieren",
+                "ru": "Обновить переводы",
+                "pt": "Atualizar traduções",
+                "nl": "Vertalingen bijwerken",
+                "fr": "Mettre à jour les traductions",
+                "it": "Aggiorna traduzioni",
+                "es": "Actualizar traducciones",
+                "pl": "Zaktualizuj tłumaczenia",
+                "zh-cn": "更新翻译"
+            },
             "1.1.11": {
                 "en": "adjusted types & roles to type-detector.",
                 "de": "Angepasste Typen & Rollen an Typ-Detektor.",
@@ -230,18 +242,6 @@
                 "es": "* Se corrigió un posible problema con los identificadores del dispositivo.\r\n* Creación mejorada de dispositivos\r\n* Ajustado para el adaptador de descubrimiento que aún no almacena contraseñas cifradas.",
                 "pl": "* Naprawiono możliwy problem z identyfikatorami urządzeń.\r\n* Ulepszone tworzenie urządzeń\r\n* Dostosowano do adaptera wykrywania, który nie przechowuje jeszcze zaszyfrowanych haseł.",
                 "zh-cn": "*修复了设备ID可能出现的问题。\r\n*改进的设备创建\r\n*针对尚未存储加密密码的发现适配器进行了调整。"
-            },
-            "1.0.4": {
-                "en": "* Improved connection keepAlive\r\n* Improved logging of network errors",
-                "de": "* Verbesserte Verbindung keepAlive\r\n* Verbesserte Protokollierung von Netzwerkfehlern",
-                "ru": "* Улучшено соединение keepAlive\r\n* Улучшено ведение журнала сетевых ошибок",
-                "pt": "* Conexão aprimorada keepAlive\r\n* Registro aprimorado de erros de rede",
-                "nl": "* Verbeterde verbinding keepAlive\r\n* Verbeterde logging van netwerkfouten",
-                "fr": "* Connexion améliorée keepAlive\r\n* Amélioration de la journalisation des erreurs réseau",
-                "it": "* Connessione migliorata keepAlive\r\n* Registrazione degli errori di rete migliorata",
-                "es": "* Conexión mejorada keepAlive\r\n* Registro mejorado de errores de red",
-                "pl": "* Ulepszone połączenie keepAlive\r\n* Ulepszone rejestrowanie błędów sieciowych",
-                "zh-cn": "*改进的连接keepAlive\r\n*改进的网络错误记录"
             }
         },
         "title": "mydlink",
