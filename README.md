@@ -69,6 +69,9 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	### **WORK IN PROGRESS**
 	npm install @alcalzone/release-script
 -->
+### **WORK IN PROGRESS**
+* Update translations
+
 ### 1.1.11 (2021-06-30)
 * adjusted types & roles to type-detector.
 
