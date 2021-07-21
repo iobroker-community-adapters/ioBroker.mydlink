@@ -11,7 +11,7 @@
     "addresses": "Adressen, die Überwacht werden",
     "autoDetectDescription": "Die folgenden Geräte wurden erkannt. Sie müssen für die Verwendung durch ioBroker konfiguriert werden. Auf die Schaltfläche Hinzufügen klicken, um Werte in die Tabelle zu übertragen. Dann Name & Pin hinzufügen und speichern.",
     "detectedDevices": "Erkannte Geräte",
-    "enabled": "Aktiviert",
+    "enabled": "aktiviert",
     "errorDeviceDuplicate": "Fehler, zwei Geräte haben die gleiche MAC Adresse. Bitte Duplikate entfernen.",
     "errorDeviceWithoutPin": "Für mindestens ein Gerät ist keine PIN konfiguriert. Ohne PIN ist keine Steuerung möglich. Bitte entweder die PIN eingeben oder das unvollständige Gerät löschen.",
     "errorIdentify": "Gerät konnte nicht kontaktiert werden. Versuchen Sie es später erneut oder fügen Sie das Gerät manuell mit der anderen Schaltfläche hinzu.",
