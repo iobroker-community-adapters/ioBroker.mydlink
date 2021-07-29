@@ -1,4 +1,4 @@
-<!-- ![Logo](admin/mydlink.png)-->
+![Logo](admin/mydlink.png)
 # ioBroker.mydlink
 
 [![NPM version](https://img.shields.io/npm/v/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
@@ -15,7 +15,7 @@
 myDlink Adapter for ioBroker. 
 ------------------------------------------------------------------------------
 
-Allows to control power sockets or motion detectors from [D-Link](https://eu.dlink.com/uk/en/for-home/smart-home) from within ioBroker. *mydlink* is a registered trademark of DLink.
+Allows to control power sockets or motion detectors from [DLink](https://eu.dlink.com/uk/en/for-home/smart-home) from within ioBroker. *mydlink* is a registered trademark of DLink. This Software is developed by the ioBroker community and is not owned or controlled by DLink. 
 
 **This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
 This also helps with supporting new devices.
