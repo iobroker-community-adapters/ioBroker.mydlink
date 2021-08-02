@@ -281,7 +281,7 @@
         "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
         "loglevel": "info",
         "mode": "daemon",
-        "type": "iot-systems",
+        "type": "hardware",
         "connectionType": "local",
         "dataSource": "poll",
         "keywords": [
