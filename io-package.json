@@ -276,12 +276,14 @@
         "license": "MIT",
         "platform": "Javascript/Node.js",
         "icon": "mydlink.png",
+        "main": "main.js",
         "enabled": true,
         "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.mydlink/master/admin/mydlink.png",
         "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
         "loglevel": "info",
         "mode": "daemon",
-        "type": "hardware",
+        "type": "iot-systems",
+        "compact": true,
         "connectionType": "local",
         "dataSource": "poll",
         "keywords": [
@@ -294,7 +296,6 @@
             "de": "docs/de/README.md",
             "en": "docs/en/README.md"
         },
-        "compact": true,
         "materialize": true,
         "supportCustoms": false,
         "messagebox": true,

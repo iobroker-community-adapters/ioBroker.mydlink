@@ -6,6 +6,11 @@
     "name": "Garfonso",
     "email": "garfonso@mobo.info"
   },
+  "contributors": [
+    {
+      "name": "Garfonso"
+    }
+  ],
   "homepage": "https://github.com/iobroker-community-adapters/ioBroker.mydlink",
   "license": "MIT",
   "keywords": [
@@ -46,6 +51,15 @@
     "sinon-chai": "^3.7.0"
   },
   "main": "main.js",
+  "files": [
+    "admin{,/!(src)/**}/!(tsconfig|tsconfig.*).json",
+    "admin{,/!(src)/**}/*.{html,css,png,svg,jpg,js}",
+    "lib/",
+    "www/",
+    "io-package.json",
+    "LICENSE",
+    "main.js"
+  ],
   "scripts": {
     "test:js": "mocha --config test/mocharc.custom.json \"{!(node_modules|test)/**/*.test.js,*.test.js,test/**/test!(PackageFiles|Startup).js}\"",
     "test:package": "mocha test/package --exit",
