@@ -19,7 +19,7 @@
     "ipaddress": "IP Address",
     "mac": "Endereço MAC",
     "model": "Modelo",
-    "name": "Name",
+    "name": "Nome",
     "onlineMessage": "O dispositivo deve estar online",
     "pin": "IP Address",
     "pollInterval": "Polling interval[ms]",
