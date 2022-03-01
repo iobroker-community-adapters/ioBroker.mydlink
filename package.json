@@ -23,7 +23,7 @@
     "url": "https://github.com/iobroker-community-adapters/ioBroker.mydlink"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^2.5.1",
+    "@iobroker/adapter-core": "^2.6.0",
     "axios": "^0.21.2",
     "dlink_websocketclient": "^0.4.2",
     "mdns-discovery": "^0.2.6",
