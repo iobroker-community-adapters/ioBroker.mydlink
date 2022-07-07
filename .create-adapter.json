@@ -27,8 +27,7 @@
     "adminReact": "no",
     "tools": [
         "ESLint",
-        "type checking",
-        "devcontainer"
+        "type checking"
     ],
     "indentation": "Space (4)",
     "quotes": "single",
