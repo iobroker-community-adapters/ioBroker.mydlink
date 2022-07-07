@@ -41,10 +41,11 @@
     "license": "MIT License",
     "ci": "gh-actions",
     "dependabot": "yes",
-    "creatorVersion": "2.0.1",
-    "replay": "D:\\iobroker\\ioBroker.mydlink\\.create-adapter.json",
+    "creatorVersion": "2.1.1",
+    "replay": "/home/achim/development/iobroker/ioBroker.mydlink/.create-adapter.json",
     "releaseScript": "yes",
     "devServer": "yes",
     "devServerPort": 8083,
-    "defaultBranch": "master"
+    "defaultBranch": "master",
+    "i18n": "JSON"
 }
