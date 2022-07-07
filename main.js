@@ -35,6 +35,9 @@ const lastDetectedSuffix = '.lastDetected';
 const noMotionSuffix = '.no_motion';
 
 function decrypt(key, value) {
+    if (!value || !key) {
+        return value;
+    }
     let result = '';
     for (let i = 0; i < value.length; ++i) {
         result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
@@ -42,6 +45,9 @@ function decrypt(key, value) {
     return result;
 }
 function encrypt(key, value) {
+    if (!value || !key) {
+        return value;
+    }
     let result = '';
     for (let i = 0; i < value.length; ++i) {
         result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
