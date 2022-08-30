@@ -5,7 +5,6 @@
 [![Downloads](https://img.shields.io/npm/dm/iobroker.mydlink.svg)](https://www.npmjs.com/package/iobroker.mydlink)
 ![Number of Installations](https://iobroker.live/badges/mydlink-installed.svg)
 ![Current version in stable repository](https://iobroker.live/badges/mydlink-stable.svg)
-[![Dependency Status](https://img.shields.io/david/iobroker-community-adapters/iobroker.mydlink.svg)](https://david-dm.org/iobroker-community-adapters/iobroker.mydlink)
 [![Translation status](https://weblate.iobroker.net/widgets/adapters/-/mydlink/svg-badge.svg)](https://weblate.iobroker.net/engage/adapters/?utm_source=widget)
 
 [![NPM](https://nodei.co/npm/iobroker.mydlink.png?downloads=true)](https://nodei.co/npm/iobroker.mydlink/)
