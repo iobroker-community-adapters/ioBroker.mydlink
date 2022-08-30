@@ -1,6 +1,6 @@
 {
   "name": "iobroker.mydlink",
-  "version": "1.1.12",
+  "version": "1.2.0",
   "description": "connects mydlink plugs and sensors to ioBroker",
   "author": {
     "name": "Garfonso",

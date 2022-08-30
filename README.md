@@ -68,7 +68,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	### **WORK IN PROGRESS**
 	npm install @alcalzone/release-script
 -->
-### **WORK IN PROGRESS**
+### 1.2.0 (2022-08-30)
 * Update translations & dependencies
 * Add support for devices with multiple sockets
 * Allow polling for websocket devices
@@ -217,4 +217,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
