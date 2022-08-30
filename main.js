@@ -884,22 +884,24 @@ class MyDlink extends utils.Adapter {
                 await this.identifyDevice(device);
             }
             if (device.loggedIn && device.identified) {
-                await this.pollAndSetState(device.client.isDeviceReady, device.id + unreachableSuffix, {invert: true});
+                await this.pollAndSetState(device.client.isDeviceReady.bind(device.client), device.id + unreachableSuffix, {invert: true});
                 //poll ready will throw error if not ready.
                 device.ready = true;
                 await this.setStateChangedAsync('info.connection', true, true);
                 if (device.flags.canSwitchOnOff) {
                     if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
+                        const states = await device.client.state(-1); //get all socket states.
                         for (let index = 1; index <= device.flags.numSockets; index += 1) {
                             const id = device.id + stateSuffix + '_' + index;
-                            await this.pollAndSetState(device.client.state.bind(device.client, index - 1), id);
+                            const val = states[index - 1];
+                            await this.setStateChangedAsync(id, val, true);
                         }
                     } else {
-                        await this.pollAndSetState(device.client.state, device.id + stateSuffix);
+                        await this.pollAndSetState(device.client.state.bind(device.client), device.id + stateSuffix);
                     }
                 }
                 if (device.flags.hasLastDetected) {
-                    const detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
+                    const detectionHappened = await this.pollAndSetState(device.client.lastDetection.bind(device.client), device.id + lastDetectedSuffix);
                     if (detectionHappened) {
                         //always set state to true, for new detections.
                         await this.setStateAsync(device.id + stateSuffix, detectionHappened, true);
@@ -916,13 +918,13 @@ class MyDlink extends utils.Adapter {
                     }
                 }
                 if (device.flags.hasTemp) {
-                    await this.pollAndSetState(device.client.temperature, device.id + temperatureSuffix, {number: true});
+                    await this.pollAndSetState(device.client.temperature.bind(device.client), device.id + temperatureSuffix, {number: true});
                 }
                 if (device.flags.hasPower) {
-                    await this.pollAndSetState(device.client.consumption, device.id + powerSuffix, {number: true});
+                    await this.pollAndSetState(device.client.consumption.bind(device.client), device.id + powerSuffix, {number: true});
                 }
                 if (device.flags.hasTotalPower) {
-                    await this.pollAndSetState(device.client.totalConsumption, device.id + totalPowerSuffix, {number: true});
+                    await this.pollAndSetState(device.client.totalConsumption.bind(device.client), device.id + totalPowerSuffix, {number: true});
                 }
                 //this.log.debug('Polling of ' + device.name + ' finished.');
             }

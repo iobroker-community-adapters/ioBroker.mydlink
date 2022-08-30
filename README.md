@@ -70,6 +70,8 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 -->
 ### **WORK IN PROGRESS**
 * Update translations & dependencies
+* Add support for devices with multiple sockets
+* Allow polling for websocket devices
 
 ### 1.1.12 (2021-07-21)
 * Update translations
