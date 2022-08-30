@@ -24,6 +24,7 @@ const deviceFlags = require('./lib/deviceFlags');
 // const fs = require('fs');
 const createSoapClient = require('./lib/soapclient.js');
 const WebSocketClient = require('dlink_websocketclient');
+const axios = require('axios').default;
 
 const unreachableSuffix = '.unreachable';
 const enabledSuffix = '.enabled';
@@ -300,10 +301,26 @@ class MyDlink extends utils.Adapter {
         let mac;
         let canSwitch;
         if (device.useWebSocket) {
-            //is mac striped of :
+            //is mac stripped of :
             const id = device.client.getDeviceId();
             mac = id.match(/.{2}/g).join(':').toUpperCase(); //add back the :.
             canSwitch = true;
+
+            //get model from webserver / wifi-ssid:
+            const url = `http://${device.ip}/login?username=Admin&password=${device.pin}`;
+            const result = await axios.get(url);
+            if (result.status === 200) {
+                console.log(`${device.name} identify responded with ${result.data}`);
+                const startPos = result.data.indexOf('SSID: ') + 6;
+                const model = result.data.substring(startPos, startPos + 8);
+                this.log.debug('Got model ' + model + ' during identification of ' + device.name);
+                if (model !== device.model) {
+                    this.log.debug('Model updated from ' + (device.model || 'unknown') + ' to ' + model);
+                    device.model = model;
+                    //store new model in device object:
+                    await this.createNewDevice(device);
+                }
+            }
         } else {
             const settings = await device.client.getDeviceSettings();
             this.log.debug(device.name + ' returned following device settings: ' + JSON.stringify(settings, null, 2));
