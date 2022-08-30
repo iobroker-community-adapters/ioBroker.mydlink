@@ -11,7 +11,7 @@
 'use strict';
 
 /*
- * Created with @iobroker/create-adapter v1.20.0
+ * Created with @iobroker/create-adapter v2.2.0
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
@@ -90,7 +90,7 @@ function idFromMac(mac) {
  * @property {boolean} useWebSocket true if device uses webSocket client instead of soapclient.
  */
 
-class DlinkSmarthome extends utils.Adapter {
+class MyDlink extends utils.Adapter {
     /**
      * @param {Partial<utils.AdapterOptions>} [options={}]
      */
@@ -718,7 +718,7 @@ class DlinkSmarthome extends utils.Adapter {
             }
         }
 
-        //add non existing devices from config:
+        //add non-existing devices from config:
         for (const configDevice of configDevicesToAdd) {
             const device = this.createDeviceFromTable(configDevice, !configDevice.pinNotEncrypted);
             this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
@@ -1198,8 +1198,8 @@ if (require.main !== module) {
     /**
      * @param {Partial<utils.AdapterOptions>} [options={}]
      */
-    module.exports = (options) => new DlinkSmarthome(options);
+    module.exports = (options) => new MyDlink(options);
 } else {
     // otherwise start the instance directly
-    new DlinkSmarthome();
+    new MyDlink();
 }
