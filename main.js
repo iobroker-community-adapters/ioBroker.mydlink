@@ -86,7 +86,7 @@ function idFromMac(mac) {
  * @property {number} pollInterval configured pollInterval in milliseconds
  * @property {NodeJS.Timeout|undefined} intervalHandle handle of interval
  * @property {string} model Model name of hardware device
- * @property {Record<string, boolean>} flags determine what features the hardware has
+ * @property {Record<string, boolean | number>} flags determine what features the hardware has
  * @property {boolean} enabled true if device should be talked too.
  * @property {boolean} useWebSocket true if device uses webSocket client instead of soapclient.
  */
@@ -153,29 +153,6 @@ class MyDlink extends utils.Adapter {
                 model: device.model,
                 useWebSocket: device.useWebSocket
             }
-        });
-        //create state object, for plug this is writable for sensor not.
-        await this.setObjectNotExistsAsync(device.id + stateSuffix, {
-            type: 'state',
-            common: {
-                name: 'state',
-                type: 'boolean',
-                role: 'switch',
-                read: true,
-                write: true
-            },
-            native: {}
-        });
-        await this.setObjectNotExistsAsync(device.id + enabledSuffix, {
-            type: 'state',
-            common: {
-                name: 'enabled',
-                type: 'boolean',
-                role: 'indicator',
-                read: true,
-                write: false
-            },
-            native: {}
         });
     }
 
@@ -259,22 +236,66 @@ class MyDlink extends utils.Adapter {
             });
         }
 
-        if (!device.flags.canSwitchOnOff) {
-            this.log.debug('Changing state to indicator for ' + device.name);
-            await this.extendObjectAsync(device.id + stateSuffix, {
-                type: 'state',
-                common: {
-                    name: 'state',
-                    type: 'boolean',
-                    role: 'sensor.motion',
-                    read: true,
-                    write: false
-                },
-                native: {}
-            });
+        if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
+            await this.delObjectAsync(device.id + stateSuffix);
+            for (let index = 1; index <= device.flags.numSockets; index += 1) {
+                const id = device.id + stateSuffix + '_' + index;
+                await this.setObjectNotExistsAsync(id, {
+                    type: 'state',
+                    common: {
+                        name: 'Socket ' + index,
+                        type: 'boolean',
+                        role: 'switch',
+                        read: true,
+                        write: true
+                    },
+                    native: { index: index }
+                });
+                await this.subscribeStatesAsync(id);
+            }
         } else {
-            await this.subscribeStatesAsync(device.id + stateSuffix);
+            if (device.flags.canSwitchOnOff) {
+                //create state object, for plug this is writable for sensor not.
+                await this.setObjectNotExistsAsync(device.id + stateSuffix, {
+                    type: 'state',
+                    common: {
+                        name: 'state',
+                        type: 'boolean',
+                        role: 'switch',
+                        read: true,
+                        write: true
+                    },
+                    native: {}
+                });
+                await this.subscribeStatesAsync(device.id + stateSuffix);
+
+            } else {
+                await this.setObjectNotExistsAsync(device.id + stateSuffix, {
+                    type: 'state',
+                    common: {
+                        name: 'state',
+                        type: 'boolean',
+                        role: 'sensor.motion',
+                        read: true,
+                        write: false
+                    },
+                    native: {}
+                });
+            }
         }
+
+        //enabled indicator:
+        await this.setObjectNotExistsAsync(device.id + enabledSuffix, {
+            type: 'state',
+            common: {
+                name: 'enabled',
+                type: 'boolean',
+                role: 'indicator',
+                read: true,
+                write: false
+            },
+            native: {}
+        });
 
         //have ready indicator:
         await this.setObjectNotExistsAsync(device.id + unreachableSuffix, {
@@ -288,7 +309,7 @@ class MyDlink extends utils.Adapter {
             },
             native: {}
         });
-        await this.delObjectAsync(device.id + '.ready');
+        await this.delObjectAsync(device.id + '.ready'); //remove old .ready state -> now .unreachable as per ioBroker logic.
     }
 
     /**
@@ -458,8 +479,15 @@ class MyDlink extends utils.Adapter {
 
             const loginResult = await device.client.login();
             if (device.useWebSocket) {
-                const state = await device.client.state();
-                await this.setStateChangedAsync(device.id + stateSuffix, state, true);
+                if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
+                    for (let index = 1; index < device.flags.numSockets; index += 1) {
+                        const state = await device.client.state(index - 1);
+                        await this.setStateChangedAsync(device.id + stateSuffix + '_' + index, state, true);
+                    }
+                } else {
+                    const state = await device.client.state();
+                    await this.setStateChangedAsync(device.id + stateSuffix, state, true);
+                }
             }
 
             if (loginResult === true) {
@@ -644,9 +672,13 @@ class MyDlink extends utils.Adapter {
         if (device.enabled) {
             if (device.useWebSocket) {
                 //event listener:
-                device.client.on('switched', val => {
-                    this.log.debug('Event from device.');
-                    this.setStateAsync(device.id + stateSuffix, val, true);
+                device.client.on('switched', (val, socket) => {
+                    this.log.debug(`Event from device ${socket} now ${val}`);
+                    if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
+                        this.setStateAsync(device.id + stateSuffix + '_' + (socket + 1), val, true);
+                    } else {
+                        this.setStateAsync(device.id + stateSuffix, val, true);
+                    }
                 });
                 //error handling:
                 device.client.on('error', (code, error) => this.errorHandler(device, code, error));
@@ -786,7 +818,7 @@ class MyDlink extends utils.Adapter {
     /**
      * Poll a value, compare it to the value already set and if different, set value in DB.
      * @param pollFunc - function to use for polling / or set state
-     * @param id - state Id
+     * @param id - full or local id.
      * @param {Record<string, boolean>} [flags] convert to number or invert boolean
      * @returns {Promise<boolean>} //true if change did happen.
      */
@@ -856,7 +888,14 @@ class MyDlink extends utils.Adapter {
                 device.ready = true;
                 await this.setStateChangedAsync('info.connection', true, true);
                 if (device.flags.canSwitchOnOff) {
-                    await this.pollAndSetState(device.client.state, device.id + stateSuffix);
+                    if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
+                        for (let index = 1; index <= device.flags.numSockets; index += 1) {
+                            const id = device.id + stateSuffix + '_' + index;
+                            await this.pollAndSetState(device.client.state.bind(device.client, index - 1), id);
+                        }
+                    } else {
+                        await this.pollAndSetState(device.client.state, device.id + stateSuffix);
+                    }
                 }
                 if (device.flags.hasLastDetected) {
                     const detectionHappened = await this.pollAndSetState(device.client.lastDetection, device.id + lastDetectedSuffix);
@@ -974,7 +1013,7 @@ class MyDlink extends utils.Adapter {
             //find devices:
             for (const device of this.devices) {
                 const devId = this.namespace + '.' + device.id + stateSuffix;
-                if (id === devId) {
+                if (id.startsWith(devId)) {
                     //found device:
                     this.log.debug('Found device to switch.');
 
@@ -982,9 +1021,13 @@ class MyDlink extends utils.Adapter {
                         if (!device.loggedIn) {
                             await this.loginDevice(device);
                         }
-                        await device.client.switch(state.val);
-                        this.log.debug('Switched ' + device.name + (state.val ? ' on.' : ' off.'));
-                        await this.pollAndSetState(device.client.state.bind(device.client), device.id + stateSuffix);
+                        let socket = 0;
+                        if (id !== devId) {
+                            socket = Number(devId.substring(devId.lastIndexOf('_') + 1)) - 1; //convert to 0 based index here.
+                        }
+                        await device.client.switch(state.val, socket);
+                        this.log.debug(`Switched Socket ${socket} of ${device.name} ${state.val ? 'on' : 'off'}.`);
+                        await this.pollAndSetState(device.client.state.bind(device.client, socket), id); //can be full id here.
                     } catch(e) {
                         const code = this.processNetworkError(e);
                         if (code === 403) {
