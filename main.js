@@ -331,9 +331,11 @@ class MyDlink extends utils.Adapter {
             const url = `http://${device.ip}/login?username=Admin&password=${device.pin}`;
             const result = await axios.get(url);
             if (result.status === 200) {
-                console.log(`${device.name} identify responded with ${result.data}`);
                 const startPos = result.data.indexOf('SSID: ') + 6;
                 const model = result.data.substring(startPos, startPos + 8);
+                if (!model) {
+                    this.log.warn(`${device.name} identify responded with unknown result, please report: ${result.data}`);
+                }
                 this.log.debug('Got model ' + model + ' during identification of ' + device.name);
                 if (model !== device.model) {
                     this.log.debug('Model updated from ' + (device.model || 'unknown') + ' to ' + model);
@@ -417,6 +419,19 @@ class MyDlink extends utils.Adapter {
             }
         }
 
+        if (device.useWebSocket) {
+            //get first status here, after model is known:
+            if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
+                const states = await device.client.state(-1); //get all states.
+                for (let index = 1; index <= device.flags.numSockets; index += 1) {
+                    await this.setStateChangedAsync(device.id + stateSuffix + '_' + index, states[index -1], true);
+                }
+            } else {
+                const state = await device.client.state();
+                await this.setStateChangedAsync(device.id + stateSuffix, state, true);
+            }
+        }
+
         await this.createObjects(device);
         device.identified = true;
         return device;
@@ -478,18 +493,6 @@ class MyDlink extends utils.Adapter {
             }
 
             const loginResult = await device.client.login();
-            if (device.useWebSocket) {
-                if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
-                    for (let index = 1; index < device.flags.numSockets; index += 1) {
-                        const state = await device.client.state(index - 1);
-                        await this.setStateChangedAsync(device.id + stateSuffix + '_' + index, state, true);
-                    }
-                } else {
-                    const state = await device.client.state();
-                    await this.setStateChangedAsync(device.id + stateSuffix, state, true);
-                }
-            }
-
             if (loginResult === true) {
                 this.log.debug(device.name + ' successfully logged in. ' + loginResult);
                 device.loggedIn = true;
