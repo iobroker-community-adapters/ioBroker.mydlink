@@ -687,22 +687,23 @@ class MyDlink extends utils.Adapter {
                 await this.setStateAsync(device.id + unreachableSuffix, false, true);
                 device.ready = true;
                 this.log.debug('Setup device event listener.');
-            } else {
-                let interval = device.pollInterval;
-                if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
-                    this.log.debug('Start polling for ' + device.name + ' with interval ' + interval);
-                    result = true; //only use yellow/green states if polling at least one device.
-                    if (interval < 500) {
-                        this.log.warn('Increasing poll rate to twice per second. Please check device config.');
-                        interval = 500; //polling twice every second should be enough, right?
-                    }
-                    device.pollInterval = interval;
-                    // @ts-ignore
-                    device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
-                        device.pollInterval);
-                } else {
-                    this.log.debug('Polling of ' + device.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
+            }
+
+            //some devices, for example W245, don't push.. so poll websocket also.
+            let interval = device.pollInterval;
+            if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
+                this.log.debug('Start polling for ' + device.name + ' with interval ' + interval);
+                result = true; //only use yellow/green states if polling at least one device.
+                if (interval < 500) {
+                    this.log.warn('Increasing poll rate to twice per second. Please check device config.');
+                    interval = 500; //polling twice every second should be enough, right?
                 }
+                device.pollInterval = interval;
+                // @ts-ignore
+                device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
+                    device.pollInterval);
+            } else {
+                this.log.debug('Polling of ' + device.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
             }
         }
 
