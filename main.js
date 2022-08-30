@@ -1080,62 +1080,60 @@ class MyDlink extends utils.Adapter {
         if (entry.name === '_dcp._tcp.local') {
             this.log.debug('Maybe detected websocket device');
             console.log(entry);
-            const device = this.devices.find(device => device.ip === entry.ip);
             //get model:
             let model;
             if (entry.PTR && entry.PTR.data) {
                 model = entry.PTR.data.substring(0, 8);
             }
-            if (device) {
-                if (model && !device.model && device.useWebSocket) {
-                    this.log.debug('Updated model to ' + model);
-                    device.model = model;
-                    await this.createNewDevice(device); //store model in config.
+
+            //somehow I get records for devices from wrong IP.. or they report devices, they detect under their IP?? not sure...
+            //let's connect here and get the MAC -> so we can securely identify the device.
+            //then decide if it is a new one (update & present in UI) or an old one (ignore for now).
+            const newDevice = this.createDeviceFromIpAndPin(entry.ip, 'INVALID');
+            newDevice.model = model;
+            newDevice.client = new WebSocketClient({
+                ip: newDevice.ip,
+                pin: newDevice.pin,
+                useTelnetForToken: false,
+                log: console.debug
+            });
+
+            try {
+                await newDevice.client.login();
+                newDevice.id = newDevice.client.getDeviceId().toUpperCase();
+                if (newDevice.id) {
+                    // @ts-ignore
+                    newDevice.mac = newDevice.id.match(/.{2}/g).join(':');
+                    this.log.debug(`Got websocket device ${model} on ${newDevice.ip}`);
                 }
+            } catch (e) {
+                this.log.debug('Could not identify websocket device: ' + e.stack);
+            } finally {
+                this.stopDevice(newDevice);
+            }
+
+            //now use mac to check if we already now that device:
+            const device = this.devices.find(device => device.mac === entry.mac);
+            if (device) {
+                this.log.debug(`Device was already present as ${device.model} on ${device.ip}`);
+                if (device.ip === newDevice.ip && device.model !== newDevice.model) {
+                    this.log.debug(`Model still differs? ${device.model} != ${newDevice.model}`);
+                    if (model && device.useWebSocket) {
+                        this.log.debug('Updated model to ' + model);
+                        device.model = model;
+                        await this.createNewDevice(device); //store model in config.
+                    }
+                }
+            } else { //not known yet, add to detected devices:
                 this.detectedDevices[entry.ip] = {
-                    ip: device.ip,
+                    ip: newDevice.ip,
                     name: entry.name,
                     type: model,
-                    mac: device.mac,
+                    mac: newDevice.mac,
                     mydlink: true,
                     useWebSocket: true,
                     alreadyPresent: !!device
                 };
-                this.log.debug('Device ' + model + ' at ' + device.ip + ' already present.');
-            } else {
-                if (!this.detectedDevices[entry.ip] || !this.detectedDevices[entry.ip].mac) {
-                    //let's get MAC of device:
-                    const newDevice = this.createDeviceFromIpAndPin(entry.ip, 'INVALID');
-                    newDevice.model = model;
-                    newDevice.client = new WebSocketClient({
-                        ip: newDevice.ip,
-                        pin: newDevice.pin,
-                        useTelnetForToken: false,
-                        log: console.debug
-                    });
-                    try {
-                        await newDevice.client.login();
-                        newDevice.id = newDevice.client.getDeviceId().toUpperCase();
-                        if (newDevice.id) {
-                            // @ts-ignore
-                            newDevice.mac = newDevice.id.match(/.{2}/g).join(':');
-                            this.detectedDevices[newDevice.ip] = {
-                                ip: newDevice.ip,
-                                name: entry.name,
-                                type: model,
-                                mac: newDevice.mac,
-                                mydlink: true,
-                                useWebSocket: true,
-                                alreadyPresent: !!device
-                            };
-                            this.log.debug(`Got websocket device ${model} on ${newDevice.ip}`);
-                        }
-                    } catch (e) {
-                        this.log.debug('Could not identify websocket device: ' + e.stack);
-                    } finally {
-                        this.stopDevice(newDevice);
-                    }
-                }
             }
         }
 
