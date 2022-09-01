@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mydlink",
-        "version": "1.1.12",
+        "version": "1.2.0",
         "news": {
+            "1.2.0": {
+                "en": "* Updated translations & dependencies\n* Added: support for devices with multiple sockets\n* Changed: websocket devices are now also polled",
+                "de": "* Aktualisierte Übersetzungen & Abhängigkeiten\n* Hinzugefügt: Unterstützung für Geräte mit mehreren Steckdosen\n* Geändert: Websocket-Geräte werden jetzt auch abgefragt",
+                "ru": "* Обновленные переводы и зависимости\n* Добавлена: поддержка устройств с несколькими розетками\n* Изменено: устройства websocket теперь также загрязняются",
+                "pt": "* Traduções e dependências atualizadas\n* Adicionado: suporte para dispositivos com várias tomadas\n* Alterado: dispositivos websocket agora também são sondados",
+                "nl": "♪ Vertaling:\n♪ Added: support for apparatuur with multiple sockets\nQuality over Quantity (QoQ) Releases Vertaling:",
+                "fr": "* Mise à jour des traductions et dépendances\n* Ajouté: support pour les appareils avec plusieurs sockets\n* Changed: les appareils websocket sont maintenant également pollués",
+                "it": "# Traduzioni aggiornate e dipendenze\n* Aggiunto: supporto per dispositivi con prese multiple\n* Cambiato: i dispositivi websocket sono ora anche inquinati",
+                "es": "* Traducciones actualizadas \" dependencias\n* Añadido: soporte para dispositivos con múltiples sockets\n* Cambio: los dispositivos websocket ahora también son encuestados",
+                "pl": "* Tłumaczenie i zależności\n* Added: obsługa urządzeń z wieloma gniazdami\n* Changed: Websocket devices również są zanieczyszczone",
+                "zh-cn": "* A/64/50。 最新翻译和频率\n* 增编:用多种装置支助装置\n* 修改:网络装置现在也受到污染。"
+            },
             "1.1.12": {
                 "en": "Update translations",
                 "de": "Übersetzungen aktualisieren",
