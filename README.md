@@ -67,7 +67,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	Placeholder for next versions (this needs to be indented):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.2.1 (2022-09-01)
 * fix release...
 
 ### 1.2.0 (2022-08-30)

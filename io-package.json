@@ -1,363 +1,195 @@
 {
-    "common": {
-        "name": "mydlink",
-        "version": "1.2.0",
-        "news": {
-            "1.2.0": {
-                "en": "* Updated translations & dependencies\n* Added: support for devices with multiple sockets\n* Changed: websocket devices are now also polled",
-                "de": "* Aktualisierte Übersetzungen & Abhängigkeiten\n* Hinzugefügt: Unterstützung für Geräte mit mehreren Steckdosen\n* Geändert: Websocket-Geräte werden jetzt auch abgefragt",
-                "ru": "* Обновленные переводы и зависимости\n* Добавлена: поддержка устройств с несколькими розетками\n* Изменено: устройства websocket теперь также загрязняются",
-                "pt": "* Traduções e dependências atualizadas\n* Adicionado: suporte para dispositivos com várias tomadas\n* Alterado: dispositivos websocket agora também são sondados",
-                "nl": "♪ Vertaling:\n♪ Added: support for apparatuur with multiple sockets\nQuality over Quantity (QoQ) Releases Vertaling:",
-                "fr": "* Mise à jour des traductions et dépendances\n* Ajouté: support pour les appareils avec plusieurs sockets\n* Changed: les appareils websocket sont maintenant également pollués",
-                "it": "# Traduzioni aggiornate e dipendenze\n* Aggiunto: supporto per dispositivi con prese multiple\n* Cambiato: i dispositivi websocket sono ora anche inquinati",
-                "es": "* Traducciones actualizadas \" dependencias\n* Añadido: soporte para dispositivos con múltiples sockets\n* Cambio: los dispositivos websocket ahora también son encuestados",
-                "pl": "* Tłumaczenie i zależności\n* Added: obsługa urządzeń z wieloma gniazdami\n* Changed: Websocket devices również są zanieczyszczone",
-                "zh-cn": "* A/64/50。 最新翻译和频率\n* 增编:用多种装置支助装置\n* 修改:网络装置现在也受到污染。"
-            },
-            "1.1.12": {
-                "en": "Update translations",
-                "de": "Übersetzungen aktualisieren",
-                "ru": "Обновить переводы",
-                "pt": "Atualizar traduções",
-                "nl": "Vertalingen bijwerken",
-                "fr": "Mettre à jour les traductions",
-                "it": "Aggiorna traduzioni",
-                "es": "Actualizar traducciones",
-                "pl": "Zaktualizuj tłumaczenia",
-                "zh-cn": "更新翻译"
-            },
-            "1.1.11": {
-                "en": "adjusted types & roles to type-detector.",
-                "de": "Angepasste Typen & Rollen an Typ-Detektor.",
-                "ru": "скорректированные типы и роли для детектора типа.",
-                "pt": "tipos e funções ajustados para detector de tipo.",
-                "nl": "aangepaste typen & rollen naar type-detector.",
-                "fr": "types et rôles ajustés au détecteur de type.",
-                "it": "tipi e ruoli adattati al tipo-rilevatore.",
-                "es": "tipos y roles ajustados al detector de tipos.",
-                "pl": "dostosowane typy i role do detektora typów.",
-                "zh-cn": "将类型和角色调整为类型检测器。"
-            },
-            "1.1.10": {
-                "en": "fix type warnings\nupdated translations and dependencies",
-                "de": "Typwarnungen beheben\naktualisierte Übersetzungen und Abhängigkeiten",
-                "ru": "исправить предупреждения типа\nобновленные переводы и зависимости",
-                "pt": "corrigir avisos de tipo\ntraduções atualizadas e dependências",
-                "nl": "type waarschuwingen repareren\nbijgewerkte vertalingen en afhankelijkheden",
-                "fr": "avertissements de type de correction\ntraductions et dépendances mises à jour",
-                "it": "correggere gli avvisi di tipo\ntraduzioni e dipendenze aggiornate",
-                "es": "corregir advertencias de tipo\ntraducciones y dependencias actualizadas",
-                "pl": "Ostrzeżenia o poprawkach\nzaktualizowane tłumaczenia i zależności",
-                "zh-cn": "修复类型警告\n更新的翻译和依赖项"
-            },
-            "1.1.9": {
-                "en": "updated translations",
-                "de": "aktualisierte Übersetzungen",
-                "ru": "обновленные переводы",
-                "pt": "traduções atualizadas",
-                "nl": "bijgewerkte vertalingen",
-                "fr": "traductions mises à jour",
-                "it": "traduzioni aggiornate",
-                "es": "traducciones actualizadas",
-                "pl": "zaktualizowane tłumaczenia",
-                "zh-cn": "更新的翻译"
-            },
-            "1.1.8": {
-                "en": "added: `telnet` token is now case insensitive\nfixed: prevent object missing warning on new devices",
-                "de": "hinzugefügt: `Telnet` Token ist jetzt unabhängig von Groß- und Kleinschreibung\nbehoben: Verhindert, dass auf neuen Geräten eine Warnung zum Fehlen eines Objekts angezeigt wird",
-                "ru": "добавлено: токен telnet теперь нечувствителен к регистру\nисправлено: предотвращение предупреждения об отсутствии объекта на новых устройствах",
-                "pt": "adicionado: o token `telnet` agora não diferencia maiúsculas de minúsculas\ncorrigido: evita o aviso de falta de objeto em novos dispositivos",
-                "nl": "toegevoegd: `telnet`-token is nu niet hoofdlettergevoelig\nopgelost: voorkom dat een object ontbreekt op nieuwe apparaten",
-                "fr": "ajouté: le jeton `telnet` est maintenant insensible à la casse\ncorrigé: empêcher l'avertissement d'objet manquant sur les nouveaux appareils",
-                "it": "aggiunto: il token `telnet` ora non fa distinzione tra maiuscole e minuscole\nrisolto: impedisce l'avviso di mancanza di oggetto sui nuovi dispositivi",
-                "es": "agregado: el token `telnet` ahora no distingue entre mayúsculas y minúsculas\nsolucionado: evitar la advertencia de falta de objeto en dispositivos nuevos",
-                "pl": "dodano: token `telnet` nie rozróżnia teraz wielkości liter\nnaprawiono: zapobiegaj ostrzeżeniu o braku obiektu na nowych urządzeniach",
-                "zh-cn": "补充：`telnet`令牌现在不区分大小写\n固定：防止对象在新设备上丢失警告"
-            },
-            "1.1.7": {
-                "en": "fixed: prevent error message with new mydlink plugs on switch",
-                "de": "behoben: Fehlermeldung mit neuen mydlink-Steckern am Schalter verhindern",
-                "ru": "исправлено: предотвращение появления сообщения об ошибке с новыми разъемами mydlink на переключателе",
-                "pt": "corrigido: evitar mensagem de erro com novos plugues mydlink na chave",
-                "nl": "opgelost: voorkom foutmelding met nieuwe mydlink-pluggen op schakelaar",
-                "fr": "corrigé: empêcher le message d'erreur avec de nouvelles prises mydlink sur le commutateur",
-                "it": "risolto: impedisce il messaggio di errore con i nuovi plug mydlink sull'interruttore",
-                "es": "solucionado: evitar mensajes de error con nuevos enchufes mydlink en el interruptor",
-                "pl": "naprawiono: zapobiegaj wyświetlaniu komunikatu o błędzie z nowymi wtyczkami mydlink na przełączniku",
-                "zh-cn": "固定：防止错误消息与交换机上的新mydlink插头"
-            },
-            "1.1.6": {
-                "en": "fixed: prevent error message with new mydlink plugs on switch",
-                "de": "behoben: Fehlermeldung mit neuen mydlink-Steckern am Schalter verhindern",
-                "ru": "исправлено: предотвращение появления сообщения об ошибке с новыми разъемами mydlink на переключателе",
-                "pt": "corrigido: evitar mensagem de erro com novos plugues mydlink na chave",
-                "nl": "opgelost: voorkom foutmelding met nieuwe mydlink-pluggen op schakelaar",
-                "fr": "corrigé: empêcher le message d'erreur avec de nouvelles prises mydlink sur le commutateur",
-                "it": "risolto: impedisce il messaggio di errore con i nuovi plug mydlink sull'interruttore",
-                "es": "solucionado: evitar mensajes de error con nuevos enchufes mydlink en el interruptor",
-                "pl": "naprawiono: zapobiegaj wyświetlaniu komunikatu o błędzie z nowymi wtyczkami mydlink na przełączniku",
-                "zh-cn": "固定：防止错误消息与交换机上的新mydlink插头"
-            },
-            "1.1.5": {
-                "en": "Add: support for DCH-S160 water detector added (needs polling, linke motion detector).",
-                "de": "Hinzufügen: Unterstützung für DCH-S160 Wasserdetektor hinzugefügt (muss abgefragt werden, linker Bewegungsmelder).",
-                "ru": "Добавлено: добавлена поддержка датчика воды DCH-S160 (требуется опрос, датчик движения Linke).",
-                "pt": "Adicionar: suporte para detector de água DCH-S160 adicionado (precisa de sondagem, detector de movimento linear).",
-                "nl": "Toevoegen: ondersteuning voor DCH-S160 waterdetector toegevoegd (polling vereist, linke bewegingsdetector).",
-                "fr": "Ajout: prise en charge du détecteur d'eau DCH-S160 ajoutée (interrogation requise, détecteur de mouvement linke).",
-                "it": "Aggiunto: aggiunto il supporto per il rilevatore di acqua DCH-S160 (necessita di polling, rilevatore di movimento lineare).",
-                "es": "Agregar: se agregó soporte para el detector de agua DCH-S160 (necesita sondeo, detector de movimiento linke).",
-                "pl": "Dodaj: dodano obsługę czujnika wody DCH-S160 (wymaga odpytywania, czujnik ruchu linke).",
-                "zh-cn": "添加：添加了对DCH-S160水检测器的支持（需要轮询，链接运动检测器）。"
-            },
-            "1.1.4": {
-                "en": "fixed: sometimes state was always reported as true.",
-                "de": "behoben: Manchmal wurde der Status immer als wahr gemeldet.",
-                "ru": "исправлено: иногда состояние всегда сообщалось как истинное.",
-                "pt": "corrigido: às vezes, o estado sempre era relatado como verdadeiro.",
-                "nl": "opgelost: soms werd de staat altijd als waar gemeld.",
-                "fr": "fixe: parfois l'état était toujours signalé comme vrai.",
-                "it": "risolto: a volte lo stato veniva sempre segnalato come vero.",
-                "es": "fijo: a veces el estado siempre se informaba como verdadero.",
-                "pl": "naprawiono: czasami stan zawsze był zgłaszany jako prawdziwy.",
-                "zh-cn": "已修正：有时状态始终被报告为true。"
-            },
-            "1.1.3": {
-                "en": "fixed: if error during login, polling would stop.\nfixed: can now update device name from config again\nchange: read devices from config in UI again\nchange: in UI do not create +-Button if detected device is already in devices table.",
-                "de": "behoben: Wenn beim Anmelden ein Fehler auftrat, wurde die Abfrage beendet.\nBehoben: Kann jetzt den Gerätenamen aus der Konfiguration erneut aktualisieren\nändern: Geräte aus der Konfiguration in der Benutzeroberfläche erneut lesen\nÄnderung: Erstellen Sie in der Benutzeroberfläche keine + -Taste, wenn sich das erkannte Gerät bereits in der Gerätetabelle befindet.",
-                "ru": "исправлено: если ошибка во время входа в систему, опрос будет остановлен.\nисправлено: теперь можно обновить имя устройства из конфигурации снова\nизменить: снова прочитать устройства из конфигурации в пользовательском интерфейсе\nизменить: в пользовательском интерфейсе не создавать + кнопку +, если обнаруженное устройство уже находится в таблице устройств.",
-                "pt": "corrigido: se ocorrer um erro durante o login, a pesquisa será interrompida.\ncorrigido: agora pode atualizar o nome do dispositivo a partir da configuração novamente\nchange: ler dispositivos da configuração na interface do usuário novamente\nalteração: na interface do usuário, não crie o botão +-se o dispositivo detectado já estiver na tabela de dispositivos.",
-                "nl": "opgelost: als er een fout optreedt tijdens het inloggen, stopt de polling.\nopgelost: kan de apparaatnaam nu opnieuw vanuit de configuratie bijwerken\nverandering: lees opnieuw apparaten van config in UI\nwijzigen: maak in de gebruikersinterface geen + -knop als het gedetecteerde apparaat al in de apparaattabel staat.",
-                "fr": "corrigé: en cas d'erreur lors de la connexion, l'interrogation s'arrêtait.\ncorrigé: peut désormais mettre à jour le nom du périphérique à partir de la configuration\nchangement: lire à nouveau les périphériques de la configuration dans l'interface utilisateur\nchangement: dans l'interface utilisateur, ne créez pas de bouton + si le périphérique détecté est déjà dans la table des périphériques.",
-                "it": "risolto: se l'errore durante l'accesso, il polling si fermava.\nrisolto: ora è possibile aggiornare nuovamente il nome del dispositivo dalla configurazione\nmodifica: legge nuovamente i dispositivi dalla configurazione nell'interfaccia utente\nmodifica: nell'interfaccia utente non creare + -Button se il dispositivo rilevato è già nella tabella dei dispositivi.",
-                "es": "corregido: si se produce un error durante el inicio de sesión, la encuesta se detendrá.\ncorregido: ahora puede actualizar el nombre del dispositivo desde la configuración nuevamente\ncambio: lea los dispositivos desde la configuración en la interfaz de usuario nuevamente\ncambio: en la interfaz de usuario no cree + -Button si el dispositivo detectado ya está en la tabla de dispositivos.",
-                "pl": "naprawiono: jeśli błąd podczas logowania, odpytywanie przestało działać\nnaprawiono: można teraz ponownie zaktualizować nazwę urządzenia z konfiguracji\nzmiana: ponownie odczytaj urządzenia z konfiguracji w interfejsie użytkownika\nzmień: w interfejsie użytkownika nie twórz + -Przycisk, jeśli wykryte urządzenie znajduje się już w tabeli urządzeń.",
-                "zh-cn": "固定：如果登录期间出错，轮询将停止。\n固定：现在可以再次从配置更新设备名称\n更改：再次从用户界面中的配置读取设备\n更改：如果检测到的设备已在设备表中，则在UI中不要创建+按钮。"
-            },
-            "1.1.2": {
-                "en": "fixed two possible crashes with offline / wrong devices.",
-                "de": "Zwei mögliche Abstürze mit Offline- / falschen Geräten wurden behoben.",
-                "ru": "исправлены два возможных сбоя с отключенными / неправильными устройствами.",
-                "pt": "Corrigido duas possíveis falhas com dispositivos offline / incorretos.",
-                "nl": "twee mogelijke crashes opgelost met offline / verkeerde apparaten.",
-                "fr": "correction de deux plantages possibles avec des appareils hors ligne / incorrects.",
-                "it": "risolti due possibili arresti anomali con dispositivi offline / errati.",
-                "es": "Se corrigieron dos posibles bloqueos con dispositivos fuera de línea / incorrectos.",
-                "pl": "naprawiono dwie możliwe awarie urządzeń offline / niewłaściwych.",
-                "zh-cn": "修复了离线/错误设备可能导致的两次崩溃。"
-            },
-            "1.1.1": {
-                "en": "Improved auto detection of DSP-W115 (but mdns seems very unreliable whit that device)\nUI should never delete user devices",
-                "de": "Verbesserte automatische Erkennung von DSP-W115 (aber mdns scheint mit diesem Gerät sehr unzuverlässig zu sein)\nDie Benutzeroberfläche sollte niemals Benutzergeräte löschen",
-                "ru": "Улучшено автоматическое обнаружение DSP-W115 (но mdns кажется очень ненадежным с этим устройством)\nПользовательский интерфейс никогда не должен удалять пользовательские устройства",
-                "pt": "Detecção automática aprimorada do DSP-W115 (mas os mdns parecem muito confiáveis com esse dispositivo)\nA interface do usuário nunca deve excluir dispositivos do usuário",
-                "nl": "Verbeterde automatische detectie van DSP-W115 (maar mdns lijkt erg onbetrouwbaar met dat apparaat)\nGebruikersinterface mag nooit gebruikersapparaten verwijderen",
-                "fr": "Amélioration de la détection automatique du DSP-W115 (mais les MDN semblent très peu fiables avec cet appareil)\nL'interface utilisateur ne doit jamais supprimer les appareils des utilisateurs",
-                "it": "Rilevamento automatico migliorato di DSP-W115 (ma mdns sembra molto inaffidabile con quel dispositivo)\nL'interfaccia utente non dovrebbe mai eliminare i dispositivi utente",
-                "es": "Detección automática mejorada de DSP-W115 (pero mdns parece muy poco confiable con ese dispositivo)\nLa interfaz de usuario nunca debe eliminar dispositivos de usuario",
-                "pl": "Poprawione automatyczne wykrywanie DSP-W115 (ale mdns wydaje się bardzo zawodny z tym urządzeniem)\nInterfejs użytkownika nigdy nie powinien usuwać urządzeń użytkowników",
-                "zh-cn": "改进了对DSP-W115的自动检测（但是，该设备的mdns似乎非常不可靠）\n用户界面绝对不能删除用户设备"
-            },
-            "1.1.0": {
-                "en": "Added Support for w115 (and maybe other never myDlink devices, might even do *something* with cameras)\nFix relogin to device (i.e. when device was restarted during adapter runtime) \nFix error when switching a socket.",
-                "de": "Unterstützung für w115 hinzugefügt (und vielleicht andere, niemals myDlink-Geräte, könnten sogar *etwas* mit Kameras tun) \nBehebung der erneuten Anmeldung am Gerät (d. H. Wenn das Gerät zur Laufzeit des Adapters neu gestartet wurde)\nFehler beim Umschalten einer Steckdose behoben.",
-                "ru": "Добавлена поддержка w115 (и, возможно, других, не относящихся к myDlink устройств, может даже что-то делать с камерами)\nИсправлена повторная регистрация на устройстве (то есть, когда устройство было перезапущено во время работы адаптера)\nИсправлена ошибка при переключении сокета.",
-                "pt": "Adicionado suporte para o w115 (e talvez outros dispositivos nunca myDlink, podem até fazer *algo* com câmeras) \nCorrigir login novamente no dispositivo (ou seja, quando o dispositivo foi reiniciado durante o tempo de execução do adaptador)\nCorrija o erro ao trocar um soquete.",
-                "nl": "Ondersteuning toegevoegd voor w115 (en misschien andere nooit myDlink-apparaten, kunnen zelfs *iets* doen met camera's) \nOpnieuw inloggen op apparaat repareren (d.w.z. wanneer het apparaat opnieuw werd opgestart tijdens de runtime van de adapter)\nFout oplossen bij het wisselen van een stopcontact.",
-                "fr": "Ajout de la prise en charge de w115 (et peut-être que d'autres appareils jamais myDlink peuvent même faire *quelque chose* avec des caméras) \nCorrection de la reconnexion à l'appareil (c'est-à-dire lorsque l'appareil a été redémarré pendant l'exécution de l'adaptateur)\nCorrection d'une erreur lors du changement de socket.",
-                "it": "Aggiunto supporto per w115 (e forse altri dispositivi mai myDlink, potrebbe persino fare *qualcosa* con le fotocamere) \nCorrezione del nuovo accesso al dispositivo (ad es. Al riavvio del dispositivo durante il runtime dell'adattatore)\nErrore di correzione durante la commutazione di un socket.",
-                "es": "Soporte adicional para w115 (y tal vez otros dispositivos que nunca sean myDlink, incluso podrían hacer *algo* con las cámaras) \nSe corrigió el inicio de sesión en el dispositivo (es decir, cuando el dispositivo se reinició durante el tiempo de ejecución del adaptador)\nSoluciona el error al cambiar un zócalo.",
-                "pl": "Dodano wsparcie dla w115 (i może inne urządzenia nigdy myDlink, mogą nawet *zrobić* z kamerami) \nNapraw ponowne logowanie do urządzenia (tj. Kiedy urządzenie zostało zrestartowane podczas działania adaptera)\nNapraw błąd podczas przełączania gniazda.",
-                "zh-cn": "新增了对w115的支持（也许还有其他从未使用过的myDlink设备，甚至可以对相机进行某些操作）\n修复重新登录到设备（即在适配器运行时重新启动设备时）\n解决切换插座时的错误。"
-            },
-            "1.0.11": {
-                "en": "Tried to add even more information in case device seems incompatible",
-                "de": "Es wurde versucht, noch mehr Informationen hinzuzufügen, falls das Gerät nicht kompatibel erscheint",
-                "ru": "Попытка добавить еще больше информации, если устройство кажется несовместимым",
-                "pt": "Tentou adicionar ainda mais informações caso o dispositivo pareça incompatível",
-                "nl": "Probeerde nog meer informatie toe te voegen voor het geval het apparaat incompatibel lijkt",
-                "fr": "J'ai essayé d'ajouter encore plus d'informations au cas où l'appareil semble incompatible",
-                "it": "Ho provato ad aggiungere ulteriori informazioni nel caso in cui il dispositivo sembri incompatibile",
-                "es": "Intenté agregar aún más información en caso de que el dispositivo parezca incompatible",
-                "pl": "Próbowałem dodać jeszcze więcej informacji, jeśli urządzenie wydaje się niezgodne",
-                "zh-cn": "试图添加更多信息以防设备看起来不兼容"
-            },
-            "1.0.10": {
-                "en": "Returned to login with user \"Admin\"\nTried to add more debug for incompatible devices.",
-                "de": "Zurück zum Login mit Benutzer \"Admin\"\nEs wurde versucht, mehr Debug für inkompatible Geräte hinzuzufügen.",
-                "ru": "Вернулся для входа в систему с пользователем \"Admin\"\nПопытался добавить больше отладки для несовместимых устройств.",
-                "pt": "Retornado para fazer login com o usuário \"Admin\"\nTentei adicionar mais depuração para dispositivos incompatíveis.",
-                "nl": "Keerde terug naar inloggen met gebruiker \"Admin\"\nProbeerde meer foutopsporing toe te voegen voor incompatibele apparaten.",
-                "fr": "Retour à la connexion avec l'utilisateur \"Admin\"\nJ'ai essayé d'ajouter plus de débogage pour les appareils incompatibles.",
-                "it": "Restituito per accedere con l'utente \"Admin\"\nHo provato ad aggiungere altro debug per dispositivi incompatibili.",
-                "es": "Regresó al inicio de sesión con el usuario \"Admin\"\nIntenté agregar más depuración para dispositivos incompatibles.",
-                "pl": "Wrócił do logowania z użytkownikiem „Administrator”\nPróbowałem dodać więcej debugowania dla niekompatybilnych urządzeń.",
-                "zh-cn": "返回以用户“ Admin”登录\n尝试为不兼容的设备添加更多调试。"
-            },
-            "1.0.9": {
-                "en": "* Fixed: changes in configuration were not respected once devices were created\r\n* Fixed: re-login to device on switching if polling is disabled\r\n* Fixed: Error output on switching now more informative",
-                "de": "* Behoben: Konfigurationsänderungen wurden nach dem Erstellen der Geräte nicht berücksichtigt\r\n* Behoben: Beim Umschalten erneut am Gerät anmelden, wenn die Abfrage deaktiviert ist\r\n* Behoben: Fehlerausgabe beim Umschalten jetzt informativer",
-                "ru": "* Исправлено: изменения в конфигурации не учитывались при создании устройств\r\n* Исправлено: повторный вход в устройство при переключении, если опрос отключен\r\n* Исправлено: ошибка вывода при переключении теперь более информативна",
-                "pt": "* Corrigido: alterações na configuração não eram respeitadas após a criação dos dispositivos\r\n* Corrigido: re-login no dispositivo ao alternar se a pesquisa estiver desativada\r\n* Corrigido: Saída de erro ao alternar agora mais informativo",
-                "nl": "* Opgelost: configuratiewijzigingen werden niet gerespecteerd nadat apparaten waren gemaakt\r\n* Opgelost: opnieuw inloggen bij apparaat bij schakelen als polling is uitgeschakeld\r\n* Opgelost: foutuitvoer bij schakelen nu informatiever",
-                "fr": "* Corrigé: les changements de configuration n'étaient pas respectés une fois les appareils créés\r\n* Corrigé: se reconnecter à l'appareil lors de la commutation si l'interrogation est désactivée\r\n* Correction: sortie d'erreur lors de la commutation maintenant plus informative",
-                "it": "* Risolto: le modifiche alla configurazione non venivano rispettate dopo la creazione dei dispositivi\r\n* Risolto: accedere nuovamente al dispositivo al momento della commutazione se il polling è disabilitato\r\n* Risolto: errore durante la commutazione ora più informativo",
-                "es": "* Solucionado: los cambios en la configuración no se respetaron una vez que se crearon los dispositivos\r\n* Solucionado: reiniciar sesión en el dispositivo al cambiar si el sondeo está deshabilitado\r\n* Solucionado: salida de error al cambiar ahora más informativo",
-                "pl": "* Naprawiono: zmiany konfiguracji nie były przestrzegane po utworzeniu urządzeń\r\n* Naprawiono: ponowne logowanie do urządzenia przy przełączaniu, jeśli odpytywanie jest wyłączone\r\n* Naprawiono: Błąd wyjścia przy przełączaniu teraz bardziej informacyjny",
-                "zh-cn": "*修正：创建设备后，配置更改不被接受\r\n*固定：如果禁用轮询，则在切换时重新登录到设备\r\n*修正：切换时错误输出现在更加有用"
-            },
-            "1.0.8": {
-                "en": "* Fixed switching, was broken in some circumstances by id changes.",
-                "de": "* Das Umschalten wurde behoben und wurde unter bestimmten Umständen durch ID-Änderungen unterbrochen.",
-                "ru": "* Исправлено переключение, было прервано в некоторых случаях изменениями id.",
-                "pt": "* A comutação fixa foi interrompida em algumas circunstâncias pelas alterações de identificação.",
-                "nl": "* Vaste schakeling, werd in sommige gevallen verbroken door id-wijzigingen.",
-                "fr": "* La commutation fixe a été interrompue dans certaines circonstances par des changements d'ID.",
-                "it": "* Risolto il problema, in alcune circostanze è stato interrotto da modifiche dell'ID.",
-                "es": "* Cambio fijo, se rompió en algunas circunstancias por cambios de identificación.",
-                "pl": "* Naprawiono przełączanie, w niektórych okolicznościach zostało przerwane przez zmiany identyfikatora.",
-                "zh-cn": "*固定切换，在某些情况下会因ID更改而中断。"
-            },
-            "1.0.7": {
-                "en": "* Made saving config more robust and direct again.\r\n* Made identify by IP more robust and allows saving right away. \r\n* Prevent saving if devices without PIN are configured.",
-                "de": "* Das Speichern der Konfiguration wurde wieder robuster und direkter.\r\n* Identifiziert durch IP robuster und ermöglicht sofortiges Speichern.\r\n* Verhindern Sie das Speichern, wenn Geräte ohne PIN konfiguriert sind.",
-                "ru": "* Сделано сохранение конфигурации более надежным и прямым снова.\r\n* Сделана идентификация по IP более надежной и позволяет экономить сразу.\r\n* Запретить сохранение, если настроены устройства без PIN.",
-                "pt": "* Tornou a configuração de economia mais robusta e direta novamente.\r\n* Tornou a identificação por IP mais robusta e permite salvar imediatamente.\r\n* Evite salvar se dispositivos sem PIN estiverem configurados.",
-                "nl": "* Besparingsconfiguratie weer robuuster en direct gemaakt.\r\n* Identificatie door IP robuuster gemaakt en direct opslaan mogelijk.\r\n* Voorkom besparing als apparaten zonder pincode zijn geconfigureerd.",
-                "fr": "* Rendre la configuration de sauvegarde plus robuste et plus directe.\r\n* Fait identifier par IP plus robuste et permet d'économiser tout de suite.\r\n* Empêchez l'enregistrement si des appareils sans code PIN sont configurés.",
-                "it": "* Ha reso la configurazione di salvataggio più robusta e diretta di nuovo.\r\n* Ha reso l'identificazione tramite IP più robusta e consente il salvataggio immediato.\r\n* Impedisci il salvataggio se sono configurati dispositivi senza PIN.",
-                "es": "* Se hizo la configuración de guardado más robusta y directa nuevamente\r\n* Se identificó por IP más robusto y permite guardar de inmediato.\r\n* Evite guardar si los dispositivos sin PIN están configurados.",
-                "pl": "* Poprawiono konfigurację zapisywania, która jest bardziej niezawodna i bezpośrednia.\r\n* Ulepszono identyfikację za pomocą adresu IP i umożliwia natychmiastowe oszczędzanie.\r\n* Zapobiegaj zapisywaniu, jeśli skonfigurowano urządzenia bez kodu PIN.",
-                "zh-cn": "*使保存配置更加可靠和直接。\r\n*通过IP进行识别的功能更加强大，可以立即进行保存。\r\n*如果配置了没有PIN的设备，请防止保存。"
-            },
-            "1.0.6": {
-                "en": "* Prevent creation of empty devices (MYDLINK-6)",
-                "de": "* Verhindern Sie die Erstellung leerer Geräte (MYDLINK-6)",
-                "ru": "* Предотвращение создания пустых устройств (MYDLINK-6)",
-                "pt": "* Impedir a criação de dispositivos vazios (MYDLINK-6)",
-                "nl": "* Voorkom het aanmaken van lege apparaten (MYDLINK-6)",
-                "fr": "* Empêcher la création d'appareils vides (MYDLINK-6)",
-                "it": "* Impedisci la creazione di dispositivi vuoti (MYDLINK-6)",
-                "es": "* Evitar la creación de dispositivos vacíos (MYDLINK-6)",
-                "pl": "* Zapobiegaj tworzeniu pustych urządzeń (MYDLINK-6)",
-                "zh-cn": "*防止创建空设备（MYDLINK-6）"
-            },
-            "1.0.5": {
-                "en": "* Fixed possible issue with device ids.\r\n* Improved device creation\r\n* Adjusted for discovery adapter that not yet stores passwords encrypted.",
-                "de": "* Mögliches Problem mit Geräte-IDs behoben.\r\n* Verbesserte Geräteerstellung\r\n* Angepasst für den Erkennungsadapter, der noch keine verschlüsselten Passwörter speichert.",
-                "ru": "* Исправлена возможная проблема с идентификаторами устройств.\r\n* Улучшено создание устройства\r\n* С учетом адаптера обнаружения, который еще не хранит зашифрованные пароли.",
-                "pt": "* Corrigido possível problema com os IDs do dispositivo.\r\n* Melhor criação de dispositivos\r\n* Ajustado para o adaptador de descoberta que ainda não armazena senhas criptografadas.",
-                "nl": "* Mogelijk probleem met apparaat-ID's opgelost.\r\n* Verbeterde apparaatcreatie\r\n* Aangepast voor zoekadapter die wachtwoorden nog niet versleuteld opslaat.",
-                "fr": "* Correction d'un problème possible avec les identifiants des appareils.\r\n* Amélioration de la création d'appareils\r\n* Adapté pour l'adaptateur de découverte qui ne stocke pas encore les mots de passe cryptés.",
-                "it": "* Risolto possibile problema con ID dispositivo.\r\n* Creazione del dispositivo migliorata\r\n* Modificato per l'adattatore di individuazione che non memorizza ancora le password crittografate.",
-                "es": "* Se corrigió un posible problema con los identificadores del dispositivo.\r\n* Creación mejorada de dispositivos\r\n* Ajustado para el adaptador de descubrimiento que aún no almacena contraseñas cifradas.",
-                "pl": "* Naprawiono możliwy problem z identyfikatorami urządzeń.\r\n* Ulepszone tworzenie urządzeń\r\n* Dostosowano do adaptera wykrywania, który nie przechowuje jeszcze zaszyfrowanych haseł.",
-                "zh-cn": "*修复了设备ID可能出现的问题。\r\n*改进的设备创建\r\n*针对尚未存储加密密码的发现适配器进行了调整。"
-            }
-        },
-        "title": "mydlink",
-        "titleLang": {
-            "en": "mydlink",
-            "de": "mydlink",
-            "ru": "mydlink",
-            "pt": "mydlink",
-            "nl": "mydlink",
-            "fr": "mydlink",
-            "it": "mydlink",
-            "es": "mydlink",
-            "pl": "mydlink",
-            "zh-cn": "mydlink"
-        },
-        "tier": 2,
-        "desc": {
-            "en": "connects mydlink plugs and sensors to ioBroker",
-            "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker",
-            "ru": "подключает разъемы и датчики mydlink к ioBroker",
-            "pt": "conecta plugues e sensores do mydlink ao ioBroker",
-            "nl": "verbindt mydlink-stekkers en sensoren met ioBroker",
-            "fr": "connecte les connecteurs et capteurs mydlink à ioBroker",
-            "it": "collega connettori e sensori mydlink a ioBroker",
-            "es": "conecta enchufes y sensores mydlink a ioBroker",
-            "pl": "łączy wtyczki i czujniki mydlink z ioBroker",
-            "zh-cn": "将mydlink插头和传感器连接到ioBroker"
-        },
-        "authors": [
-            "Garfonso <garfonso@mobo.info>"
-        ],
-        "license": "MIT",
-        "platform": "Javascript/Node.js",
-        "icon": "mydlink.png",
-        "main": "main.js",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.mydlink/master/admin/mydlink.png",
-        "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
-        "loglevel": "info",
-        "mode": "daemon",
-        "type": "iot-systems",
-        "compact": true,
-        "connectionType": "local",
-        "dataSource": "poll",
-        "keywords": [
-            "mydlink",
-            "dsp-w215",
-            "dsp-w115",
-            "dch-s150"
-        ],
-        "docs": {
-            "de": "docs/de/README.md",
-            "en": "docs/en/README.md"
-        },
-        "materialize": true,
-        "supportCustoms": false,
-        "messagebox": true,
-        "dependencies": [
-            {
-                "js-controller": ">=2.0.0"
-            }
-        ],
-        "plugins": {
-            "sentry": {
-                "dsn": "https://9fb94599ef264055b318c7a06962af3e@sentry.iobroker.net/104",
-                "pathWhitelist": [
-                    "@iobroker",
-                    "iobroker.js-controller",
-                    "mydlink",
-                    "soapclient",
-                    "deviceFlags"
-                ],
-                "pathBlacklist": [],
-                "errorBlacklist": [
-                    "SyntaxError"
-                ]
-            }
-        }
+  "common": {
+    "name": "mydlink",
+    "version": "1.2.1",
+    "news": {
+      "1.2.1": {
+        "en": "fix release...",
+        "de": "wiederherstellen.",
+        "ru": "исправить релиз.",
+        "pt": "corrigir a liberação.",
+        "nl": "loslaten.",
+        "fr": "correction.",
+        "it": "risolvere il rilascio.",
+        "es": "arregla la liberación.",
+        "pl": "reaktywacja.",
+        "zh-cn": "fix 释放。."
+      },
+      "1.2.0": {
+        "en": "* Updated translations & dependencies\n* Added: support for devices with multiple sockets\n* Changed: websocket devices are now also polled",
+        "de": "* Aktualisierte Übersetzungen & Abhängigkeiten\n* Hinzugefügt: Unterstützung für Geräte mit mehreren Steckdosen\n* Geändert: Websocket-Geräte werden jetzt auch abgefragt",
+        "ru": "* Обновленные переводы и зависимости\n* Добавлена: поддержка устройств с несколькими розетками\n* Изменено: устройства websocket теперь также загрязняются",
+        "pt": "* Traduções e dependências atualizadas\n* Adicionado: suporte para dispositivos com várias tomadas\n* Alterado: dispositivos websocket agora também são sondados",
+        "nl": "♪ Vertaling:\n♪ Added: support for apparatuur with multiple sockets\nQuality over Quantity (QoQ) Releases Vertaling:",
+        "fr": "* Mise à jour des traductions et dépendances\n* Ajouté: support pour les appareils avec plusieurs sockets\n* Changed: les appareils websocket sont maintenant également pollués",
+        "it": "# Traduzioni aggiornate e dipendenze\n* Aggiunto: supporto per dispositivi con prese multiple\n* Cambiato: i dispositivi websocket sono ora anche inquinati",
+        "es": "* Traducciones actualizadas \" dependencias\n* Añadido: soporte para dispositivos con múltiples sockets\n* Cambio: los dispositivos websocket ahora también son encuestados",
+        "pl": "* Tłumaczenie i zależności\n* Added: obsługa urządzeń z wieloma gniazdami\n* Changed: Websocket devices również są zanieczyszczone",
+        "zh-cn": "* A/64/50。 最新翻译和频率\n* 增编:用多种装置支助装置\n* 修改:网络装置现在也受到污染。"
+      },
+      "1.1.12": {
+        "en": "Update translations",
+        "de": "Übersetzungen aktualisieren",
+        "ru": "Обновить переводы",
+        "pt": "Atualizar traduções",
+        "nl": "Vertalingen bijwerken",
+        "fr": "Mettre à jour les traductions",
+        "it": "Aggiorna traduzioni",
+        "es": "Actualizar traducciones",
+        "pl": "Zaktualizuj tłumaczenia",
+        "zh-cn": "更新翻译"
+      },
+      "1.1.11": {
+        "en": "adjusted types & roles to type-detector.",
+        "de": "Angepasste Typen & Rollen an Typ-Detektor.",
+        "ru": "скорректированные типы и роли для детектора типа.",
+        "pt": "tipos e funções ajustados para detector de tipo.",
+        "nl": "aangepaste typen & rollen naar type-detector.",
+        "fr": "types et rôles ajustés au détecteur de type.",
+        "it": "tipi e ruoli adattati al tipo-rilevatore.",
+        "es": "tipos y roles ajustados al detector de tipos.",
+        "pl": "dostosowane typy i role do detektora typów.",
+        "zh-cn": "将类型和角色调整为类型检测器。"
+      },
+      "1.1.10": {
+        "en": "fix type warnings\nupdated translations and dependencies",
+        "de": "Typwarnungen beheben\naktualisierte Übersetzungen und Abhängigkeiten",
+        "ru": "исправить предупреждения типа\nобновленные переводы и зависимости",
+        "pt": "corrigir avisos de tipo\ntraduções atualizadas e dependências",
+        "nl": "type waarschuwingen repareren\nbijgewerkte vertalingen en afhankelijkheden",
+        "fr": "avertissements de type de correction\ntraductions et dépendances mises à jour",
+        "it": "correggere gli avvisi di tipo\ntraduzioni e dipendenze aggiornate",
+        "es": "corregir advertencias de tipo\ntraducciones y dependencias actualizadas",
+        "pl": "Ostrzeżenia o poprawkach\nzaktualizowane tłumaczenia i zależności",
+        "zh-cn": "修复类型警告\n更新的翻译和依赖项"
+      },
+      "1.1.9": {
+        "en": "updated translations",
+        "de": "aktualisierte Übersetzungen",
+        "ru": "обновленные переводы",
+        "pt": "traduções atualizadas",
+        "nl": "bijgewerkte vertalingen",
+        "fr": "traductions mises à jour",
+        "it": "traduzioni aggiornate",
+        "es": "traducciones actualizadas",
+        "pl": "zaktualizowane tłumaczenia",
+        "zh-cn": "更新的翻译"
+      },
+      "1.1.8": {
+        "en": "added: `telnet` token is now case insensitive\nfixed: prevent object missing warning on new devices",
+        "de": "hinzugefügt: `Telnet` Token ist jetzt unabhängig von Groß- und Kleinschreibung\nbehoben: Verhindert, dass auf neuen Geräten eine Warnung zum Fehlen eines Objekts angezeigt wird",
+        "ru": "добавлено: токен telnet теперь нечувствителен к регистру\nисправлено: предотвращение предупреждения об отсутствии объекта на новых устройствах",
+        "pt": "adicionado: o token `telnet` agora não diferencia maiúsculas de minúsculas\ncorrigido: evita o aviso de falta de objeto em novos dispositivos",
+        "nl": "toegevoegd: `telnet`-token is nu niet hoofdlettergevoelig\nopgelost: voorkom dat een object ontbreekt op nieuwe apparaten",
+        "fr": "ajouté: le jeton `telnet` est maintenant insensible à la casse\ncorrigé: empêcher l'avertissement d'objet manquant sur les nouveaux appareils",
+        "it": "aggiunto: il token `telnet` ora non fa distinzione tra maiuscole e minuscole\nrisolto: impedisce l'avviso di mancanza di oggetto sui nuovi dispositivi",
+        "es": "agregado: el token `telnet` ahora no distingue entre mayúsculas y minúsculas\nsolucionado: evitar la advertencia de falta de objeto en dispositivos nuevos",
+        "pl": "dodano: token `telnet` nie rozróżnia teraz wielkości liter\nnaprawiono: zapobiegaj ostrzeżeniu o braku obiektu na nowych urządzeniach",
+        "zh-cn": "补充：`telnet`令牌现在不区分大小写\n固定：防止对象在新设备上丢失警告"
+      }
     },
-    "native": {
-        "devices": []
+    "title": "mydlink",
+    "titleLang": {
+      "en": "mydlink",
+      "de": "mydlink",
+      "ru": "mydlink",
+      "pt": "mydlink",
+      "nl": "mydlink",
+      "fr": "mydlink",
+      "it": "mydlink",
+      "es": "mydlink",
+      "pl": "mydlink",
+      "zh-cn": "mydlink"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "connection status to wifi determined by at least one device responding",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
-    ]
+    "tier": 2,
+    "desc": {
+      "en": "connects mydlink plugs and sensors to ioBroker",
+      "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker",
+      "ru": "подключает разъемы и датчики mydlink к ioBroker",
+      "pt": "conecta plugues e sensores do mydlink ao ioBroker",
+      "nl": "verbindt mydlink-stekkers en sensoren met ioBroker",
+      "fr": "connecte les connecteurs et capteurs mydlink à ioBroker",
+      "it": "collega connettori e sensori mydlink a ioBroker",
+      "es": "conecta enchufes y sensores mydlink a ioBroker",
+      "pl": "łączy wtyczki i czujniki mydlink z ioBroker",
+      "zh-cn": "将mydlink插头和传感器连接到ioBroker"
+    },
+    "authors": [
+      "Garfonso <garfonso@mobo.info>"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "icon": "mydlink.png",
+    "main": "main.js",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.mydlink/master/admin/mydlink.png",
+    "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "iot-systems",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "poll",
+    "keywords": [
+      "mydlink",
+      "dsp-w215",
+      "dsp-w115",
+      "dch-s150"
+    ],
+    "docs": {
+      "de": "docs/de/README.md",
+      "en": "docs/en/README.md"
+    },
+    "materialize": true,
+    "supportCustoms": false,
+    "messagebox": true,
+    "dependencies": [
+      {
+        "js-controller": ">=2.0.0"
+      }
+    ],
+    "plugins": {
+      "sentry": {
+        "dsn": "https://9fb94599ef264055b318c7a06962af3e@sentry.iobroker.net/104",
+        "pathWhitelist": [
+          "@iobroker",
+          "iobroker.js-controller",
+          "mydlink",
+          "soapclient",
+          "deviceFlags"
+        ],
+        "pathBlacklist": [],
+        "errorBlacklist": [
+          "SyntaxError"
+        ]
+      }
+    }
+  },
+  "native": {
+    "devices": []
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "connection status to wifi determined by at least one device responding",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
