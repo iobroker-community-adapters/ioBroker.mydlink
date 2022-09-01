@@ -38,7 +38,7 @@
     "@iobroker/adapter-core": "^2.6.0",
     "@iobroker/adapter-dev": "^1.0.1",
     "@iobroker/dev-server": "^0.5.0",
-    "@iobroker/testing": "^4.0.0",
+    "@iobroker/testing": "^4.1.0",
     "@tsconfig/node16": "^1.0.3",
     "@types/chai": "^4.3.3",
     "@types/chai-as-promised": "^7.1.5",
