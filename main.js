@@ -34,6 +34,7 @@ const totalPowerSuffix = '.totalPower';
 const temperatureSuffix = '.temperature';
 const lastDetectedSuffix = '.lastDetected';
 const noMotionSuffix = '.no_motion';
+const rebootSuffix = '.reboot';
 
 function decrypt(key, value) {
     if (!value || !key) {
@@ -298,6 +299,23 @@ class MyDlink extends utils.Adapter {
             },
             native: {}
         });
+
+        //reboot button:
+        if (!device.useWebSocket) {
+            await this.setObjectNotExistsAsync(device.id + rebootSuffix, {
+                type: 'state',
+                common: {
+                    name: 'reboot device',
+                    type: 'boolean',
+                    role: 'button',
+                    read: false,
+                    write: true
+                },
+                native: {}
+            });
+        } else {
+            await this.delObjectAsync(device.id + rebootSuffix);
+        }
 
         //have ready indicator:
         await this.setObjectNotExistsAsync(device.id + unreachableSuffix, {
@@ -1030,7 +1048,10 @@ class MyDlink extends utils.Adapter {
                             await this.loginDevice(device);
                         }
                         let socket = 0;
-                        if (id !== devId) {
+                        if (id.endsWith(rebootSuffix)) {
+                            await device.client.reboot();
+                            return;
+                        } else if (id !== devId) {
                             socket = Number(devId.substring(devId.lastIndexOf('_') + 1)) - 1; //convert to 0 based index here.
                         }
                         await device.client.switch(state.val, socket);
