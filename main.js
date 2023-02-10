@@ -184,8 +184,8 @@ class MyDlink extends utils.Adapter {
                 common: {
                     name: 'currentPowerConsumption',
                     type: 'number',
-                    role: 'value.power.consumption',
-                    unit: 'Wh',
+                    role: 'value.power',
+                    unit: 'W',
                     read: true,
                     write: false
                 },
