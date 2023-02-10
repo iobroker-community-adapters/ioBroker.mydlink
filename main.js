@@ -313,6 +313,7 @@ class MyDlink extends utils.Adapter {
                 },
                 native: {}
             });
+            await this.subscribeStatesAsync(device.id + rebootSuffix);
         } else {
             await this.delObjectAsync(device.id + rebootSuffix);
         }
@@ -1038,7 +1039,7 @@ class MyDlink extends utils.Adapter {
         if (state.ack === false) {
             //find devices:
             for (const device of this.devices) {
-                const devId = this.namespace + '.' + device.id + stateSuffix;
+                const devId = this.namespace + '.' + device.id;
                 if (id.startsWith(devId)) {
                     //found device:
                     this.log.debug('Found device to switch.');
@@ -1048,15 +1049,19 @@ class MyDlink extends utils.Adapter {
                             await this.loginDevice(device);
                         }
                         let socket = 0;
-                        if (id.endsWith(rebootSuffix)) {
+                        if (id === devId + rebootSuffix) {
                             await device.client.reboot();
-                            return;
-                        } else if (id !== devId) {
-                            socket = Number(devId.substring(devId.lastIndexOf('_') + 1)) - 1; //convert to 0 based index here.
+                            this.log.debug(`Send reboot request to ${device.name}`);
+                        } else if (id.startsWith(devId + stateSuffix)) {
+                            if (id !== devId + stateSuffix) {
+                                socket = Number(id.substring(id.lastIndexOf('_') + 1)) - 1; //convert to 0 based index here.
+                            }
+                            await device.client.switch(state.val, socket);
+                            this.log.debug(`Switched Socket ${socket} of ${device.name} ${state.val ? 'on' : 'off'}.`);
+                            await this.pollAndSetState(device.client.state.bind(device.client, socket), id); //can be full id here.
+                        } else {
+                            this.log.error(`Don't know what to do for change in ${id}`);
                         }
-                        await device.client.switch(state.val, socket);
-                        this.log.debug(`Switched Socket ${socket} of ${device.name} ${state.val ? 'on' : 'off'}.`);
-                        await this.pollAndSetState(device.client.state.bind(device.client, socket), id); //can be full id here.
                     } catch(e) {
                         const code = this.processNetworkError(e);
                         if (code === 403) {
