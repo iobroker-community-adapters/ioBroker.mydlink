@@ -269,7 +269,6 @@ class MyDlink extends utils.Adapter {
                 });
                 await this.subscribeStatesAsync(device.id + stateSuffix);
 
-            } else {
                 // @ts-ignore
             } else if (device.flags.type.includes('detection')) {
                 const role = device.flags.type === 'Motion detection' ? 'sensor.motion' : 'sensor.alarm.flood';
