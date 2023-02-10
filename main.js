@@ -86,7 +86,7 @@ function idFromMac(mac) {
  * @property {number} pollInterval configured pollInterval in milliseconds
  * @property {NodeJS.Timeout|undefined} intervalHandle handle of interval
  * @property {string} model Model name of hardware device
- * @property {Record<string, boolean | number>} flags determine what features the hardware has
+ * @property {Record<string, boolean | number | string>} flags determine what features the hardware has
  * @property {boolean} enabled true if device should be talked too.
  * @property {boolean} useWebSocket true if device uses webSocket client instead of soapclient.
  */
@@ -270,12 +270,15 @@ class MyDlink extends utils.Adapter {
                 await this.subscribeStatesAsync(device.id + stateSuffix);
 
             } else {
+                // @ts-ignore
+            } else if (device.flags.type.includes('detection')) {
+                const role = device.flags.type === 'Motion detection' ? 'sensor.motion' : 'sensor.alarm.flood';
                 await this.setObjectNotExistsAsync(device.id + stateSuffix, {
                     type: 'state',
                     common: {
                         name: 'state',
                         type: 'boolean',
-                        role: 'sensor.motion',
+                        role: role,
                         read: true,
                         write: false
                     },
