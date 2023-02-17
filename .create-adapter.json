@@ -23,7 +23,7 @@
     "connectionType": "local",
     "dataSource": "poll",
     "connectionIndicator": "yes",
-    "language": "JavaScript",
+    "language": "TypeScript",
     "adminReact": "no",
     "tools": [
         "ESLint",
