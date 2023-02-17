@@ -1,195 +1,200 @@
 {
-  "common": {
-    "name": "mydlink",
-    "version": "1.2.1",
-    "news": {
-      "1.2.1": {
-        "en": "fix release...",
-        "de": "wiederherstellen.",
-        "ru": "исправить релиз.",
-        "pt": "corrigir a liberação.",
-        "nl": "loslaten.",
-        "fr": "correction.",
-        "it": "risolvere il rilascio.",
-        "es": "arregla la liberación.",
-        "pl": "reaktywacja.",
-        "zh-cn": "fix 释放。."
-      },
-      "1.2.0": {
-        "en": "* Updated translations & dependencies\n* Added: support for devices with multiple sockets\n* Changed: websocket devices are now also polled",
-        "de": "* Aktualisierte Übersetzungen & Abhängigkeiten\n* Hinzugefügt: Unterstützung für Geräte mit mehreren Steckdosen\n* Geändert: Websocket-Geräte werden jetzt auch abgefragt",
-        "ru": "* Обновленные переводы и зависимости\n* Добавлена: поддержка устройств с несколькими розетками\n* Изменено: устройства websocket теперь также загрязняются",
-        "pt": "* Traduções e dependências atualizadas\n* Adicionado: suporte para dispositivos com várias tomadas\n* Alterado: dispositivos websocket agora também são sondados",
-        "nl": "♪ Vertaling:\n♪ Added: support for apparatuur with multiple sockets\nQuality over Quantity (QoQ) Releases Vertaling:",
-        "fr": "* Mise à jour des traductions et dépendances\n* Ajouté: support pour les appareils avec plusieurs sockets\n* Changed: les appareils websocket sont maintenant également pollués",
-        "it": "# Traduzioni aggiornate e dipendenze\n* Aggiunto: supporto per dispositivi con prese multiple\n* Cambiato: i dispositivi websocket sono ora anche inquinati",
-        "es": "* Traducciones actualizadas \" dependencias\n* Añadido: soporte para dispositivos con múltiples sockets\n* Cambio: los dispositivos websocket ahora también son encuestados",
-        "pl": "* Tłumaczenie i zależności\n* Added: obsługa urządzeń z wieloma gniazdami\n* Changed: Websocket devices również są zanieczyszczone",
-        "zh-cn": "* A/64/50。 最新翻译和频率\n* 增编:用多种装置支助装置\n* 修改:网络装置现在也受到污染。"
-      },
-      "1.1.12": {
-        "en": "Update translations",
-        "de": "Übersetzungen aktualisieren",
-        "ru": "Обновить переводы",
-        "pt": "Atualizar traduções",
-        "nl": "Vertalingen bijwerken",
-        "fr": "Mettre à jour les traductions",
-        "it": "Aggiorna traduzioni",
-        "es": "Actualizar traducciones",
-        "pl": "Zaktualizuj tłumaczenia",
-        "zh-cn": "更新翻译"
-      },
-      "1.1.11": {
-        "en": "adjusted types & roles to type-detector.",
-        "de": "Angepasste Typen & Rollen an Typ-Detektor.",
-        "ru": "скорректированные типы и роли для детектора типа.",
-        "pt": "tipos e funções ajustados para detector de tipo.",
-        "nl": "aangepaste typen & rollen naar type-detector.",
-        "fr": "types et rôles ajustés au détecteur de type.",
-        "it": "tipi e ruoli adattati al tipo-rilevatore.",
-        "es": "tipos y roles ajustados al detector de tipos.",
-        "pl": "dostosowane typy i role do detektora typów.",
-        "zh-cn": "将类型和角色调整为类型检测器。"
-      },
-      "1.1.10": {
-        "en": "fix type warnings\nupdated translations and dependencies",
-        "de": "Typwarnungen beheben\naktualisierte Übersetzungen und Abhängigkeiten",
-        "ru": "исправить предупреждения типа\nобновленные переводы и зависимости",
-        "pt": "corrigir avisos de tipo\ntraduções atualizadas e dependências",
-        "nl": "type waarschuwingen repareren\nbijgewerkte vertalingen en afhankelijkheden",
-        "fr": "avertissements de type de correction\ntraductions et dépendances mises à jour",
-        "it": "correggere gli avvisi di tipo\ntraduzioni e dipendenze aggiornate",
-        "es": "corregir advertencias de tipo\ntraducciones y dependencias actualizadas",
-        "pl": "Ostrzeżenia o poprawkach\nzaktualizowane tłumaczenia i zależności",
-        "zh-cn": "修复类型警告\n更新的翻译和依赖项"
-      },
-      "1.1.9": {
-        "en": "updated translations",
-        "de": "aktualisierte Übersetzungen",
-        "ru": "обновленные переводы",
-        "pt": "traduções atualizadas",
-        "nl": "bijgewerkte vertalingen",
-        "fr": "traductions mises à jour",
-        "it": "traduzioni aggiornate",
-        "es": "traducciones actualizadas",
-        "pl": "zaktualizowane tłumaczenia",
-        "zh-cn": "更新的翻译"
-      },
-      "1.1.8": {
-        "en": "added: `telnet` token is now case insensitive\nfixed: prevent object missing warning on new devices",
-        "de": "hinzugefügt: `Telnet` Token ist jetzt unabhängig von Groß- und Kleinschreibung\nbehoben: Verhindert, dass auf neuen Geräten eine Warnung zum Fehlen eines Objekts angezeigt wird",
-        "ru": "добавлено: токен telnet теперь нечувствителен к регистру\nисправлено: предотвращение предупреждения об отсутствии объекта на новых устройствах",
-        "pt": "adicionado: o token `telnet` agora não diferencia maiúsculas de minúsculas\ncorrigido: evita o aviso de falta de objeto em novos dispositivos",
-        "nl": "toegevoegd: `telnet`-token is nu niet hoofdlettergevoelig\nopgelost: voorkom dat een object ontbreekt op nieuwe apparaten",
-        "fr": "ajouté: le jeton `telnet` est maintenant insensible à la casse\ncorrigé: empêcher l'avertissement d'objet manquant sur les nouveaux appareils",
-        "it": "aggiunto: il token `telnet` ora non fa distinzione tra maiuscole e minuscole\nrisolto: impedisce l'avviso di mancanza di oggetto sui nuovi dispositivi",
-        "es": "agregado: el token `telnet` ahora no distingue entre mayúsculas y minúsculas\nsolucionado: evitar la advertencia de falta de objeto en dispositivos nuevos",
-        "pl": "dodano: token `telnet` nie rozróżnia teraz wielkości liter\nnaprawiono: zapobiegaj ostrzeżeniu o braku obiektu na nowych urządzeniach",
-        "zh-cn": "补充：`telnet`令牌现在不区分大小写\n固定：防止对象在新设备上丢失警告"
-      }
-    },
-    "title": "mydlink",
-    "titleLang": {
-      "en": "mydlink",
-      "de": "mydlink",
-      "ru": "mydlink",
-      "pt": "mydlink",
-      "nl": "mydlink",
-      "fr": "mydlink",
-      "it": "mydlink",
-      "es": "mydlink",
-      "pl": "mydlink",
-      "zh-cn": "mydlink"
-    },
-    "tier": 2,
-    "desc": {
-      "en": "connects mydlink plugs and sensors to ioBroker",
-      "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker",
-      "ru": "подключает разъемы и датчики mydlink к ioBroker",
-      "pt": "conecta plugues e sensores do mydlink ao ioBroker",
-      "nl": "verbindt mydlink-stekkers en sensoren met ioBroker",
-      "fr": "connecte les connecteurs et capteurs mydlink à ioBroker",
-      "it": "collega connettori e sensori mydlink a ioBroker",
-      "es": "conecta enchufes y sensores mydlink a ioBroker",
-      "pl": "łączy wtyczki i czujniki mydlink z ioBroker",
-      "zh-cn": "将mydlink插头和传感器连接到ioBroker"
-    },
-    "authors": [
-      "Garfonso <garfonso@mobo.info>"
-    ],
-    "license": "MIT",
-    "platform": "Javascript/Node.js",
-    "icon": "mydlink.png",
-    "main": "main.js",
-    "enabled": true,
-    "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.mydlink/master/admin/mydlink.png",
-    "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
-    "loglevel": "info",
-    "mode": "daemon",
-    "type": "iot-systems",
-    "compact": true,
-    "connectionType": "local",
-    "dataSource": "poll",
-    "keywords": [
-      "mydlink",
-      "dsp-w215",
-      "dsp-w115",
-      "dch-s150"
-    ],
-    "docs": {
-      "de": "docs/de/README.md",
-      "en": "docs/en/README.md"
-    },
-    "materialize": true,
-    "supportCustoms": false,
-    "messagebox": true,
-    "dependencies": [
-      {
-        "js-controller": ">=2.0.0"
-      }
-    ],
-    "plugins": {
-      "sentry": {
-        "dsn": "https://9fb94599ef264055b318c7a06962af3e@sentry.iobroker.net/104",
-        "pathWhitelist": [
-          "@iobroker",
-          "iobroker.js-controller",
-          "mydlink",
-          "soapclient",
-          "deviceFlags"
+    "common": {
+        "name": "mydlink",
+        "version": "1.2.1",
+        "news": {
+            "1.2.1": {
+                "en": "fix release...",
+                "de": "wiederherstellen.",
+                "ru": "исправить релиз.",
+                "pt": "corrigir a liberação.",
+                "nl": "loslaten.",
+                "fr": "correction.",
+                "it": "risolvere il rilascio.",
+                "es": "arregla la liberación.",
+                "pl": "reaktywacja.",
+                "zh-cn": "fix 释放。."
+            },
+            "1.2.0": {
+                "en": "* Updated translations & dependencies\n* Added: support for devices with multiple sockets\n* Changed: websocket devices are now also polled",
+                "de": "* Aktualisierte Übersetzungen & Abhängigkeiten\n* Hinzugefügt: Unterstützung für Geräte mit mehreren Steckdosen\n* Geändert: Websocket-Geräte werden jetzt auch abgefragt",
+                "ru": "* Обновленные переводы и зависимости\n* Добавлена: поддержка устройств с несколькими розетками\n* Изменено: устройства websocket теперь также загрязняются",
+                "pt": "* Traduções e dependências atualizadas\n* Adicionado: suporte para dispositivos com várias tomadas\n* Alterado: dispositivos websocket agora também são sondados",
+                "nl": "♪ Vertaling:\n♪ Added: support for apparatuur with multiple sockets\nQuality over Quantity (QoQ) Releases Vertaling:",
+                "fr": "* Mise à jour des traductions et dépendances\n* Ajouté: support pour les appareils avec plusieurs sockets\n* Changed: les appareils websocket sont maintenant également pollués",
+                "it": "# Traduzioni aggiornate e dipendenze\n* Aggiunto: supporto per dispositivi con prese multiple\n* Cambiato: i dispositivi websocket sono ora anche inquinati",
+                "es": "* Traducciones actualizadas \" dependencias\n* Añadido: soporte para dispositivos con múltiples sockets\n* Cambio: los dispositivos websocket ahora también son encuestados",
+                "pl": "* Tłumaczenie i zależności\n* Added: obsługa urządzeń z wieloma gniazdami\n* Changed: Websocket devices również są zanieczyszczone",
+                "zh-cn": "* A/64/50。 最新翻译和频率\n* 增编:用多种装置支助装置\n* 修改:网络装置现在也受到污染。"
+            },
+            "1.1.12": {
+                "en": "Update translations",
+                "de": "Übersetzungen aktualisieren",
+                "ru": "Обновить переводы",
+                "pt": "Atualizar traduções",
+                "nl": "Vertalingen bijwerken",
+                "fr": "Mettre à jour les traductions",
+                "it": "Aggiorna traduzioni",
+                "es": "Actualizar traducciones",
+                "pl": "Zaktualizuj tłumaczenia",
+                "zh-cn": "更新翻译"
+            },
+            "1.1.11": {
+                "en": "adjusted types & roles to type-detector.",
+                "de": "Angepasste Typen & Rollen an Typ-Detektor.",
+                "ru": "скорректированные типы и роли для детектора типа.",
+                "pt": "tipos e funções ajustados para detector de tipo.",
+                "nl": "aangepaste typen & rollen naar type-detector.",
+                "fr": "types et rôles ajustés au détecteur de type.",
+                "it": "tipi e ruoli adattati al tipo-rilevatore.",
+                "es": "tipos y roles ajustados al detector de tipos.",
+                "pl": "dostosowane typy i role do detektora typów.",
+                "zh-cn": "将类型和角色调整为类型检测器。"
+            },
+            "1.1.10": {
+                "en": "fix type warnings\nupdated translations and dependencies",
+                "de": "Typwarnungen beheben\naktualisierte Übersetzungen und Abhängigkeiten",
+                "ru": "исправить предупреждения типа\nобновленные переводы и зависимости",
+                "pt": "corrigir avisos de tipo\ntraduções atualizadas e dependências",
+                "nl": "type waarschuwingen repareren\nbijgewerkte vertalingen en afhankelijkheden",
+                "fr": "avertissements de type de correction\ntraductions et dépendances mises à jour",
+                "it": "correggere gli avvisi di tipo\ntraduzioni e dipendenze aggiornate",
+                "es": "corregir advertencias de tipo\ntraducciones y dependencias actualizadas",
+                "pl": "Ostrzeżenia o poprawkach\nzaktualizowane tłumaczenia i zależności",
+                "zh-cn": "修复类型警告\n更新的翻译和依赖项"
+            },
+            "1.1.9": {
+                "en": "updated translations",
+                "de": "aktualisierte Übersetzungen",
+                "ru": "обновленные переводы",
+                "pt": "traduções atualizadas",
+                "nl": "bijgewerkte vertalingen",
+                "fr": "traductions mises à jour",
+                "it": "traduzioni aggiornate",
+                "es": "traducciones actualizadas",
+                "pl": "zaktualizowane tłumaczenia",
+                "zh-cn": "更新的翻译"
+            },
+            "1.1.8": {
+                "en": "added: `telnet` token is now case insensitive\nfixed: prevent object missing warning on new devices",
+                "de": "hinzugefügt: `Telnet` Token ist jetzt unabhängig von Groß- und Kleinschreibung\nbehoben: Verhindert, dass auf neuen Geräten eine Warnung zum Fehlen eines Objekts angezeigt wird",
+                "ru": "добавлено: токен telnet теперь нечувствителен к регистру\nисправлено: предотвращение предупреждения об отсутствии объекта на новых устройствах",
+                "pt": "adicionado: o token `telnet` agora não diferencia maiúsculas de minúsculas\ncorrigido: evita o aviso de falta de objeto em novos dispositivos",
+                "nl": "toegevoegd: `telnet`-token is nu niet hoofdlettergevoelig\nopgelost: voorkom dat een object ontbreekt op nieuwe apparaten",
+                "fr": "ajouté: le jeton `telnet` est maintenant insensible à la casse\ncorrigé: empêcher l'avertissement d'objet manquant sur les nouveaux appareils",
+                "it": "aggiunto: il token `telnet` ora non fa distinzione tra maiuscole e minuscole\nrisolto: impedisce l'avviso di mancanza di oggetto sui nuovi dispositivi",
+                "es": "agregado: el token `telnet` ahora no distingue entre mayúsculas y minúsculas\nsolucionado: evitar la advertencia de falta de objeto en dispositivos nuevos",
+                "pl": "dodano: token `telnet` nie rozróżnia teraz wielkości liter\nnaprawiono: zapobiegaj ostrzeżeniu o braku obiektu na nowych urządzeniach",
+                "zh-cn": "补充：`telnet`令牌现在不区分大小写\n固定：防止对象在新设备上丢失警告"
+            }
+        },
+        "title": "mydlink",
+        "titleLang": {
+            "en": "mydlink",
+            "de": "mydlink",
+            "ru": "mydlink",
+            "pt": "mydlink",
+            "nl": "mijndlink",
+            "fr": "mondlink",
+            "it": "mydlink",
+            "es": "mydlink",
+            "pl": "mydlink",
+            "zh-cn": "mydlink"
+        },
+        "desc": {
+            "en": "connects mydlink plugs and sensors to ioBroker",
+            "de": "verbindet mydlink Stecker und Sensoren mit ioBroker",
+            "ru": "подключает вилки и датчики mydlink к ioBroker",
+            "pt": "conecta plugues mydlink e sensores ao ioBroker",
+            "nl": "verbindt mydlink-stekkers en -sensoren met ioBroker",
+            "fr": "connecte les prises et capteurs mydlink à ioBroker",
+            "it": "collega le spine e i sensori mydlink a ioBroker",
+            "es": "conecta enchufes mydlink y sensores a ioBroker",
+            "pl": "łączy wtyczki i czujniki mydlink z ioBroker",
+            "zh-cn": "将 mydlink 插头和传感器连接到 ioBroker"
+        },
+        "authors": [
+            "Garfonso <garfonso@mobo.info>"
         ],
-        "pathBlacklist": [],
-        "errorBlacklist": [
-          "SyntaxError"
-        ]
-      }
-    }
-  },
-  "native": {
-    "devices": []
-  },
-  "objects": [],
-  "instanceObjects": [
-    {
-      "_id": "info",
-      "type": "channel",
-      "common": {
-        "name": "Information"
-      },
-      "native": {}
+        "keywords": [
+            "mydlink",
+            "dlink",
+            "dsp-w215",
+            "dsp-w115",
+            "dch-s150"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "build/main.js",
+        "icon": "mydlink.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.mydlink/master/admin/mydlink.png",
+        "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "iot-systems",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "materialize"
+        },
+        "docs": {
+            "de": "docs/de/README.md",
+            "en": "docs/en/README.md"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.3.22"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=5.0.0"
+            }
+        ],
+        "plugins": {
+            "sentry": {
+                "dsn": "https://9fb94599ef264055b318c7a06962af3e@sentry.iobroker.net/104",
+                "pathWhitelist": [
+                    "@iobroker",
+                    "iobroker.js-controller",
+                    "mydlink",
+                    "soapclient",
+                    "deviceFlags"
+                ],
+                "pathBlacklist": [],
+                "errorBlacklist": [
+                    "SyntaxError"
+                ]
+            }
+        }
     },
-    {
-      "_id": "info.connection",
-      "type": "state",
-      "common": {
-        "role": "indicator.connected",
-        "name": "connection status to wifi determined by at least one device responding",
-        "type": "boolean",
-        "read": true,
-        "write": false,
-        "def": false
-      },
-      "native": {}
-    }
-  ]
+    "native": {
+        "devices": []
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "connection status to wifi determined by at least one device responding",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
 }
