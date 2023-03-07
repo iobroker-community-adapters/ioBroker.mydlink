@@ -17,144 +17,14 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 const utils = require('@iobroker/adapter-core');
-const Mdns = require('mdns-discovery');
 const deviceFlags = require('./lib/deviceFlags');
 
 // Load your modules here, e.g.:
 // const fs = require('fs');
 const createSoapClient = require('./lib/soapclient.js');
-const WebSocketClient = require('dlink_websocketclient');
 const axios = require('axios').default;
 
-const unreachableSuffix = '.unreachable';
-const enabledSuffix = '.enabled';
-const stateSuffix = '.state';
-const powerSuffix = '.currentPower';
-const totalPowerSuffix = '.totalPower';
-const temperatureSuffix = '.temperature';
-const lastDetectedSuffix = '.lastDetected';
-const noMotionSuffix = '.no_motion';
-const rebootSuffix = '.reboot';
-
-function decrypt(key, value) {
-    if (!value || !key) {
-        return value;
-    }
-    let result = '';
-    for (let i = 0; i < value.length; ++i) {
-        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-    }
-    return result;
-}
-function encrypt(key, value) {
-    if (!value || !key) {
-        return value;
-    }
-    let result = '';
-    for (let i = 0; i < value.length; ++i) {
-        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-    }
-    return result;
-}
-
-/**
- * create id from mac:
- * @param {string} mac
- */
-function idFromMac(mac) {
-    return mac.toUpperCase().replace(/:/g, '');
-}
-
-/**
- * @typedef DeviceConfig
- * @type {Object}
- * @property {string} model - model name of device
- */
-/**
- * @typedef Device
- * @type {Object}
- * @property {object} client - soap client
- * @property {string} ip - device.ip,
- * @property {string} pin - device.pin,
- * @property {string} mac - mac address and id of device
- * @property {string} id - full object id of device (derived from mac)
- * @property {string} name - device.name, //for easier logging
- * @property {boolean} loggedIn - true if logged in
- * @property {boolean} identified - true if identified
- * @property {boolean} ready - true if logged in and ready to send / receive and online
- * @property {boolean} loginErrorPrinted - used to surpress repeating login errors.
- * @property {boolean} created - true if created in ioBroker (can only happen with mac)
- * @property {number} pollInterval configured pollInterval in milliseconds
- * @property {NodeJS.Timeout|undefined} intervalHandle handle of interval
- * @property {string} model Model name of hardware device
- * @property {Record<string, boolean | number | string>} flags determine what features the hardware has
- * @property {boolean} enabled true if device should be talked too.
- * @property {boolean} useWebSocket true if device uses webSocket client instead of soapclient.
- */
-
 class MyDlink extends utils.Adapter {
-    /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
-     */
-    constructor(options) {
-        super({
-            ...options,
-            name: 'mydlink',
-        });
-        this.on('ready', this.onReady.bind(this));
-        this.on('stateChange', this.onStateChange.bind(this));
-        this.on('message', this.onMessage.bind(this));
-        this.on('unload', this.onUnload.bind(this));
-        this.secret = '';
-
-        /**
-         * Array of devices.
-         *  Device consists of:
-         *      config: which includes IP, PIN, ... set by the user
-         *      client: soapclient for interaction with device
-         * @type {Array<Device>}
-         */
-        this.devices = [];
-        /**
-         * Auto detected devices. Store here and aggregate until we are sure it is mydlink and have mac
-         *  -> multiple messages.
-         * @type {{}}
-         */
-        this.detectedDevices = {};
-    }
-
-    /**
-     * Create states for new devices, ie devices that came from config but did not have a device created, yet.
-     * @param {Device} device
-     * @returns {Promise<void>}
-     */
-    async createNewDevice(device) {
-        if (!device.id && device.mac) {
-            device.id = idFromMac(device.mac);
-        }
-        if (!device.id) {
-            this.log.warn('Could not create device ' + device.name + ' without MAC. Please check config or if device is online.');
-            return;
-        }
-
-        //also set the native part of the device:
-        await this.extendObjectAsync(device.id, {
-            type: 'device',
-            common: {
-                name: device.name
-            },
-            native: {
-                ip: device.ip,
-                mac: device.mac,
-                pin: encrypt(this.secret, device.pin),
-                pollInterval: device.pollInterval,
-                enabled: device.enabled,
-                name: device.name,
-                model: device.model,
-                useWebSocket: device.useWebSocket
-            }
-        });
-    }
 
     /**
      * Creates objects based on flags on device. IE for W215 also temperature and power measurement.
@@ -550,204 +420,9 @@ class MyDlink extends utils.Adapter {
     }
 
     /**
-     * Create device object from ioBroker-Object.
-     * @param {ioBroker.DeviceObject} configDevice
-     * @returns {Device}
-     */
-    createDeviceFromConfig(configDevice) {
-        this.log.debug('Processing ' + configDevice.common.name);
-        const native = configDevice.native;
-
-        //internal configuration:
-        return {
-            client: {}, //filled later
-            ip: /** @type {string} */ (native.ip),
-            pin: (native.mac && !native.pinNotEncrypted) ? decrypt(this.secret, native.pin) : /** @type {string} **/ (native.pin),
-            pollInterval: /** @type {number} */ (native.pollInterval),
-            mac: native.mac ? /** @type {string} */ (native.mac).toUpperCase() : '',
-            id: configDevice._id.split('.')[2], //for easier state updates -> depents on MAC. - remove adapter & instance
-            name: /** @type {string} */ (native.name), //for easier logging
-            loggedIn: false,
-            identified: false,
-            ready: false,
-            intervalHandle: undefined,
-            loginErrorPrinted: false,
-            created: true,
-            model: /** @type {string} */ (native.model || ''),
-            flags: {},
-            enabled: /** @type {boolean} */ (native.enabled),
-            useWebSocket: /** @type {boolean} */ (native.useWebSocket)
-        };
-    }
-
-    /**
-     *
-     * @param {string} ip
-     * @param {string} pin
-     * @returns {Device}
-     */
-    createDeviceFromIpAndPin(ip, pin) {
-        //internal configuration:
-        return {
-            client: {}, //filled later
-            ip: ip,
-            pin: pin,
-            pollInterval: 30000,
-            mac: '',
-            id: '',
-            name: '',
-            loggedIn: false,
-            identified: false,
-            ready: false,
-            intervalHandle: undefined,
-            loginErrorPrinted: false,
-            created: true,
-            model: '',
-            flags: {},
-            enabled: true,
-            useWebSocket: false
-        };
-    }
-
-    /**
-     * Creates full device from configuration table:
-     * @param {Record<string, any>} tableDevice
-     * @param {boolean} [doDecrypt] if false will not decrypt pin here. Defaults to false.
-     * @returns {Device}
-     */
-    createDeviceFromTable(tableDevice, doDecrypt = false) {
-        //internal configuration:
-        return {
-            client: {}, //filled later
-            ip: tableDevice.ip,
-            pin: doDecrypt && tableDevice.mac ? decrypt(this.secret, tableDevice.pin) : tableDevice.pin,
-            pollInterval: tableDevice.pollInterval,
-            mac: tableDevice.mac ? tableDevice.mac.toUpperCase() : '',
-            id: tableDevice.mac ? idFromMac(tableDevice.mac) : '',
-            name: tableDevice.name,
-            loggedIn: false,
-            identified: false,
-            ready: false,
-            intervalHandle: undefined,
-            loginErrorPrinted: false,
-            created: true,
-            model: '',
-            flags: {},
-            enabled: tableDevice.enabled,
-            useWebSocket: false
-        };
-    }
-
-    /**
-     * errorHandler for socket errors with webSocketClient
-     * @param {Device} device
-     * @param {number|undefined} [code] possible error code
-     * @param {Object|undefined} [err] possible error object
-     */
-    async errorHandler(device, code, err) {
-        await this.setStateAsync(device.id + unreachableSuffix, true, true);
-        if (code || err) {
-            this.log.debug(device.name + ': Socket error: ' + code + ' - ' + err ? err.stack : err);
-        } else {
-            this.log.debug(device.name + ': Socket closed.');
-        }
-        this.stopDevice(device);
-        device.ready = false;
-        //abuse unused intervalHandle here.
-        if (device.intervalHandle) {
-            clearTimeout(device.intervalHandle);
-        }
-        device.intervalHandle = setTimeout(() => {
-            this.startDevice(device);
-        }, 10000);
-    }
-
-    /**
-     * starting communication with device from config.
-     * @param {Device} device
-     * @returns {Promise<boolean>}
-     */
-    async startDevice(device){
-        //if device was already started -> stop it.
-        //(use case: ip did change or settings did change)
-        this.stopDevice(device);
-
-        //interrogate enabled devices
-        //this will get MAC for manually configured devices.
-        if (device.enabled) {
-            //login:
-            await this.loginDevice(device);
-
-            if (device.loggedIn) {
-                try {
-                    await this.identifyDevice(device);
-                } catch (e) {
-                    this.log.error(device.name + ' could not get settings: ' + e.stack);
-                }
-            }
-        }
-
-        //transfer enabled flag to object:
-        await this.setStateAsync(device.id + enabledSuffix, {val: device.enabled, ack: true});
-
-        //start polling if device is enabled (do this after all is setup).
-        let result = false;
-        if (device.enabled) {
-            if (device.useWebSocket) {
-                //event listener:
-                device.client.on('switched', (val, socket) => {
-                    this.log.debug(`Event from device ${socket} now ${val}`);
-                    if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
-                        this.setStateAsync(device.id + stateSuffix + '_' + (socket + 1), val, true);
-                    } else {
-                        this.setStateAsync(device.id + stateSuffix, val, true);
-                    }
-                });
-                //error handling:
-                device.client.on('error', (code, error) => this.errorHandler(device, code, error));
-                device.client.on('close', () => this.errorHandler(device));
-                device.client.on('message', (message) => this.log.debug(`${device.name} got message: ${message}`));
-                await this.setStateAsync(device.id + unreachableSuffix, false, true);
-                device.ready = true;
-                this.log.debug('Setup device event listener.');
-            }
-
-            //some devices, for example W245, don't push.. so poll websocket also.
-            let interval = device.pollInterval;
-            if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
-                this.log.debug('Start polling for ' + device.name + ' with interval ' + interval);
-                result = true; //only use yellow/green states if polling at least one device.
-                if (interval < 500) {
-                    this.log.warn('Increasing poll rate to twice per second. Please check device config.');
-                    interval = 500; //polling twice every second should be enough, right?
-                }
-                device.pollInterval = interval;
-                // @ts-ignore
-                device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
-                    device.pollInterval);
-            } else {
-                this.log.debug('Polling of ' + device.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        // Initialize your adapter here
-
-        //get secret for decryption:
-        const systemConfig = await this.getForeignObjectAsync('system.config');
-        if (systemConfig) {
-            this.secret = (systemConfig.native ? systemConfig.native.secret : '');
-        }
-        this.secret = this.secret || 'RJaeBLRPwvPfh5O'; //fallback in error case or for old installations without secret.
-
-        //start auto detection:
-        this.autoDetect();
 
         //start existing devices:
         let haveActiveDevices = false;
@@ -778,7 +453,7 @@ class MyDlink extends utils.Adapter {
                     break; //break on first copy -> will remove additional copies later.
                 }
             }
-            const device = this.createDeviceFromConfig(existingDevice);
+            const device = DeviceInfo.createFromObject(existingDevice);
             await this.createNewDevice(device); //store new config.
             if (existingDevice.native.pinNotEncrypted) {
                 needUpdateConfig = true;
@@ -795,7 +470,7 @@ class MyDlink extends utils.Adapter {
 
         //add non-existing devices from config:
         for (const configDevice of configDevicesToAdd) {
-            const device = this.createDeviceFromTable(configDevice, !configDevice.pinNotEncrypted);
+            const device = DeviceInfo.createFromTable(configDevice, !configDevice.pinNotEncrypted);
             this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
             const oldDevice = this.devices.find(d => d.mac === device.mac);
             if (oldDevice) {
@@ -820,7 +495,7 @@ class MyDlink extends utils.Adapter {
                 const configDevice = {
                     ip: device.ip,
                     mac: device.mac,
-                    pin: encrypt(this.secret, device.pin),
+                    pin: DeviceInfo.encryptDecrypt(this.secret, device.pin),
                     pollInterval: device.pollInterval,
                     enabled: device.enabled,
                     name: device.name,
@@ -837,151 +512,6 @@ class MyDlink extends utils.Adapter {
         }
 
         await this.setStateChangedAsync('info.connection', !haveActiveDevices, true); //if no active device -> make green.
-    }
-
-    /**
-     * Poll a value, compare it to the value already set and if different, set value in DB.
-     * @param pollFunc - function to use for polling / or set state
-     * @param id - full or local id.
-     * @param {Record<string, boolean>} [flags] convert to number or invert boolean
-     * @returns {Promise<boolean>} //true if change did happen.
-     */
-    async pollAndSetState(pollFunc, id, flags = {number: false, invert: false}) {
-        let value = await pollFunc();
-        if (value === 'ERROR') {
-            //something went wrong... maybe can not read that setting at all?
-            throw new Error('Error during reading ' + id);
-        } else if (value === 'false') {
-            value = false;
-        } else if (value === 'true') {
-            value = true;
-        } else if (typeof value === 'string' && flags.number) {
-            value = Number(value); //prevent wrong type warnings.
-        }
-
-        if (flags.invert) {
-            value = !value;
-        }
-
-        const result = await this.setStateChangedAsync(id, value, true);
-        // @ts-ignore
-        return !result.notChanged;
-    }
-
-    /**
-     * Get code from network error.
-     * @param {Record<string, any>} e
-     * @returns {number|string}
-     */
-    processNetworkError(e) {
-        if (e.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
-            //See if we are logged out -> login again on next poll.
-            //otherwise ignore and try again later?
-            return e.response.status;
-        } else if (e.request) {
-            // The request was made but no response was received
-            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-            // http.ClientRequest in node.js
-            //probably ECONNRESET or Timeout -> e.code should be set.
-            return e.code;
-        } else {
-            //something else...?
-            return e.code;
-        }
-    }
-
-    /**
-     * Do polling here.
-     * @param device
-     * @returns {Promise<void>}
-     */
-    async onInterval(device) {
-        //this.log.debug('Polling ' + device.name);
-        try {
-            if (!device.loggedIn) {
-                await this.loginDevice(device);
-            }
-            if (device.loggedIn && !device.identified) {
-                await this.identifyDevice(device);
-            }
-            if (device.loggedIn && device.identified) {
-                await this.pollAndSetState(device.client.isDeviceReady.bind(device.client), device.id + unreachableSuffix, {invert: true});
-                //poll ready will throw error if not ready.
-                device.ready = true;
-                await this.setStateChangedAsync('info.connection', true, true);
-                if (device.flags.canSwitchOnOff) {
-                    if (device.flags.numSockets !== undefined && device.flags.numSockets > 1) {
-                        const states = await device.client.state(-1); //get all socket states.
-                        for (let index = 1; index <= device.flags.numSockets; index += 1) {
-                            const id = device.id + stateSuffix + '_' + index;
-                            const val = states[index - 1];
-                            await this.setStateChangedAsync(id, val, true);
-                        }
-                    } else {
-                        await this.pollAndSetState(device.client.state.bind(device.client), device.id + stateSuffix);
-                    }
-                }
-                if (device.flags.hasLastDetected) {
-                    const detectionHappened = await this.pollAndSetState(device.client.lastDetection.bind(device.client), device.id + lastDetectedSuffix);
-                    if (detectionHappened) {
-                        //always set state to true, for new detections.
-                        await this.setStateAsync(device.id + stateSuffix, detectionHappened, true);
-                    } else {
-                        await this.setStateChangedAsync(device.id + stateSuffix, false, true);
-                    }
-
-                    //fill no detection variable:
-                    const lastDetection = await this.getStateAsync(device.id + lastDetectedSuffix);
-                    if (lastDetection) {
-                        //@ts-ignore -> we already check for null / undefined???
-                        const noMotion = Math.round((Date.now() - /** @type {number} */ lastDetection.val) / 1000);
-                        await this.setStateChangedAsync(device.id + noMotionSuffix, noMotion, true);
-                    }
-                }
-                if (device.flags.hasTemp) {
-                    await this.pollAndSetState(device.client.temperature.bind(device.client), device.id + temperatureSuffix, {number: true});
-                }
-                if (device.flags.hasPower) {
-                    await this.pollAndSetState(device.client.consumption.bind(device.client), device.id + powerSuffix, {number: true});
-                }
-                if (device.flags.hasTotalPower) {
-                    await this.pollAndSetState(device.client.totalConsumption.bind(device.client), device.id + totalPowerSuffix, {number: true});
-                }
-                //this.log.debug('Polling of ' + device.name + ' finished.');
-            }
-        } catch (e) {
-            const code = this.processNetworkError(e);
-            if (code === 403 || device.ready) {
-                device.loggedIn = false; //login next polling.
-            }
-            this.log.debug('Error during polling ' + device.name + ': ' + code + ' - ' + e.stack + ' - ' + e.body);
-            device.ready = false;
-            await this.setStateChangedAsync(device.id + unreachableSuffix, true, true);
-
-            let connected = false;
-            this.devices.forEach((device) => { connected = connected || device.ready; }); //turn green if at least one device is ready = reachable.
-            await this.setStateChangedAsync('info.connection', connected, true);
-        }
-        device.intervalHandle = setTimeout(this.onInterval.bind(this, device),
-            device.pollInterval);
-    }
-
-    stopDevice(device) {
-        if (device.client && typeof device.client.removeAllListeners === 'function') {
-            device.client.removeAllListeners('switch');
-            device.client.removeAllListeners('error');
-            device.client.removeAllListeners('close');
-        }
-        if (device.intervalHandle) {
-            clearInterval(device.intervalHandle);
-        }
-        if (device.client && typeof device.client.disconnect === 'function') {
-            device.client.disconnect();
-        }
-        device.ready = false;
-        device.loggedIn = false;
     }
 
     /**
@@ -1084,7 +614,7 @@ class MyDlink extends utils.Adapter {
                     const devices = await this.getDevicesAsync();
                     const tableDevices = [];
                     for (const device of devices)  {
-                        device.native.pin = decrypt(this.secret, device.native.pin);
+                        device.native.pin = DeviceInfo.encryptDecrypt(this.secret, device.native.pin);
                         tableDevices.push(device.native);
                     }
                     if (obj.callback) {
@@ -1095,7 +625,7 @@ class MyDlink extends utils.Adapter {
                 case 'identifyDevice': {
                     const params = /** @type {Record<string, any>} */ (obj.message);
                     if (params && params.ip && params.pin) {
-                        const device = this.createDeviceFromIpAndPin(params.ip, params.pin);
+                        const device = new DeviceInfo(params.ip, params.pin);
                         await this.startDevice(device);
                         if (device.loggedIn && device.identified) { //will be false if ip wrong or duplicate mac.
                             this.devices.push(device);
@@ -1120,153 +650,6 @@ class MyDlink extends utils.Adapter {
                 }
             }
 
-        }
-    }
-
-    autoDetect() {
-        this.mdns = new Mdns({
-            timeout: 0, //0 == stay active??
-            name: [ '_dhnap._tcp.local', '_dcp._tcp.local' ],
-            find: '*',
-            broadcast: false
-        });
-
-        this.log.debug('Auto detection started');
-        this.mdns.on('entry', this.onDetection.bind(this));
-        this.mdns.run(() => this.log.info('Discovery done'));
-    }
-
-    async onDetection(entry) {
-        //format of data: length-byte + text + length-byte + text + length-byte + text ...
-        function extractStringsFromBuffer(buffer) {
-            let index = 0;
-            const strings = [];
-            while(index < buffer.length) {
-                const length = buffer.readInt8(index);
-                index += 1;
-                strings.push(buffer.subarray(index, index + length).toString());
-                index += length;
-            }
-            return strings;
-        }
-
-        //somehow starts to detect fritzbox later on??
-        if (entry.name !== '_dhnap._tcp.local' && entry.name !== '_dcp._tcp.local') {
-            //this.log.debug('Ignoring false detection? -> ' + entry.ip + ' - ' + entry.name);
-            return;
-        }
-        if (entry.name === '_dcp._tcp.local') {
-            this.log.debug('Maybe detected websocket device');
-            console.log(entry);
-            //get model:
-            let model;
-            if (entry.PTR && entry.PTR.data) {
-                model = entry.PTR.data.substring(0, 8);
-            }
-
-            //somehow I get records for devices from wrong IP.. or they report devices, they detect under their IP?? not sure...
-            //let's connect here and get the MAC -> so we can securely identify the device.
-            //then decide if it is a new one (update & present in UI) or an old one (ignore for now).
-            const newDevice = this.createDeviceFromIpAndPin(entry.ip, 'INVALID');
-            newDevice.model = model;
-            newDevice.client = new WebSocketClient({
-                ip: newDevice.ip,
-                pin: newDevice.pin,
-                useTelnetForToken: false,
-                log: console.debug
-            });
-
-            try {
-                await newDevice.client.login();
-                newDevice.id = newDevice.client.getDeviceId().toUpperCase();
-                if (newDevice.id) {
-                    // @ts-ignore
-                    newDevice.mac = newDevice.id.match(/.{2}/g).join(':');
-                    this.log.debug(`Got websocket device ${model} on ${newDevice.ip}`);
-                }
-            } catch (e) {
-                this.log.debug('Could not identify websocket device: ' + e.stack);
-            } finally {
-                this.stopDevice(newDevice);
-            }
-
-            //now use mac to check if we already now that device:
-            const device = this.devices.find(device => device.mac === entry.mac);
-            if (device) {
-                this.log.debug(`Device was already present as ${device.model} on ${device.ip}`);
-                if (device.ip === newDevice.ip && device.model !== newDevice.model) {
-                    this.log.debug(`Model still differs? ${device.model} != ${newDevice.model}`);
-                    if (model && device.useWebSocket) {
-                        this.log.debug('Updated model to ' + model);
-                        device.model = model;
-                        await this.createNewDevice(device); //store model in config.
-                    }
-                }
-            } else { //not known yet, add to detected devices:
-                this.detectedDevices[entry.ip] = {
-                    ip: newDevice.ip,
-                    name: entry.name,
-                    type: model,
-                    mac: newDevice.mac,
-                    mydlink: true,
-                    useWebSocket: true,
-                    alreadyPresent: !!device
-                };
-            }
-        }
-
-        //this.log.debug('Got discovery: ' + JSON.stringify(entry, null, 2));
-        if (entry.TXT && entry.TXT.data) {
-            //build detected device and fill it:
-            let device = this.detectedDevices[entry.ip];
-            if (!device) {
-                device = {
-                    ip: entry.ip,
-                    name: entry.name
-                };
-            }
-
-            //parse buffer:
-            const keyValuePairs = extractStringsFromBuffer(entry.TXT.data);
-            for (const pair of keyValuePairs) {
-                const [ key, value ] = pair.split('=');
-                switch(key.toLowerCase()) {
-                    //extract mac from buffer:
-                    case 'mac': {
-                        device.mac = value.toUpperCase();
-                        break;
-                    }
-                    //extract model number from buffer:
-                    case 'model_number': {
-                        device.type = value;
-                        break;
-                    }
-                    //if mydlink=true -> we should look at that device! :)
-                    case 'mydlink': {
-                        if (value === 'true') {
-                            device.mydlink = true; //ok, great :-)
-                        }
-                    }
-                }
-            }
-
-            if (device.mydlink) {
-                this.detectedDevices[device.ip] = device;
-                const oldDevice = this.devices.find(d => d.mac === device.mac);
-                if (oldDevice) {
-                    //update model, if differs.
-                    if (oldDevice.model !== device.type) {
-                        oldDevice.model = device.type;
-                    }
-                    //found device we already know. Let's check ip.
-                    if (device.ip !== oldDevice.ip) {
-                        oldDevice.ip = device.ip;
-                        await this.startDevice(oldDevice);
-                    }
-                    device.alreadyPresent = true;
-                }
-                this.log.debug('Detected Device now is: ' + JSON.stringify(device, null, 2));
-            }
         }
     }
 }
