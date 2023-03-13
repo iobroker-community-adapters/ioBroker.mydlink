@@ -90,8 +90,11 @@ export abstract class Device extends  DeviceInfo {
         await this.adapter.extendObjectAsync(this.id, {
             type: 'device',
             common: {
-                name: this.name
-            },
+                name: this.name,
+                statusStates: {
+                    onlineId: `${this.adapter.namespace}.${this.id}.${Suffixes.reachable}`
+                }
+            } as Partial<ioBroker.DeviceCommon>,
             native: {
                 ip: this.ip,
                 mac: this.mac,
@@ -102,6 +105,50 @@ export abstract class Device extends  DeviceInfo {
                 model: this.model,
                 useWebSocket: this.isWebsocket
             }
+        });
+    }
+
+    /**
+     * Creates objects for the device.
+     */
+    async createObjects() {
+        //enabled indicator:
+        await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.enabled, {
+            type: 'state',
+            common: {
+                name: 'enabled',
+                type: 'boolean',
+                role: 'indicator',
+                read: true,
+                write: false
+            },
+            native: {}
+        });
+
+        //have ready indicator:
+        await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.unreachable, {
+            type: 'state',
+            common: {
+                name: 'unreach',
+                type: 'boolean',
+                role: 'indicator.maintenance.unreach',
+                read: true,
+                write: false
+            },
+            native: {}
+        });
+
+        //have ready indicator:
+        await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.reachable, {
+            type: 'state',
+            common: {
+                name: 'device is reachable',
+                type: 'boolean',
+                role: 'indicator.reachable',
+                read: true,
+                write: false
+            },
+            native: {}
         });
     }
 
@@ -118,10 +165,27 @@ export abstract class Device extends  DeviceInfo {
 
     async login() {
         //TODO!
+        await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
+        await this.adapter.setStateAsync(this.id + Suffixes.unreachable, !this.ready, true);
     }
 
     async identify() {
         //TODO!
+    }
+
+    async handleNetworkError(e: any) {
+        const code = processNetworkError(e);
+        if (code === 403 || this.ready) {
+            this.loggedIn = false; //login next polling.
+        }
+        this.adapter.log.debug('Error during communication ' + this.name + ': ' + code + ' - ' + e.stack + ' - ' + e.body);
+        this.ready = false;
+        await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
+        await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, false, true);
+
+        let connected = false;
+        this.adapter.devices.forEach((device) => { connected = connected || device.ready; }); //turn green if at least one device is ready = reachable.
+        await this.adapter.setStateChangedAsync('info.connection', connected, true);
     }
 
     /**
@@ -139,7 +203,8 @@ export abstract class Device extends  DeviceInfo {
             }
             if (this.loggedIn && this.identified) {
                 this.ready = this.client.isDeviceReady();
-                await this.adapter.setStateAsync(this.id + Suffixes.unreachable, !this.ready, true);
+                await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, !this.ready, true);
+                await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
 
                 //prevent more interaction with device and reset connection.
                 if (this.ready) {
@@ -148,21 +213,13 @@ export abstract class Device extends  DeviceInfo {
                 }
             }
         } catch (e: any) {
-            const code = processNetworkError(e);
-            if (code === 403 || this.ready) {
-                this.loggedIn = false; //login next polling.
-            }
-            this.adapter.log.debug('Error during polling ' + this.name + ': ' + code + ' - ' + e.stack + ' - ' + e.body);
-            this.ready = false;
-            await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
-
-            let connected = false;
-            this.adapter.devices.forEach((device) => { connected = connected || device.ready; }); //turn green if at least one device is ready = reachable.
-            await this.adapter.setStateChangedAsync('info.connection', connected, true);
+            await this.handleNetworkError(e);
         }
 
-        this.intervalHandle = setTimeout(() => this.onInterval,
-            this.pollInterval);
+        if (this.pollInterval > 0) { //only start timeout again, if set in settings.
+            this.intervalHandle = setTimeout(() => this.onInterval,
+                this.pollInterval);
+        }
     }
 
     /**
@@ -212,11 +269,25 @@ export abstract class Device extends  DeviceInfo {
                 this.intervalHandle = setTimeout(() => this.onInterval,
                     this.pollInterval);
             } else {
+                this.pollInterval = 0;
                 this.adapter.log.debug('Polling of ' + this.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
             }
         }
 
         return result;
     }
+
+    /**
+     * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
+     * @param id
+     * @param state
+     */
+    async handleStateChange(id : string, state : ioBroker.State) {
+        if (this.loggedIn) {
+            await this.login();
+        }
+
+    }
+
 }
 

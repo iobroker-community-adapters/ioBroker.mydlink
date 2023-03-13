@@ -1,5 +1,5 @@
 import { WebSocketClient } from 'dlink_websocketclient';
-import { Device } from './Device';
+import {Device, processNetworkError} from './Device';
 import {Suffixes} from './suffixes';
 import {Mydlink} from '../main';
 
@@ -19,6 +19,45 @@ export class WebSocketDevice extends Device {
             useTelnetForToken: this.pinDecrypted.toUpperCase() === 'TELNET',
             log: console.debug
         });
+    }
+
+    /**
+     * Creates objects for the device.
+     */
+    async createObjects() {
+        await super.createObjects();
+        if (this.numSockets > 1) {
+            //create state for each socket.
+            for (let index = 1; index <= this.numSockets; index += 1) {
+                const id = this.id + Suffixes.state + '_' + index;
+                await this.adapter.setObjectNotExistsAsync(id, {
+                    type: 'state',
+                    common: {
+                        name: 'Socket ' + index,
+                        type: 'boolean',
+                        role: 'switch',
+                        read: true,
+                        write: true
+                    },
+                    native: { index: index }
+                });
+                await this.adapter.subscribeStatesAsync(id);
+            }
+        } else {
+            //create state object, for plug this is writable for sensor not.
+            await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.state, {
+                type: 'state',
+                common: {
+                    name: 'state of plug',
+                    type: 'boolean',
+                    role: 'switch',
+                    read: true,
+                    write: true
+                },
+                native: {}
+            });
+            await this.adapter.subscribeStatesAsync(this.id + Suffixes.state);
+        }
     }
 
     stop() : void {
@@ -98,4 +137,36 @@ export class WebSocketDevice extends Device {
 
         return result;
     }
+
+    /**
+     * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
+     * @param id
+     * @param state
+     */
+    async handleStateChange(id : string, state : ioBroker.State) {
+        if (typeof state.val === 'boolean') {
+            if (!this.loggedIn) {
+                await this.login();
+            }
+
+            let socket = 0;
+            if (this.numSockets > 1) {
+                socket = Number(id.substring(id.lastIndexOf('_') + 1)) - 1; //convert to 0 based index here.
+            }
+            try {
+                const newVal = await this.client.switch(state.val, socket);
+                this.adapter.log.debug(`Switched Socket ${socket} of ${this.name} ${state.val ? 'on' : 'off'}.`);
+                await this.adapter.setStateAsync(id, newVal, true);
+            } catch(e: any) {
+                const code = processNetworkError(e);
+                if (code === 403) {
+                    this.loggedIn = false; //login next polling.
+                }
+                this.adapter.log.error('Error while switching device ' + this.name + ': ' + code + ' - ' + e.stack);
+            }
+        } else {
+            this.adapter.log.warn('Wrong state type. Only boolean accepted for switch.');
+        }
+    }
+
 }

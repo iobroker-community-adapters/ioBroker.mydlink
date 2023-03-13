@@ -67,12 +67,15 @@ export class Mydlink extends utils.Adapter {
      */
     private onUnload(callback: () => void): void {
         try {
-            // Here you must clear all timeouts or intervals that may still be active
-            // clearTimeout(timeout1);
-            // clearTimeout(timeout2);
-            // ...
-            // clearInterval(interval1);
+            this.log.debug('Stop polling');
+            for (const device of this.devices) {
+                device.stop();
+            }
+            if (this.autoDetector) {
+                this.autoDetector.close();
+            }
 
+            this.log.info('cleaned everything up...');
             callback();
         } catch (e) {
             callback();
@@ -82,13 +85,21 @@ export class Mydlink extends utils.Adapter {
     /**
      * Is called if a subscribed state changes
      */
-    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-        if (state) {
+    private async onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+        if (state) { //ignore delete state
             // The state was changed
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-        } else {
-            // The state was deleted
-            this.log.info(`state ${id} deleted`);
+
+            //only act if ack = false.
+            if (state.ack === false) {
+                const deviceId = id.split('.')[2]; //0 = adapter, 1 = instance -> 2 = device id.
+                const device = this.devices.find(d => d.id === deviceId);
+                if (device) {
+                    await device.handleStateChange(id, state);
+                } else {
+                    this.log.info(`Unknown device ${deviceId} for ${id}. Can't control anything.`);
+                }
+            }
         }
     }
 

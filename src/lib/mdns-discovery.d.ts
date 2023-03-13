@@ -4,5 +4,6 @@ declare module 'mdns-discovery' {
 
         on(event: string, callback: method);
         run(callback: method);
+        close();
     }
 }

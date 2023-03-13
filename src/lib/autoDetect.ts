@@ -146,6 +146,12 @@ export class AutoDetector {
         }
     }
 
+    close () {
+        if (this.mdns && typeof this.mdns.close === 'function') {
+            this.mdns.close();
+        }
+    }
+
     constructor (adapter : Mydlink) {
         this.adapter = adapter;
         this.mdns = new Mdns({

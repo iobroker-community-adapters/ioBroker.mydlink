@@ -10,13 +10,6 @@ export interface Client {
     state(index?: number) : Promise<boolean | Array<boolean>>;
 
     /**
-     * Change the state of a socket.
-     * @param on new value of switch.
-     * @param index
-     */
-    switch(on: boolean, index?: number) : Promise<boolean | void>;
-
-    /**
      * Login to real device using device info
      */
     login(device: DeviceInfo) : Promise<boolean>;
@@ -33,11 +26,19 @@ export interface Client {
 }
 
 export interface WebSocketClientInterface extends Client {
+
+    /**
+     * Change the state of a socket.
+     * @param on new value of switch.
+     * @param index
+     */
+    switch(on: boolean, index?: number) : Promise<boolean>;
+
     on(event: string, callback: (valueOrCodeOrMessage?: boolean | number | string, indexOrError?: number | Error | undefined) => void) : void;
     removeAllListeners(event: string): void;
 }
 
-export interface SoapClient extends Client {
+export interface SoapClientInterface extends Client {
     getDeviceSettings():  Promise<Record<string, string>>;
     getDeviceDescriptionXML(): Promise<Record<string, string>>;
     lastDetection(): Promise<number>;
@@ -45,4 +46,11 @@ export interface SoapClient extends Client {
     consumption(): Promise<number>;
     totalConsumption(): Promise<number>;
     reboot(): Promise<void>;
+
+    /**
+     * Change the state of a socket.
+     * @param on new value of switch.
+     * @param index
+     */
+    switch(on: boolean) : Promise<boolean | void>;
 }

@@ -18,7 +18,7 @@ export const DeviceFlags = {
         hasLastDetected: true
     },
     'DCH-S160': {
-        type: 'Water detection',
+        type: 'Water detection', //'sensor.alarm.flood'
         canSwitchOnOff: false,
         hasTemp: false,
         hasPower: false,

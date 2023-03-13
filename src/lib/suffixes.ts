@@ -1,5 +1,6 @@
 export const Suffixes = {
     unreachable: '.unreachable',
+    reachable: '.reachable',
     enabled: '.enabled',
     state: '.state',
     power: '.currentPower',
@@ -7,5 +8,8 @@ export const Suffixes = {
     temperature: '.temperature',
     lastDetected: '.lastDetected',
     noMotion: '.no_motion',
-    reboot: '.reboot'
+    reboot: '.reboot',
+    soundType: '.sound',
+    soundVolume: '.volume',
+    soundDuration: '.duration'
 };
