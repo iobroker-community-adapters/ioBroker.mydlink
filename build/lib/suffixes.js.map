@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../src/lib/suffixes.ts"],
-  "sourcesContent": ["export const Suffixes = {\n    unreachable: '.unreachable',\n    enabled: '.enabled',\n    state: '.state',\n    power: '.currentPower',\n    totalPower: '.totalPower',\n    temperature: '.temperature',\n    lastDetected: '.lastDetected',\n    noMotion: '.no_motion',\n    reboot: '.reboot'\n};\n"],
-  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAO,MAAM,WAAW;AAAA,EACpB,aAAa;AAAA,EACb,SAAS;AAAA,EACT,OAAO;AAAA,EACP,OAAO;AAAA,EACP,YAAY;AAAA,EACZ,aAAa;AAAA,EACb,cAAc;AAAA,EACd,UAAU;AAAA,EACV,QAAQ;AACZ;",
+  "sourcesContent": ["export const Suffixes = {\n    unreachable: '.unreachable',\n    reachable: '.reachable',\n    enabled: '.enabled',\n    state: '.state',\n    power: '.currentPower',\n    totalPower: '.totalPower',\n    temperature: '.temperature',\n    lastDetected: '.lastDetected',\n    noMotion: '.no_motion',\n    reboot: '.reboot',\n    soundType: '.sound',\n    soundVolume: '.volume',\n    soundDuration: '.duration'\n};\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAO,MAAM,WAAW;AAAA,EACpB,aAAa;AAAA,EACb,WAAW;AAAA,EACX,SAAS;AAAA,EACT,OAAO;AAAA,EACP,OAAO;AAAA,EACP,YAAY;AAAA,EACZ,aAAa;AAAA,EACb,cAAc;AAAA,EACd,UAAU;AAAA,EACV,QAAQ;AAAA,EACR,WAAW;AAAA,EACX,aAAa;AAAA,EACb,eAAe;AACnB;",
   "names": []
 }

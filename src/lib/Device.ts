@@ -2,6 +2,7 @@ import { Client } from './Clients';
 import { DeviceInfo } from './DeviceInfo';
 import { Suffixes } from './suffixes';
 import {Mydlink} from '../main';
+import {KnownDevices} from "./KnownDevices";
 
 /**
  * Get code from network error.
@@ -27,7 +28,23 @@ export function processNetworkError(e: Record<string, any>) {
     }
 }
 
-export abstract class Device extends  DeviceInfo {
+export async function createDeviceFromDeviceObject(adapter : ioBroker.Adapter, configDevice: ioBroker.DeviceObject) {
+    if (configDevice.native.model) {
+        const deviceFlags = KnownDevices[configDevice.native.model];
+        if (deviceFlags) {
+            const type = deviceFlags.DeviceType;
+            return Device.createFromObject<typeof type>(type, adapter, configDevice);
+        } else {
+            adapter.log.info(`Unknown device type ${configDevice.native.model}. Falling back to intentification connection.`);
+            return createDeviceFromTableObject(adapter, configDevice.native);
+        }
+    } else {
+        adapter.log.info('Model not set or unknown. Fallback to identification connections.');
+        return createDeviceFromTableObject(adapter, configDevice.native);
+    }
+}
+
+export abstract class Device extends DeviceInfo {
     readonly adapter: Mydlink;
     abstract client: Client;
     constructor (adapter : Mydlink, ip : string, pin: string, pinEncrypted: boolean) {
@@ -41,12 +58,12 @@ export abstract class Device extends  DeviceInfo {
      * @param configDevice ioBroker device object
      * @returns Device
      */
-    static createFromObject<Type extends Device>(this: { new(adapter : ioBroker.Adapter, ip : string, pin: string, pinEncrypted: boolean): Type },
-        adapter : ioBroker.Adapter, configDevice: ioBroker.DeviceObject) : Type {
+    static createFromObject<Type extends Device>(childClass: new(adapter: ioBroker.Adapter, ip: string, pin: string, pinEncrypted: boolean) => Type,
+        adapter: ioBroker.Adapter, configDevice: ioBroker.DeviceObject) : Type {
 
         const native = configDevice.native;
         const pinEncrypted = (native.mac && !native.pinNotEncrypted);
-        const device = new this(adapter, native.ip, native.pin, pinEncrypted);
+        const device = new childClass(adapter, native.ip, native.pin, pinEncrypted);
         device.pollInterval = native.pollInterval;
         device.mac = native.mac ? native.mac.toUpperCase() : '';
         device.id = configDevice._id.split('.')[2];
@@ -111,7 +128,7 @@ export abstract class Device extends  DeviceInfo {
     /**
      * Creates objects for the device.
      */
-    async createObjects() {
+    async createObjects() : Promise<void> {
         //enabled indicator:
         await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.enabled, {
             type: 'state',
@@ -152,7 +169,7 @@ export abstract class Device extends  DeviceInfo {
         });
     }
 
-    stop() {
+    stop() : void {
         if (this.intervalHandle) {
             clearInterval(this.intervalHandle);
         }
@@ -163,17 +180,17 @@ export abstract class Device extends  DeviceInfo {
         this.loggedIn = false;
     }
 
-    async login() {
+    async login() : Promise<void> {
         //TODO!
         await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
         await this.adapter.setStateAsync(this.id + Suffixes.unreachable, !this.ready, true);
     }
 
-    async identify() {
+    async identify() : Promise<void> {
         //TODO!
     }
 
-    async handleNetworkError(e: any) {
+    async handleNetworkError(e: any) : Promise<void> {
         const code = processNetworkError(e);
         if (code === 403 || this.ready) {
             this.loggedIn = false; //login next polling.
@@ -226,7 +243,7 @@ export abstract class Device extends  DeviceInfo {
      * starting communication with device from config.
      * @returns {Promise<boolean>}
      */
-    async start() {
+    async start() : Promise<boolean> {
         //if device was already started -> stop it.
         //(use case: ip did change or settings did change)
         this.stop();
@@ -279,14 +296,13 @@ export abstract class Device extends  DeviceInfo {
 
     /**
      * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
-     * @param id
-     * @param state
+     * @param _id
+     * @param _state
      */
-    async handleStateChange(id : string, state : ioBroker.State) {
+    async handleStateChange(_id : string, _state : ioBroker.State) : Promise<void> {
         if (this.loggedIn) {
             await this.login();
         }
-
     }
 
 }

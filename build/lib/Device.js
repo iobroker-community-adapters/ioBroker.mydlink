@@ -71,7 +71,10 @@ class Device extends import_DeviceInfo.DeviceInfo {
     await this.adapter.extendObjectAsync(this.id, {
       type: "device",
       common: {
-        name: this.name
+        name: this.name,
+        statusStates: {
+          onlineId: `${this.adapter.namespace}.${this.id}.${import_suffixes.Suffixes.reachable}`
+        }
       },
       native: {
         ip: this.ip,
@@ -85,6 +88,41 @@ class Device extends import_DeviceInfo.DeviceInfo {
       }
     });
   }
+  async createObjects() {
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.enabled, {
+      type: "state",
+      common: {
+        name: "enabled",
+        type: "boolean",
+        role: "indicator",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.unreachable, {
+      type: "state",
+      common: {
+        name: "unreach",
+        type: "boolean",
+        role: "indicator.maintenance.unreach",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.reachable, {
+      type: "state",
+      common: {
+        name: "device is reachable",
+        type: "boolean",
+        role: "indicator.reachable",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+  }
   stop() {
     if (this.intervalHandle) {
       clearInterval(this.intervalHandle);
@@ -96,8 +134,25 @@ class Device extends import_DeviceInfo.DeviceInfo {
     this.loggedIn = false;
   }
   async login() {
+    await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
+    await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
   }
   async identify() {
+  }
+  async handleNetworkError(e) {
+    const code = processNetworkError(e);
+    if (code === 403 || this.ready) {
+      this.loggedIn = false;
+    }
+    this.adapter.log.debug("Error during communication " + this.name + ": " + code + " - " + e.stack + " - " + e.body);
+    this.ready = false;
+    await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
+    await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, false, true);
+    let connected = false;
+    this.adapter.devices.forEach((device) => {
+      connected = connected || device.ready;
+    });
+    await this.adapter.setStateChangedAsync("info.connection", connected, true);
   }
   async onInterval() {
     try {
@@ -109,29 +164,21 @@ class Device extends import_DeviceInfo.DeviceInfo {
       }
       if (this.loggedIn && this.identified) {
         this.ready = this.client.isDeviceReady();
-        await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
+        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
+        await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
         if (this.ready) {
           await this.adapter.setStateChangedAsync("info.connection", true, true);
         }
       }
     } catch (e) {
-      const code = processNetworkError(e);
-      if (code === 403 || this.ready) {
-        this.loggedIn = false;
-      }
-      this.adapter.log.debug("Error during polling " + this.name + ": " + code + " - " + e.stack + " - " + e.body);
-      this.ready = false;
-      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
-      let connected = false;
-      this.adapter.devices.forEach((device) => {
-        connected = connected || device.ready;
-      });
-      await this.adapter.setStateChangedAsync("info.connection", connected, true);
+      await this.handleNetworkError(e);
     }
-    this.intervalHandle = setTimeout(
-      () => this.onInterval,
-      this.pollInterval
-    );
+    if (this.pollInterval > 0) {
+      this.intervalHandle = setTimeout(
+        () => this.onInterval,
+        this.pollInterval
+      );
+    }
   }
   async start() {
     this.stop();
@@ -166,10 +213,16 @@ class Device extends import_DeviceInfo.DeviceInfo {
           this.pollInterval
         );
       } else {
+        this.pollInterval = 0;
         this.adapter.log.debug("Polling of " + this.name + " disabled, interval was " + interval + " (0 means disabled)");
       }
     }
     return result;
+  }
+  async handleStateChange(id, state) {
+    if (this.loggedIn) {
+      await this.login();
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

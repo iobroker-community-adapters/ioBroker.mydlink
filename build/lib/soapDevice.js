@@ -25,11 +25,38 @@ __export(soapDevice_exports, {
 module.exports = __toCommonJS(soapDevice_exports);
 var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
-var import_Clients = require("./Clients");
 class SoapDevice extends import_Device.Device {
   constructor(adapter, ip, pin, pinEncrypted) {
     super(adapter, ip, pin, pinEncrypted);
-    this.client = new import_Clients.SoapClient();
+    this.client = new SoapClient();
+  }
+  async createObjects() {
+    await super.createObjects();
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.reboot, {
+      type: "state",
+      common: {
+        name: "reboot device",
+        type: "boolean",
+        role: "button",
+        read: false,
+        write: true
+      },
+      native: {}
+    });
+    await this.adapter.subscribeStatesAsync(this.id + import_suffixes.Suffixes.reboot);
+  }
+  async handleStateChange(id, _state) {
+    if (this.loggedIn) {
+      await this.login();
+    }
+    if (id.endsWith(import_suffixes.Suffixes.reboot)) {
+      try {
+        await this.client.reboot();
+        this.adapter.log.debug(`Send reboot request to ${this.name}`);
+      } catch (e) {
+        await this.handleNetworkError(e);
+      }
+    }
   }
 }
 class SoapSwitch extends SoapDevice {
@@ -39,23 +66,94 @@ class SoapSwitch extends SoapDevice {
     this.hasPower = true;
     this.hasTotalPower = true;
   }
+  async createObjects() {
+    await super.createObjects();
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.state, {
+      type: "state",
+      common: {
+        name: "state of plug",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      },
+      native: {}
+    });
+    await this.adapter.subscribeStatesAsync(this.id + import_suffixes.Suffixes.state);
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.temperature, {
+      type: "state",
+      common: {
+        name: "temperature",
+        type: "number",
+        role: "value.temperature",
+        unit: "\xB0C",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.power, {
+      type: "state",
+      common: {
+        name: "currentPowerConsumption",
+        type: "number",
+        role: "value.power",
+        unit: "W",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.totalPower, {
+      type: "state",
+      common: {
+        name: "totalPowerConsumption",
+        type: "number",
+        role: "value.power.consumption",
+        unit: "kWh",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+  }
   async onInterval() {
     await super.onInterval();
     if (this.ready) {
-      const val = await this.client.state();
-      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
-      if (this.hasTemp) {
-        const temp = await this.client.temperature();
-        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.temperature, temp, true);
+      try {
+        const val = await this.client.state();
+        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
+        if (this.hasTemp) {
+          const temp = await this.client.temperature();
+          await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.temperature, temp, true);
+        }
+        if (this.hasPower) {
+          const power = await this.client.consumption();
+          await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.power, power, true);
+        }
+        if (this.hasTotalPower) {
+          const totalPower = await this.client.totalConsumption();
+          await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.power, totalPower, true);
+        }
+      } catch (e) {
+        await this.handleNetworkError(e);
       }
-      if (this.hasPower) {
-        const power = await this.client.consumption();
-        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.power, power, true);
+    }
+  }
+  async handleStateChange(id, state) {
+    await super.handleStateChange(id, state);
+    if (typeof state.val === "boolean") {
+      if (id.endsWith(import_suffixes.Suffixes.state)) {
+        try {
+          await this.client.switch(state.val);
+          const newVal = await this.client.state();
+          await this.adapter.setStateAsync(id, newVal, true);
+        } catch (e) {
+          await this.handleNetworkError(e);
+        }
       }
-      if (this.hasTotalPower) {
-        const totalPower = await this.client.totalConsumption();
-        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.power, totalPower, true);
-      }
+    } else {
+      this.adapter.log.warn("Wrong state type. Only boolean accepted for switch.");
     }
   }
 }
@@ -63,16 +161,57 @@ class SoapMotionDetector extends SoapDevice {
   async onInterval() {
     await super.onInterval();
     if (this.ready) {
-      const lastDetection = await this.client.lastDetection();
-      const result = await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.lastDetected, lastDetection, true);
-      if (!result.notChanged) {
-        await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.state, true, true);
-      } else {
-        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, false, true);
+      try {
+        const lastDetection = await this.client.lastDetection();
+        const result = await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.lastDetected, lastDetection, true);
+        if (!result.notChanged) {
+          await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.state, true, true);
+        } else {
+          await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, false, true);
+        }
+        const noMotion = Math.round((Date.now() - lastDetection) / 1e3);
+        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.noMotion, noMotion, true);
+      } catch (e) {
+        await this.handleNetworkError(e);
       }
-      const noMotion = Math.round((Date.now() - lastDetection) / 1e3);
-      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.noMotion, noMotion, true);
     }
+  }
+  async createObjects() {
+    await super.createObjects();
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.state, {
+      type: "state",
+      common: {
+        name: "state",
+        type: "boolean",
+        role: "sensor.motion",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.noMotion, {
+      type: "state",
+      common: {
+        name: "No motion since",
+        type: "number",
+        role: "value.interval",
+        unit: "seconds",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
+    await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.lastDetected, {
+      type: "state",
+      common: {
+        name: "lastDetected",
+        type: "number",
+        role: "value.time",
+        read: true,
+        write: false
+      },
+      native: {}
+    });
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

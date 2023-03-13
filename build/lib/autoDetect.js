@@ -149,6 +149,11 @@ class AutoDetector {
       }
     }
   }
+  close() {
+    if (this.mdns && typeof this.mdns.close === "function") {
+      this.mdns.close();
+    }
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

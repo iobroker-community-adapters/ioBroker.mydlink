@@ -23,6 +23,7 @@ __export(suffixes_exports, {
 module.exports = __toCommonJS(suffixes_exports);
 const Suffixes = {
   unreachable: ".unreachable",
+  reachable: ".reachable",
   enabled: ".enabled",
   state: ".state",
   power: ".currentPower",
@@ -30,7 +31,10 @@ const Suffixes = {
   temperature: ".temperature",
   lastDetected: ".lastDetected",
   noMotion: ".no_motion",
-  reboot: ".reboot"
+  reboot: ".reboot",
+  soundType: ".sound",
+  soundVolume: ".volume",
+  soundDuration: ".duration"
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

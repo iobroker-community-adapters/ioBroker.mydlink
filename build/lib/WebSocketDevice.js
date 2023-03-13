@@ -37,6 +37,39 @@ class WebSocketDevice extends import_Device.Device {
       log: console.debug
     });
   }
+  async createObjects() {
+    await super.createObjects();
+    if (this.numSockets > 1) {
+      for (let index = 1; index <= this.numSockets; index += 1) {
+        const id = this.id + import_suffixes.Suffixes.state + "_" + index;
+        await this.adapter.setObjectNotExistsAsync(id, {
+          type: "state",
+          common: {
+            name: "Socket " + index,
+            type: "boolean",
+            role: "switch",
+            read: true,
+            write: true
+          },
+          native: { index }
+        });
+        await this.adapter.subscribeStatesAsync(id);
+      }
+    } else {
+      await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.state, {
+        type: "state",
+        common: {
+          name: "state of plug",
+          type: "boolean",
+          role: "switch",
+          read: true,
+          write: true
+        },
+        native: {}
+      });
+      await this.adapter.subscribeStatesAsync(this.id + import_suffixes.Suffixes.state);
+    }
+  }
   stop() {
     super.stop();
     if (this.client && typeof this.client.removeAllListeners === "function") {
@@ -94,6 +127,30 @@ class WebSocketDevice extends import_Device.Device {
     this.ready = true;
     this.adapter.log.debug("Setup device event listener.");
     return result;
+  }
+  async handleStateChange(id, state) {
+    if (typeof state.val === "boolean") {
+      if (!this.loggedIn) {
+        await this.login();
+      }
+      let socket = 0;
+      if (this.numSockets > 1) {
+        socket = Number(id.substring(id.lastIndexOf("_") + 1)) - 1;
+      }
+      try {
+        const newVal = await this.client.switch(state.val, socket);
+        this.adapter.log.debug(`Switched Socket ${socket} of ${this.name} ${state.val ? "on" : "off"}.`);
+        await this.adapter.setStateAsync(id, newVal, true);
+      } catch (e) {
+        const code = (0, import_Device.processNetworkError)(e);
+        if (code === 403) {
+          this.loggedIn = false;
+        }
+        this.adapter.log.error("Error while switching device " + this.name + ": " + code + " - " + e.stack);
+      }
+    } else {
+      this.adapter.log.warn("Wrong state type. Only boolean accepted for switch.");
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

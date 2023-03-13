@@ -1,4 +1,4 @@
-import {DeviceFlags} from "./deviceFlags";
+import {KnownDevices} from "./KnownDevices";
 
 /**
  * Used to encrypt & decrypt pin. Necessary as long as js-controller can't decrypt for us in array structure.

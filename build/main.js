@@ -54,16 +54,31 @@ class Mydlink extends utils.Adapter {
   }
   onUnload(callback) {
     try {
+      this.log.debug("Stop polling");
+      for (const device of this.devices) {
+        device.stop();
+      }
+      if (this.autoDetector) {
+        this.autoDetector.close();
+      }
+      this.log.info("cleaned everything up...");
       callback();
     } catch (e) {
       callback();
     }
   }
-  onStateChange(id, state) {
+  async onStateChange(id, state) {
     if (state) {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-    } else {
-      this.log.info(`state ${id} deleted`);
+      if (state.ack === false) {
+        const deviceId = id.split(".")[2];
+        const device = this.devices.find((d) => d.id === deviceId);
+        if (device) {
+          await device.handleStateChange(id, state);
+        } else {
+          this.log.info(`Unknown device ${deviceId} for ${id}. Can't control anything.`);
+        }
+      }
     }
   }
   onMessage(obj) {
