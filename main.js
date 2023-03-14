@@ -152,37 +152,6 @@ class MyDlink extends utils.Adapter {
     }
 
     /**
-     * deletes all objects of an device and the device itself (deleteDeviceAsync does not work somehow...?)
-     * @param {Device} device
-     */
-    async deleteDeviceFull(device) {
-        //stop device:
-        this.stopDevice(device);
-
-        //check if detected device:
-        for (const ip of Object.keys(this.detectedDevices)) {
-            const dectDevice = this.detectedDevices[ip];
-            if (dectDevice.mac === device.id) {
-                dectDevice.alreadyPresent = false;
-            }
-        }
-
-        try {
-            const ids = await this.getObjectListAsync({
-                startkey: this.namespace + '.' + device.id,
-                endkey: this.namespace + '.' + device.id + '\u9999'
-            });
-            if (ids) {
-                for (const obj of ids.rows) {
-                    await this.delObjectAsync(obj.value._id);
-                }
-            }
-        } catch (e) {
-            this.log.error('Error during deletion of ' + device.id + ': ' + e.stack);
-        }
-    }
-
-    /**
      * Starts log in for device. Needs to be done before additional commands can work.
      * @param {Device} device
      * @returns {Promise<boolean>}

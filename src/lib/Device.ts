@@ -33,6 +33,7 @@ export async function createDeviceFromDeviceObject(adapter : ioBroker.Adapter, c
         const deviceFlags = KnownDevices[configDevice.native.model];
         if (deviceFlags) {
             const type = deviceFlags.DeviceType;
+            return new type(adapter, configDevice);
             return Device.createFromObject<typeof type>(type, adapter, configDevice);
         } else {
             adapter.log.info(`Unknown device type ${configDevice.native.model}. Falling back to intentification connection.`);

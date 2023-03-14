@@ -7,14 +7,14 @@
 import * as utils from '@iobroker/adapter-core';
 
 import { DeviceInfo } from './lib/DeviceInfo';
-import { Device } from './lib/Device';
+import {createDeviceFromDeviceObject, Device} from './lib/Device';
 import { AutoDetector } from './lib/autoDetect';
-import {TableDevice} from "./lib/TableDevice";
+import {TableDevice} from './lib/TableDevice';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 
-class Mydlink extends utils.Adapter {
+export class Mydlink extends utils.Adapter {
     /**
      * Array of devices.
      *  Device consists of:
@@ -29,7 +29,7 @@ class Mydlink extends utils.Adapter {
      *  -> multiple messages.
      * @type {{}}
      */
-    detectedDevices = {};
+    detectedDevices : Record<string, any> = {};
 
     autoDetector: AutoDetector | undefined = undefined;
 
@@ -42,6 +42,37 @@ class Mydlink extends utils.Adapter {
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
+    }
+
+    /**
+     * deletes all objects of an device and the device itself (deleteDeviceAsync does not work somehow...?)
+     * @param {Device} device
+     */
+    async deleteDeviceFull(device: Device) {
+        //stop device:
+        device.stop();
+
+        //check if detected device:
+        for (const ip of Object.keys(this.detectedDevices)) {
+            const dectDevice = this.detectedDevices[ip];
+            if (dectDevice.mac === device.id) {
+                dectDevice.alreadyPresent = false;
+            }
+        }
+
+        try {
+            const ids = await this.getObjectListAsync({
+                startkey: this.namespace + '.' + device.id,
+                endkey: this.namespace + '.' + device.id + '\u9999'
+            });
+            if (ids) {
+                for (const obj of ids.rows) {
+                    await this.delObjectAsync(obj.value._id);
+                }
+            }
+        } catch (e) {
+            this.log.error('Error during deletion of ' + device.id + ': ' + e.stack);
+        }
     }
 
     /**
@@ -87,13 +118,13 @@ class Mydlink extends utils.Adapter {
                     break; //break on first copy -> will remove additional copies later.
                 }
             }
-            const device = Device.createFromObject(this, existingDevice);
-            await this.createNewDevice(device); //store new config.
+            const device = await createDeviceFromDeviceObject(this, existingDevice);
+            await device.createDeviceObject(); //store new config.
             if (existingDevice.native.pinNotEncrypted) {
                 needUpdateConfig = true;
             }
             if (found) {
-                haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
+                haveActiveDevices = await device.start() || haveActiveDevices;
                 //keep config and client for later reference.
                 this.devices.push(device);
             } else {
@@ -104,7 +135,7 @@ class Mydlink extends utils.Adapter {
 
         //add non-existing devices from config:
         for (const configDevice of configDevicesToAdd) {
-            const device = DeviceInfo.createFromTable(configDevice, !configDevice.pinNotEncrypted);
+            const device = Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
             this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
             const oldDevice = this.devices.find(d => d.mac === device.mac);
             if (oldDevice) {
@@ -112,11 +143,11 @@ class Mydlink extends utils.Adapter {
                 needUpdateConfig = true;
             } else {
                 //make sure objects are created:
-                await this.createNewDevice(device);
+                await device.createDeviceObject();
 
-                haveActiveDevices = await this.startDevice(device) || haveActiveDevices;
+                haveActiveDevices = await device.start() || haveActiveDevices;
                 //call this here again, to make sure it happens.
-                await this.createNewDevice(device); //store device settings
+                await device.createDeviceObject();; //store device settings
                 //keep config and client for later reference.
                 this.devices.push(device);
             }
@@ -129,12 +160,12 @@ class Mydlink extends utils.Adapter {
                 const configDevice = {
                     ip: device.ip,
                     mac: device.mac,
-                    pin: DeviceInfo.encryptDecrypt(this.secret, device.pin),
+                    pin: device.pinEncrypted,
                     pollInterval: device.pollInterval,
                     enabled: device.enabled,
                     name: device.name,
                     model: device.model,
-                    useWebSocket: device.useWebSocket
+                    useWebSocket: device.isWebsocket
                 };
                 devices.push(configDevice);
             }

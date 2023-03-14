@@ -19,11 +19,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var Device_exports = {};
 __export(Device_exports, {
   Device: () => Device,
+  createDeviceFromDeviceObject: () => createDeviceFromDeviceObject,
   processNetworkError: () => processNetworkError
 });
 module.exports = __toCommonJS(Device_exports);
 var import_DeviceInfo = require("./DeviceInfo");
 var import_suffixes = require("./suffixes");
+var import_KnownDevices = require("./KnownDevices");
 function processNetworkError(e) {
   if (e.response) {
     return e.response.status;
@@ -33,15 +35,30 @@ function processNetworkError(e) {
     return e.code;
   }
 }
+async function createDeviceFromDeviceObject(adapter, configDevice) {
+  if (configDevice.native.model) {
+    const deviceFlags = import_KnownDevices.KnownDevices[configDevice.native.model];
+    if (deviceFlags) {
+      const type = deviceFlags.DeviceType;
+      return Device.createFromObject(type, adapter, configDevice);
+    } else {
+      adapter.log.info(`Unknown device type ${configDevice.native.model}. Falling back to intentification connection.`);
+      return createDeviceFromTableObject(adapter, configDevice.native);
+    }
+  } else {
+    adapter.log.info("Model not set or unknown. Fallback to identification connections.");
+    return createDeviceFromTableObject(adapter, configDevice.native);
+  }
+}
 class Device extends import_DeviceInfo.DeviceInfo {
   constructor(adapter, ip, pin, pinEncrypted) {
     super(ip, pin, pinEncrypted);
     this.adapter = adapter;
   }
-  static createFromObject(adapter, configDevice) {
+  static createFromObject(childClass, adapter, configDevice) {
     const native = configDevice.native;
     const pinEncrypted = native.mac && !native.pinNotEncrypted;
-    const device = new this(adapter, native.ip, native.pin, pinEncrypted);
+    const device = new childClass(adapter, native.ip, native.pin, pinEncrypted);
     device.pollInterval = native.pollInterval;
     device.mac = native.mac ? native.mac.toUpperCase() : "";
     device.id = configDevice._id.split(".")[2];
@@ -219,7 +236,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
     }
     return result;
   }
-  async handleStateChange(id, state) {
+  async handleStateChange(_id, _state) {
     if (this.loggedIn) {
       await this.login();
     }
@@ -228,6 +245,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Device,
+  createDeviceFromDeviceObject,
   processNetworkError
 });
 //# sourceMappingURL=Device.js.map

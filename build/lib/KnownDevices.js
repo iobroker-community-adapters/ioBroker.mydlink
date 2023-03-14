@@ -16,19 +16,24 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var deviceFlags_exports = {};
-__export(deviceFlags_exports, {
-  DeviceFlags: () => DeviceFlags
+var KnownDevices_exports = {};
+__export(KnownDevices_exports, {
+  KnownDevices: () => KnownDevices
 });
-module.exports = __toCommonJS(deviceFlags_exports);
-const DeviceFlags = {
+module.exports = __toCommonJS(KnownDevices_exports);
+var import_soapDevice = require("./soapDevice");
+var import_WebSocketDevice = require("./WebSocketDevice");
+var import_SoapSierene = require("./SoapSierene");
+var import_Device = require("./Device");
+const KnownDevices = {
   "DSP-W215": {
     type: "Smart plug",
     canSwitchOnOff: true,
     hasTemp: true,
     hasPower: true,
     hasTotalPower: true,
-    hasLastDetected: false
+    hasLastDetected: false,
+    DeviceType: import_soapDevice.SoapSwitch
   },
   "DCH-S150": {
     type: "Motion detection",
@@ -36,15 +41,26 @@ const DeviceFlags = {
     hasTemp: false,
     hasPower: false,
     hasTotalPower: false,
-    hasLastDetected: true
+    hasLastDetected: true,
+    DeviceType: import_soapDevice.SoapMotionDetector
   },
-  "DCH-S160": {
+  "DCH-S220": {
+    type: "Sirene",
+    canSwitchOnOff: false,
+    hasTemp: false,
+    hasPower: false,
+    hasTotalPower: false,
+    hasLastDetected: false,
+    DeviceType: import_SoapSierene.SoapSieren
+  },
+  "DCH-S160-UNTESTED": {
     type: "Water detection",
     canSwitchOnOff: false,
     hasTemp: false,
     hasPower: false,
     hasTotalPower: false,
-    hasLastDetected: true
+    hasLastDetected: true,
+    DeviceType: import_Device.Device
   },
   "DSP-W115": {
     type: "Smart plug",
@@ -52,7 +68,8 @@ const DeviceFlags = {
     hasTemp: false,
     hasPower: false,
     hasTotalPower: false,
-    hasLastDetected: false
+    hasLastDetected: false,
+    DeviceType: import_WebSocketDevice.WebSocketDevice
   },
   "DSP-W118": {
     type: "Smart plug",
@@ -60,7 +77,8 @@ const DeviceFlags = {
     hasTemp: false,
     hasPower: false,
     hasTotalPower: false,
-    hasLastDetected: false
+    hasLastDetected: false,
+    DeviceType: import_WebSocketDevice.WebSocketDevice
   },
   "DSP-W245": {
     type: "Smart plug",
@@ -69,19 +87,12 @@ const DeviceFlags = {
     hasTemp: false,
     hasPower: false,
     hasTotalPower: false,
-    hasLastDetected: false
-  },
-  "DCH-S220": {
-    type: "Sirene",
-    canSwitchOnOff: false,
-    hasTemp: false,
-    hasPower: false,
-    hasTotalPower: false,
-    hasLastDetected: false
+    hasLastDetected: false,
+    DeviceType: import_WebSocketDevice.WebSocketDevice
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  DeviceFlags
+  KnownDevices
 });
-//# sourceMappingURL=deviceFlags.js.map
+//# sourceMappingURL=KnownDevices.js.map

@@ -29,6 +29,7 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_DeviceInfo = require("./lib/DeviceInfo");
+var import_Device = require("./lib/Device");
 var import_autoDetect = require("./lib/autoDetect");
 class Mydlink extends utils.Adapter {
   constructor(options = {}) {
@@ -44,6 +45,28 @@ class Mydlink extends utils.Adapter {
     this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
+  async deleteDeviceFull(device) {
+    device.stop();
+    for (const ip of Object.keys(this.detectedDevices)) {
+      const dectDevice = this.detectedDevices[ip];
+      if (dectDevice.mac === device.id) {
+        dectDevice.alreadyPresent = false;
+      }
+    }
+    try {
+      const ids = await this.getObjectListAsync({
+        startkey: this.namespace + "." + device.id,
+        endkey: this.namespace + "." + device.id + "\u9999"
+      });
+      if (ids) {
+        for (const obj of ids.rows) {
+          await this.delObjectAsync(obj.value._id);
+        }
+      }
+    } catch (e) {
+      this.log.error("Error during deletion of " + device.id + ": " + e.stack);
+    }
+  }
   async onReady() {
     const systemConfig = await this.getForeignObjectAsync("system.config");
     if (systemConfig) {
@@ -51,6 +74,76 @@ class Mydlink extends utils.Adapter {
     }
     this.setState("info.connection", false, true);
     this.autoDetector = new import_autoDetect.AutoDetector(this);
+    let haveActiveDevices = false;
+    const existingDevices = await this.getDevicesAsync();
+    const configDevicesToAdd = [].concat(this.config.devices);
+    this.log.debug("Got existing devices: " + JSON.stringify(existingDevices, null, 2));
+    this.log.debug("Got config devices: " + JSON.stringify(configDevicesToAdd, null, 2));
+    let needUpdateConfig = false;
+    for (const existingDevice of existingDevices) {
+      let found = false;
+      for (const configDevice of this.config.devices) {
+        needUpdateConfig = !configDevice.mac;
+        if (configDevice.mac && configDevice.mac === existingDevice.native.mac || !configDevice.mac && configDevice.ip === existingDevice.native.ip) {
+          found = true;
+          for (const key of Object.keys(configDevice)) {
+            existingDevice.native[key] = configDevice[key];
+          }
+          existingDevice.native.pinNotEncrypted = !configDevice.mac;
+          configDevicesToAdd.splice(configDevicesToAdd.indexOf(configDevice), 1);
+          break;
+        }
+      }
+      const device = import_Device.Device.createFromObject(this, existingDevice);
+      await device.createDeviceObject();
+      if (existingDevice.native.pinNotEncrypted) {
+        needUpdateConfig = true;
+      }
+      if (found) {
+        haveActiveDevices = await device.start() || haveActiveDevices;
+        this.devices.push(device);
+      } else {
+        this.log.debug("Deleting " + device.name);
+        await this.deleteDeviceFull(device);
+      }
+    }
+    for (const configDevice of configDevicesToAdd) {
+      const device = import_Device.Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
+      this.log.debug("Device " + device.name + " in config but not in devices -> create and add.");
+      const oldDevice = this.devices.find((d) => d.mac === device.mac);
+      if (oldDevice) {
+        this.log.info("Duplicate entry for " + device.mac + " in config. Trying to rectify. Restart will happen. Affected devices: " + device.name + " === " + configDevice.name);
+        needUpdateConfig = true;
+      } else {
+        await device.createDeviceObject();
+        haveActiveDevices = await device.start() || haveActiveDevices;
+        await device.createDeviceObject();
+        ;
+        this.devices.push(device);
+      }
+    }
+    if (needUpdateConfig) {
+      const devices = [];
+      for (const device of this.devices) {
+        const configDevice = {
+          ip: device.ip,
+          mac: device.mac,
+          pin: device.pinEncrypted,
+          pollInterval: device.pollInterval,
+          enabled: device.enabled,
+          name: device.name,
+          model: device.model,
+          useWebSocket: device.isWebsocket
+        };
+        devices.push(configDevice);
+      }
+      await this.extendForeignObjectAsync("system.adapter." + this.namespace, {
+        native: {
+          devices
+        }
+      });
+    }
+    await this.setStateChangedAsync("info.connection", !haveActiveDevices, true);
   }
   onUnload(callback) {
     try {

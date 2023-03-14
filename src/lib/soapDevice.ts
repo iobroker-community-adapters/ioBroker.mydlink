@@ -186,6 +186,7 @@ export class SoapMotionDetector extends SoapDevice {
         if (this.ready) {
             try {
                 const lastDetection = await this.client.lastDetection();
+                //const notChanged = await new Promise<boolean>((resolve, reject) => this.adapter.setStateChanged(this.id + Suffixes.lastDetected, lastDetection, true, (err: any, _id: string, notChanged: boolean) => err ? reject(err) : resolve(notChanged)));
                 const result = await this.adapter.setStateChangedAsync(this.id + Suffixes.lastDetected, lastDetection, true);
                 if (!result.notChanged) {
                     //timestamp did change -> we had a detection!
