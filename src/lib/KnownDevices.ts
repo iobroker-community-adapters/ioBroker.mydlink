@@ -3,9 +3,9 @@
 import {SoapMotionDetector, SoapSwitch} from './soapDevice';
 import {WebSocketDevice} from './WebSocketDevice';
 import {SoapSieren} from './SoapSierene';
-import {Device} from './Device';
+import {Device, DeviceConstructor} from './Device';
 
-export interface DeviceFlags {
+export interface DeviceFlags<Type extends Device> {
     type: string;
     canSwitchOnOff?: boolean;
     hasTemp?: boolean;
@@ -13,10 +13,10 @@ export interface DeviceFlags {
     hasTotalPower?: boolean;
     hasLastDetected?: boolean;
     numSockets?: number;
-    DeviceType: Device;
+    DeviceType: DeviceConstructor<Type>;
 }
 
-export const KnownDevices : Record<string, DeviceFlags> = {
+export const KnownDevices : Record<string, DeviceFlags<any>> = {
     'DSP-W215': {
         type: 'Smart plug',
         canSwitchOnOff: true,
@@ -44,7 +44,7 @@ export const KnownDevices : Record<string, DeviceFlags> = {
         hasLastDetected: false,
         DeviceType: SoapSieren
     },
-    'DCH-S160-UNTESTED': {
+    /*'DCH-S160-UNTESTED': {
         type: 'Water detection', //'sensor.alarm.flood'
         canSwitchOnOff: false,
         hasTemp: false,
@@ -52,7 +52,7 @@ export const KnownDevices : Record<string, DeviceFlags> = {
         hasTotalPower: false,
         hasLastDetected: true,
         DeviceType: Device
-    },
+    },*/
     'DSP-W115': {
         type: 'Smart plug',
         canSwitchOnOff: true,

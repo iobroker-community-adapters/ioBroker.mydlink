@@ -27,7 +27,7 @@
   "dependencies": {
     "@iobroker/adapter-core": "^2.6.7",
     "axios": "^1.3.4",
-    "dlink_websocketclient": "^0.5.1",
+    "dlink_websocketclient": "^0.5.2",
     "mdns-discovery": "^0.2.6",
     "xmldom": "^0.6.0"
   },
@@ -43,7 +43,7 @@
     "@types/chai-as-promised": "^7.1.5",
     "@types/iobroker": "^4.0.5",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^16.18.14",
+    "@types/node": "^16.18.23",
     "@types/proxyquire": "^1.3.28",
     "@types/sinon": "^10.0.13",
     "@types/sinon-chai": "^3.2.9",

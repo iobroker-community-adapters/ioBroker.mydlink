@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,10 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var soapDevice_exports = {};
 __export(soapDevice_exports, {
@@ -25,10 +31,16 @@ __export(soapDevice_exports, {
 module.exports = __toCommonJS(soapDevice_exports);
 var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
+var import_soapclient = __toESM(require("../../lib/soapclient"));
+var import_KnownDevices = require("./KnownDevices");
 class SoapDevice extends import_Device.Device {
   constructor(adapter, ip, pin, pinEncrypted) {
     super(adapter, ip, pin, pinEncrypted);
-    this.client = new SoapClient();
+    this.client = (0, import_soapclient.default)({
+      user: "Admin",
+      password: this.pinDecrypted,
+      url: "http://" + this.ip + "/HNAP1"
+    });
   }
   async createObjects() {
     await super.createObjects();
@@ -57,6 +69,35 @@ class SoapDevice extends import_Device.Device {
         await this.handleNetworkError(e);
       }
     }
+  }
+  async identify() {
+    const settings = await this.client.getDeviceSettings();
+    let dirty = false;
+    this.adapter.log.debug(this.name + " returned following device settings: " + JSON.stringify(settings, null, 2));
+    if (this.mac && this.mac !== settings.DeviceMacId) {
+      throw new import_Device.WrongMacError(`${this.name} reported mac ${settings.DeviceMacId}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
+    }
+    if (this.mac !== settings.DeviceMacId) {
+      this.mac = settings.DeviceMacId.toUpperCase();
+      dirty = true;
+    }
+    if (this.model && this.model !== settings.ModelName) {
+      this.model = settings.ModelName;
+      this.adapter.log.warn(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
+      throw new import_Device.WrongModelError(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
+    }
+    if (this.model !== settings.ModelName) {
+      this.model = settings.ModelName;
+      dirty = true;
+    }
+    if (!import_KnownDevices.KnownDevices[this.model]) {
+      const xmls = await this.client.getDeviceDescriptionXML();
+      await this.sendModelInfoToSentry(xmls);
+    }
+    if (dirty) {
+      await this.createDeviceObject();
+    }
+    return super.identify();
   }
 }
 class SoapSwitch extends SoapDevice {
@@ -163,8 +204,8 @@ class SoapMotionDetector extends SoapDevice {
     if (this.ready) {
       try {
         const lastDetection = await this.client.lastDetection();
-        const result = await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.lastDetected, lastDetection, true);
-        if (!result.notChanged) {
+        const notChanged = await new Promise((resolve, reject) => this.adapter.setStateChanged(this.id + import_suffixes.Suffixes.lastDetected, lastDetection, true, (err, _id, notChanged2) => err ? reject(err) : resolve(notChanged2 || false)));
+        if (!notChanged) {
           await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.state, true, true);
         } else {
           await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, false, true);

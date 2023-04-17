@@ -90,8 +90,9 @@ export class DeviceInfo {
     pollInterval = 30000;
     /**
      * handle for the pollInterval. Used to clear it on exit.
+     * (is a timeout handle!!) (might also be used to retry login, even if no polling is enabled!)
      */
-    intervalHandle: NodeJS.Timeout | undefined = undefined;
+    intervalHandle: ioBroker.Timeout | undefined = undefined;
     /**
      * Model of the device.
      */

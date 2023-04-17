@@ -1,7 +1,9 @@
-import { WebSocketClient } from 'dlink_websocketclient';
-import {Device, processNetworkError} from './Device';
+import {Device, processNetworkError, WrongMacError} from './Device';
 import {Suffixes} from './suffixes';
 import {Mydlink} from '../main';
+import {default as axios} from 'axios';
+import {KnownDevices} from './KnownDevices';
+import WebSocketClient from 'dlink_websocketclient';
 
 export class WebSocketDevice extends Device {
     client: WebSocketClient;
@@ -24,7 +26,7 @@ export class WebSocketDevice extends Device {
     /**
      * Creates objects for the device.
      */
-    async createObjects() {
+    async createObjects() : Promise<void> {
         await super.createObjects();
         if (this.numSockets > 1) {
             //create state for each socket.
@@ -105,9 +107,9 @@ export class WebSocketDevice extends Device {
         this.ready = false;
         //abuse unused intervalHandle here.
         if (this.intervalHandle) {
-            clearTimeout(this.intervalHandle);
+            this.adapter.clearTimeout(this.intervalHandle);
         }
-        this.intervalHandle = setTimeout(() => {
+        this.intervalHandle = this.adapter.setTimeout(() => {
             this.start();
         }, 10000);
     }
@@ -119,7 +121,7 @@ export class WebSocketDevice extends Device {
     async start() : Promise<boolean> {
         const result = super.start();
         //event listener:
-        this.client.on('switched', (val, socket) => {
+        this.client.on('switched', (val : boolean, socket : number) => {
             this.adapter.log.debug(`Event from device ${socket} now ${val}`);
             if (this.numSockets > 1) {
                 this.adapter.setStateAsync(this.id + Suffixes.state + '_' + (socket + 1), val, true);
@@ -128,9 +130,9 @@ export class WebSocketDevice extends Device {
             }
         });
         //error handling:
-        this.client.on('error', (code, error) => this.onError(code, error));
+        this.client.on('error', (code : number, error : Error) => this.onError(code, error));
         this.client.on('close', () => this.onError());
-        this.client.on('message', (message) => this.adapter.log.debug(`${this.name} got message: ${message}`));
+        this.client.on('message', (message : string) => this.adapter.log.debug(`${this.name} got message: ${message}`));
         await this.adapter.setStateAsync(this.id + Suffixes.unreachable, false, true);
         this.ready = true;
         this.adapter.log.debug('Setup device event listener.');
@@ -143,7 +145,7 @@ export class WebSocketDevice extends Device {
      * @param id
      * @param state
      */
-    async handleStateChange(id : string, state : ioBroker.State) {
+    async handleStateChange(id : string, state : ioBroker.State) : Promise<void> {
         if (typeof state.val === 'boolean') {
             if (!this.loggedIn) {
                 await this.login();
@@ -169,4 +171,50 @@ export class WebSocketDevice extends Device {
         }
     }
 
+    async identify() : Promise<boolean> {
+        const id = this.client.getDeviceId();
+        const mac = id.match(/.{2}/g).join(':').toUpperCase(); //add back the :.
+
+        if (this.mac && this.mac !== mac) {
+            throw new WrongMacError(`${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
+        }
+        this.mac = mac;
+
+        //get model from webserver / wifi-ssid:
+        const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+        const result = await axios.get(url);
+        if (result.status === 200) {
+            const startPos = result.data.indexOf('SSID: ') + 6;
+            const model = result.data.substring(startPos, startPos + 8);
+            if (!model) {
+                this.adapter.log.warn(`${this.name} identify responded with unknown result, please report: ${result.data}`);
+            }
+            this.adapter.log.debug('Got model ' + model + ' during identification of ' + this.name);
+            if (model !== this.model) {
+                this.adapter.log.debug('Model updated from ' + (this.model || 'unknown') + ' to ' + model);
+                this.model = model;
+                //store new model in device object:
+                await this.createDeviceObject();
+            }
+        }
+
+        if (!KnownDevices[this.model]) {
+            //unknown device -> report to sentry.
+            const info = 'UNKNOWN WEBSOCKET DEVICE: ' + this.model;
+            await this.sendModelInfoToSentry({info});
+        }
+
+        //get current state:
+        if (this.numSockets > 1) {
+            const states = await this.client.state(-1); //get all states.
+            for (let index = 1; index <= this.numSockets; index += 1) {
+                await this.adapter.setStateChangedAsync(this.id + Suffixes.state + '_' + index, states[index -1], true);
+            }
+        } else {
+            const state = await this.client.state();
+            await this.adapter.setStateChangedAsync(this.id + Suffixes.state, state, true);
+        }
+
+        return super.identify();
+    }
 }

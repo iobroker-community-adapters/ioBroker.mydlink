@@ -7,7 +7,7 @@
 import * as utils from '@iobroker/adapter-core';
 
 import { DeviceInfo } from './lib/DeviceInfo';
-import {createDeviceFromDeviceObject, Device} from './lib/Device';
+import {Device} from './lib/Device';
 import { AutoDetector } from './lib/autoDetect';
 import {TableDevice} from './lib/TableDevice';
 
@@ -23,6 +23,13 @@ export class Mydlink extends utils.Adapter {
      * @type {Array<Device>}
      */
     devices: Array<Device> = [];
+
+    /**
+     * Store devices here, that we only have information from, but can not yet talk to.
+     * Especially if model is missing, and we currently can not retrieve it (because device not online)
+     * This will happen.
+     */
+    unidentifiedDevices: Array<DeviceInfo> = [];
 
     /**
      * Auto-detected devices. Store here and aggregate until we are sure it is mydlink and have mac
@@ -70,7 +77,7 @@ export class Mydlink extends utils.Adapter {
                     await this.delObjectAsync(obj.value._id);
                 }
             }
-        } catch (e) {
+        } catch (e: any) {
             this.log.error('Error during deletion of ' + device.id + ': ' + e.stack);
         }
     }
@@ -118,7 +125,7 @@ export class Mydlink extends utils.Adapter {
                     break; //break on first copy -> will remove additional copies later.
                 }
             }
-            const device = await createDeviceFromDeviceObject(this, existingDevice);
+            const device = await Device.createFromObject(this, existingDevice);
             await device.createDeviceObject(); //store new config.
             if (existingDevice.native.pinNotEncrypted) {
                 needUpdateConfig = true;
@@ -135,7 +142,7 @@ export class Mydlink extends utils.Adapter {
 
         //add non-existing devices from config:
         for (const configDevice of configDevicesToAdd) {
-            const device = Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
+            const device = await Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
             this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
             const oldDevice = this.devices.find(d => d.mac === device.mac);
             if (oldDevice) {
@@ -147,7 +154,7 @@ export class Mydlink extends utils.Adapter {
 
                 haveActiveDevices = await device.start() || haveActiveDevices;
                 //call this here again, to make sure it happens.
-                await device.createDeviceObject();; //store device settings
+                await device.createDeviceObject(); //store device settings
                 //keep config and client for later reference.
                 this.devices.push(device);
             }
@@ -225,18 +232,88 @@ export class Mydlink extends utils.Adapter {
     //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
-    private onMessage(obj: ioBroker.Message) : void {
+    private async onMessage(obj: ioBroker.Message) : Promise<void> {
         if (typeof obj === 'object' && obj.message) {
-            if (obj.command === 'send') {
-                // e.g. send email or pushover or whatever
-                this.log.info('send command');
-
-                // Send response in callback if required
-                if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+            switch(obj.command) {
+                case 'discovery': {
+                    // Send response in callback if required
+                    if (obj.callback) {
+                        const devices = [];
+                        for (const key of Object.keys(this.detectedDevices)) {
+                            const device = this.detectedDevices[key];
+                            device.readOnly = true;
+                            devices.push(device);
+                        }
+                        this.sendTo(obj.from, obj.command, devices, obj.callback);
+                    }
+                    break;
+                }
+                case 'getDevices': {
+                    const tableDevices = [];
+                    for (const device of this.devices)  {
+                        const tableDevice = {
+                            name: device.name,
+                            mac: device.mac,
+                            ip: device.ip,
+                            pin: device.pinDecrypted,
+                            pollInterval: device.pollInterval,
+                            enabled: device.enabled
+                        };
+                        tableDevices.push(tableDevice);
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, tableDevices, obj.callback);
+                    }
+                    break;
+                }
+                case 'identifyDevice': {
+                    const params = (obj.message) as Record<string, any>;
+                    if (params && params.ip && params.pin) {
+                        let device = await Device.createFromTable(this, {
+                            ip: params.ip,
+                            pin: params.pin
+                        });
+                        try {
+                            await device.start();
+                            if (device.loggedIn && device.identified) { //will be false if ip wrong or duplicate mac.
+                                const oldDevice = this.devices.find(d => d.mac === device.mac);
+                                if (oldDevice) {
+                                    device.stop();
+                                    device = oldDevice;
+                                } else {
+                                    this.devices.push(device);
+                                }
+                                const sendDevice = {
+                                    mac: device.mac,
+                                    name: device.name,
+                                    ip: device.ip,
+                                    pollInterval: device.pollInterval,
+                                    pin: device.pinDecrypted,
+                                    enabled: device.loggedIn && device.identified
+                                };
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, sendDevice, obj.callback);
+                                }
+                            } else {
+                                this.log.info('could not login -> error.');
+                                this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
+                            }
+                        } catch (e : any) {
+                            this.log.info('could not login device: ' + e.stack);
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
+                            }
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    this.log.debug('Unknown command ' + obj.command);
+                    break;
+                }
             }
         }
     }
-
 }
 
 if (require.main !== module) {

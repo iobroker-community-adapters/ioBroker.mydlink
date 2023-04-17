@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,21 +17,27 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var WebSocketDevice_exports = {};
 __export(WebSocketDevice_exports, {
   WebSocketDevice: () => WebSocketDevice
 });
 module.exports = __toCommonJS(WebSocketDevice_exports);
-var import_dlink_websocketclient = require("dlink_websocketclient");
 var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
+var import_axios = __toESM(require("axios"));
+var import_KnownDevices = require("./KnownDevices");
+var import_dlink_websocketclient = __toESM(require("dlink_websocketclient"));
 class WebSocketDevice extends import_Device.Device {
   constructor(adapter, ip, pin, pinEncrypted) {
     super(adapter, ip, pin, pinEncrypted);
     this.numSockets = 1;
     this.isWebsocket = true;
-    this.client = new import_dlink_websocketclient.WebSocketClient({
+    this.client = new import_dlink_websocketclient.default({
       ip: this.ip,
       pin: this.pinDecrypted,
       keepAlive: 5,
@@ -104,9 +112,9 @@ class WebSocketDevice extends import_Device.Device {
     this.stop();
     this.ready = false;
     if (this.intervalHandle) {
-      clearTimeout(this.intervalHandle);
+      this.adapter.clearTimeout(this.intervalHandle);
     }
-    this.intervalHandle = setTimeout(() => {
+    this.intervalHandle = this.adapter.setTimeout(() => {
       this.start();
     }, 1e4);
   }
@@ -151,6 +159,43 @@ class WebSocketDevice extends import_Device.Device {
     } else {
       this.adapter.log.warn("Wrong state type. Only boolean accepted for switch.");
     }
+  }
+  async identify() {
+    const id = this.client.getDeviceId();
+    const mac = id.match(/.{2}/g).join(":").toUpperCase();
+    if (this.mac && this.mac !== mac) {
+      throw new import_Device.WrongMacError(`${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
+    }
+    this.mac = mac;
+    const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+    const result = await import_axios.default.get(url);
+    if (result.status === 200) {
+      const startPos = result.data.indexOf("SSID: ") + 6;
+      const model = result.data.substring(startPos, startPos + 8);
+      if (!model) {
+        this.adapter.log.warn(`${this.name} identify responded with unknown result, please report: ${result.data}`);
+      }
+      this.adapter.log.debug("Got model " + model + " during identification of " + this.name);
+      if (model !== this.model) {
+        this.adapter.log.debug("Model updated from " + (this.model || "unknown") + " to " + model);
+        this.model = model;
+        await this.createDeviceObject();
+      }
+    }
+    if (!import_KnownDevices.KnownDevices[this.model]) {
+      const info = "UNKNOWN WEBSOCKET DEVICE: " + this.model;
+      await this.sendModelInfoToSentry({ info });
+    }
+    if (this.numSockets > 1) {
+      const states = await this.client.state(-1);
+      for (let index = 1; index <= this.numSockets; index += 1) {
+        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state + "_" + index, states[index - 1], true);
+      }
+    } else {
+      const state = await this.client.state();
+      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, state, true);
+    }
+    return super.identify();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

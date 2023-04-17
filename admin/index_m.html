@@ -180,21 +180,22 @@
                     pin: $("#device-pin").val()
                 });
                 console.log('Device from backend : ' + device);
-                const tableDevices = table2values('devices');
-                const oldDevice = tableDevices.find(d => d.ip === device.ip);
-                if (oldDevice) {
-                    console.log("Device already present..");
-                    if (device.enabled && (!oldDevice.mac || !oldDevice.enabled)) {
-                        oldDevice.mac = device.mac;
-                        oldDevice.enabled = device.enabled;
-                        oldDevice.pin = device.pin;
+                if (device !== 'ERROR') {
+                    const tableDevices = table2values('devices');
+                    const oldDevice = tableDevices.find(d => d.ip === device.ip);
+                    if (oldDevice) {
+                        console.log("Device already present..");
+                        if (device.enabled && (!oldDevice.mac || !oldDevice.enabled)) {
+                            oldDevice.mac = device.mac;
+                            oldDevice.enabled = device.enabled;
+                            oldDevice.pin = device.pin;
+                        }
+                    } else {
+                        tableDevices.push(device);
                     }
+                    _onChange(true);
+                    values2table('devices', tableDevices, _onChange);
                 } else {
-                    tableDevices.push(device);
-                }
-                _onChange(true);
-                values2table('devices', tableDevices, _onChange);
-                if (!device.enabled) {
                     showError('errorIdentify');
                 }
             } catch (e) {

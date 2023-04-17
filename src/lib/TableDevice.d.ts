@@ -2,11 +2,11 @@
  * Device Type from configuration.
  */
 export type TableDevice = {
-    name: string;
-    mac: string;
+    name?: string;
+    mac?: string;
     ip: string;
     pin: string;
-    pollInterval: number;
-    enabled: boolean;
+    pollInterval?: number;
+    enabled?: boolean;
     [key: string]: string | number | boolean;
 }

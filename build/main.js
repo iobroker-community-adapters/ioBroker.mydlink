@@ -38,6 +38,7 @@ class Mydlink extends utils.Adapter {
       name: "mydlink"
     });
     this.devices = [];
+    this.unidentifiedDevices = [];
     this.detectedDevices = {};
     this.autoDetector = void 0;
     this.on("ready", this.onReady.bind(this));
@@ -94,7 +95,7 @@ class Mydlink extends utils.Adapter {
           break;
         }
       }
-      const device = import_Device.Device.createFromObject(this, existingDevice);
+      const device = await import_Device.Device.createFromObject(this, existingDevice);
       await device.createDeviceObject();
       if (existingDevice.native.pinNotEncrypted) {
         needUpdateConfig = true;
@@ -108,7 +109,7 @@ class Mydlink extends utils.Adapter {
       }
     }
     for (const configDevice of configDevicesToAdd) {
-      const device = import_Device.Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
+      const device = await import_Device.Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
       this.log.debug("Device " + device.name + " in config but not in devices -> create and add.");
       const oldDevice = this.devices.find((d) => d.mac === device.mac);
       if (oldDevice) {
@@ -118,7 +119,6 @@ class Mydlink extends utils.Adapter {
         await device.createDeviceObject();
         haveActiveDevices = await device.start() || haveActiveDevices;
         await device.createDeviceObject();
-        ;
         this.devices.push(device);
       }
     }
@@ -174,12 +174,84 @@ class Mydlink extends utils.Adapter {
       }
     }
   }
-  onMessage(obj) {
+  async onMessage(obj) {
     if (typeof obj === "object" && obj.message) {
-      if (obj.command === "send") {
-        this.log.info("send command");
-        if (obj.callback)
-          this.sendTo(obj.from, obj.command, "Message received", obj.callback);
+      switch (obj.command) {
+        case "discovery": {
+          if (obj.callback) {
+            const devices = [];
+            for (const key of Object.keys(this.detectedDevices)) {
+              const device = this.detectedDevices[key];
+              device.readOnly = true;
+              devices.push(device);
+            }
+            this.sendTo(obj.from, obj.command, devices, obj.callback);
+          }
+          break;
+        }
+        case "getDevices": {
+          const tableDevices = [];
+          for (const device of this.devices) {
+            const tableDevice = {
+              name: device.name,
+              mac: device.mac,
+              ip: device.ip,
+              pin: device.pinDecrypted,
+              pollInterval: device.pollInterval,
+              enabled: device.enabled
+            };
+            tableDevices.push(tableDevice);
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, tableDevices, obj.callback);
+          }
+          break;
+        }
+        case "identifyDevice": {
+          const params = obj.message;
+          if (params && params.ip && params.pin) {
+            let device = await import_Device.Device.createFromTable(this, {
+              ip: params.ip,
+              pin: params.pin
+            });
+            try {
+              await device.start();
+              if (device.loggedIn && device.identified) {
+                const oldDevice = this.devices.find((d) => d.mac === device.mac);
+                if (oldDevice) {
+                  device.stop();
+                  device = oldDevice;
+                } else {
+                  this.devices.push(device);
+                }
+                const sendDevice = {
+                  mac: device.mac,
+                  name: device.name,
+                  ip: device.ip,
+                  pollInterval: device.pollInterval,
+                  pin: device.pinDecrypted,
+                  enabled: device.loggedIn && device.identified
+                };
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, sendDevice, obj.callback);
+                }
+              } else {
+                this.log.info("could not login -> error.");
+                this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
+              }
+            } catch (e) {
+              this.log.info("could not login device: " + e.stack);
+              if (obj.callback) {
+                this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
+              }
+            }
+          }
+          break;
+        }
+        default: {
+          this.log.debug("Unknown command " + obj.command);
+          break;
+        }
       }
     }
   }

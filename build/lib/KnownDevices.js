@@ -24,7 +24,6 @@ module.exports = __toCommonJS(KnownDevices_exports);
 var import_soapDevice = require("./soapDevice");
 var import_WebSocketDevice = require("./WebSocketDevice");
 var import_SoapSierene = require("./SoapSierene");
-var import_Device = require("./Device");
 const KnownDevices = {
   "DSP-W215": {
     type: "Smart plug",
@@ -52,15 +51,6 @@ const KnownDevices = {
     hasTotalPower: false,
     hasLastDetected: false,
     DeviceType: import_SoapSierene.SoapSieren
-  },
-  "DCH-S160-UNTESTED": {
-    type: "Water detection",
-    canSwitchOnOff: false,
-    hasTemp: false,
-    hasPower: false,
-    hasTotalPower: false,
-    hasLastDetected: true,
-    DeviceType: import_Device.Device
   },
   "DSP-W115": {
     type: "Smart plug",
