@@ -2,7 +2,7 @@
 import {Device, WrongMacError, WrongModelError} from './Device';
 import { Suffixes } from './suffixes';
 import { SoapClientInterface } from './Clients';
-import createSoapClient from '../../lib/soapclient';
+import createSoapClient from './soapclient';
 import { Mydlink } from './mydlink';
 import {KnownDevices} from './KnownDevices';
 
