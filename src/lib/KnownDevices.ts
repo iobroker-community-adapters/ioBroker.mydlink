@@ -1,9 +1,9 @@
 //state will be created if canSwitchOnOff: true or type includes 'detection'
 
-import {SoapMotionDetector, SoapSwitch} from './soapDevice';
-import {WebSocketDevice} from './WebSocketDevice';
-import {SoapSieren} from './SoapSierene';
 import {Device, DeviceConstructor} from './Device';
+import {WebSocketDevice} from './WebSocketDevice';
+import {SoapMotionDetector, SoapSwitch} from './soapDevice';
+import {SoapSieren} from './SoapSierene';
 
 export interface DeviceFlags<Type extends Device> {
     type: string;
