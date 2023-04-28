@@ -173,7 +173,7 @@ export class WebSocketDevice extends Device {
 
     async identify() : Promise<boolean> {
         const id = this.client.getDeviceId();
-        const mac = id.match(/.{2}/g).join(':').toUpperCase(); //add back the :.
+        const mac = id.match(/.{2}/g)!.join(':').toUpperCase(); //add back the :.
 
         if (this.mac && this.mac !== mac) {
             throw new WrongMacError(`${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
@@ -206,12 +206,12 @@ export class WebSocketDevice extends Device {
 
         //get current state:
         if (this.numSockets > 1) {
-            const states = await this.client.state(-1); //get all states.
+            const states = await this.client.state(-1) as Array<boolean>; //get all states.
             for (let index = 1; index <= this.numSockets; index += 1) {
                 await this.adapter.setStateChangedAsync(this.id + Suffixes.state + '_' + index, states[index -1], true);
             }
         } else {
-            const state = await this.client.state();
+            const state = await this.client.state() as boolean;
             await this.adapter.setStateChangedAsync(this.id + Suffixes.state, state, true);
         }
 
