@@ -21,8 +21,8 @@ __export(KnownDevices_exports, {
   KnownDevices: () => KnownDevices
 });
 module.exports = __toCommonJS(KnownDevices_exports);
-var import_soapDevice = require("./soapDevice");
 var import_WebSocketDevice = require("./WebSocketDevice");
+var import_soapDevice = require("./soapDevice");
 var import_SoapSierene = require("./SoapSierene");
 const KnownDevices = {
   "DSP-W215": {

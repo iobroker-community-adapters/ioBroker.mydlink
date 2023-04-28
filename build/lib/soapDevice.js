@@ -31,7 +31,7 @@ __export(soapDevice_exports, {
 module.exports = __toCommonJS(soapDevice_exports);
 var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
-var import_soapclient = __toESM(require("../../lib/soapclient"));
+var import_soapclient = __toESM(require("./soapclient"));
 var import_KnownDevices = require("./KnownDevices");
 class SoapDevice extends import_Device.Device {
   constructor(adapter, ip, pin, pinEncrypted) {
