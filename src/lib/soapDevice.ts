@@ -3,7 +3,7 @@ import {Device, WrongMacError, WrongModelError} from './Device';
 import { Suffixes } from './suffixes';
 import { SoapClientInterface } from './Clients';
 import createSoapClient from '../../lib/soapclient';
-import { Mydlink } from '../main';
+import { Mydlink } from './mydlink';
 import {KnownDevices} from './KnownDevices';
 
 export class SoapDevice extends Device {

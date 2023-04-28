@@ -14,7 +14,7 @@ import {TableDevice} from './lib/TableDevice';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 
-export class Mydlink extends utils.Adapter {
+class Mydlink extends utils.Adapter {
     /**
      * Array of devices.
      *  Device consists of:

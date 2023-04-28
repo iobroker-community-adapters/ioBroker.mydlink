@@ -1,6 +1,6 @@
 import {Device, processNetworkError, WrongMacError} from './Device';
 import {Suffixes} from './suffixes';
-import {Mydlink} from '../main';
+import {Mydlink} from './mydlink';
 import {default as axios} from 'axios';
 import {KnownDevices} from './KnownDevices';
 import WebSocketClient from 'dlink_websocketclient';

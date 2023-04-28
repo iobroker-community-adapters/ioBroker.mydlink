@@ -1,4 +1,4 @@
-import { Mydlink } from '../main';
+import { Mydlink } from './mydlink';
 import { Mdns } from 'mdns-discovery';
 
 import { WebSocketDevice } from './WebSocketDevice';

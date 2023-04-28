@@ -1,7 +1,7 @@
 import { Client } from './Clients';
 import { DeviceInfo } from './DeviceInfo';
 import { Suffixes } from './suffixes';
-import {Mydlink} from '../main';
+import {Mydlink} from './mydlink';
 import {KnownDevices} from './KnownDevices';
 import {TableDevice} from './TableDevice';
 import {SoapDevice} from './soapDevice';
