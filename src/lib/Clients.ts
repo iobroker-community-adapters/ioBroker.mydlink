@@ -20,7 +20,7 @@ export interface Client {
     /**
      * Should return true if device is ready to use and false otherwise.
      */
-    isDeviceReady(): Promise<boolean>;
+    isDeviceReady(): Promise<boolean> | boolean;
 }
 
 export interface WebSocketClientInterface extends Client {
@@ -39,14 +39,13 @@ export interface WebSocketClientInterface extends Client {
 }
 
 export interface SoapClientInterface extends Client {
-    getDeviceSettings():  Promise<Record<string, string | Array<string> >>;
-    getDeviceDescriptionXML(): Promise<Record<string, string>>;
+    getDeviceSettings():  Promise<Record<string, string>>;
     lastDetection(): Promise<number>;
     temperature(): Promise<number>;
     consumption(): Promise<number>;
     totalConsumption(): Promise<number>;
-    reboot(): Promise<void>;
-    getDeviceDescriptionXML(): Promise<Record<string, string> >;
+    reboot(): Promise<boolean>;
+    getDeviceDescriptionXML(): Promise<{deviceSettingsXML: string, modulesSoapActions: string}>;
 
     /**
      * Change the state of a socket.
