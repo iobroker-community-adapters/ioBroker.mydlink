@@ -10,7 +10,7 @@ import {Device} from './lib/Device';
 import { DeviceInfo } from './lib/DeviceInfo';
 import { AutoDetector } from './lib/autoDetect';
 import {TableDevice} from './lib/TableDevice';
-import {createFromObject, createFromTable} from "./lib/DeviceFactory";
+import {createFromObject, createFromTable} from './lib/DeviceFactory';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -37,8 +37,6 @@ class Mydlink extends utils.Adapter {
      *  -> multiple messages.
      * @type {{}}
      */
-    detectedDevices : Record<string, any> = {};
-
     autoDetector: AutoDetector | undefined = undefined;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
@@ -61,10 +59,12 @@ class Mydlink extends utils.Adapter {
         device.stop();
 
         //check if detected device:
-        for (const ip of Object.keys(this.detectedDevices)) {
-            const dectDevice = this.detectedDevices[ip];
-            if (dectDevice.mac === device.id) {
-                dectDevice.alreadyPresent = false;
+        if (this,this.autoDetector) {
+            for (const ip of Object.keys(this.autoDetector.detectedDevices)) {
+                const dectDevice = this.autoDetector.detectedDevices[ip];
+                if (dectDevice.mac === device.id) {
+                    dectDevice.alreadyPresent = false;
+                }
             }
         }
 
@@ -240,10 +240,12 @@ class Mydlink extends utils.Adapter {
                     // Send response in callback if required
                     if (obj.callback) {
                         const devices = [];
-                        for (const key of Object.keys(this.detectedDevices)) {
-                            const device = this.detectedDevices[key];
-                            device.readOnly = true;
-                            devices.push(device);
+                        if (this.autoDetector) {
+                            for (const key of Object.keys(this.autoDetector.detectedDevices)) {
+                                const device = this.autoDetector.detectedDevices[key];
+                                device.readOnly = true;
+                                devices.push(device);
+                            }
                         }
                         this.sendTo(obj.from, obj.command, devices, obj.callback);
                     }
@@ -273,7 +275,7 @@ class Mydlink extends utils.Adapter {
                         let device = await createFromTable(this, {
                             ip: params.ip,
                             pin: params.pin
-                        });
+                        }, false);
                         try {
                             await device.start();
                             if (device.loggedIn && device.identified) { //will be false if ip wrong or duplicate mac.
