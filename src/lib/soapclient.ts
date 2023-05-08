@@ -49,6 +49,14 @@ class HNAP_ERROR extends Error {
     }
 }
 
+/**
+ * Encrypt stuff like we need it with HNAP. No clue, what I am doing here. Ignore name of parameters. ;-)
+ * @param key
+ * @param challenge
+ */
+function hmac(key : string, challenge : string): string {
+    return crypto.createHmac('md5', key).update(challenge).digest('hex').toUpperCase();
+}
 
 /**
  * Creates a soapClient.
@@ -82,11 +90,7 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) {
             HNAP_AUTH.challenge = doc.getElementsByTagName('Challenge')!.item(0)!.firstChild!.nodeValue!;
             HNAP_AUTH.publicKey = doc.getElementsByTagName('PublicKey')!.item(0)!.firstChild!.nodeValue!;
             HNAP_AUTH.cookie = doc.getElementsByTagName('Cookie')!.item(0)!.firstChild!.nodeValue!;
-            HNAP_AUTH.privateKey = crypto.createHmac('md5', HNAP_AUTH.publicKey + HNAP_AUTH.pwd).update(HNAP_AUTH.challenge).digest('hex');
-
-            console.log(HNAP_AUTH);
-            //TODO: is that the same as:?
-            //md5.hex_hmac_md5(HNAP_AUTH.publicKey + HNAP_AUTH.pwd, HNAP_AUTH.challenge).toUpperCase();
+            HNAP_AUTH.privateKey = hmac(HNAP_AUTH.publicKey + HNAP_AUTH.pwd, HNAP_AUTH.challenge);
         }
     }
 
@@ -98,11 +102,10 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) {
     }
 
     function loginParameters() : string {
-        //const login_pwd = md5.hex_hmac_md5(HNAP_AUTH.privateKey, HNAP_AUTH.challenge); //TODO: is this the same?
-        const login_pwd = crypto.createHmac('md5', HNAP_AUTH.privateKey).update(HNAP_AUTH.challenge).digest('hex');
+        const login_pwd = hmac(HNAP_AUTH.privateKey, HNAP_AUTH.challenge);
         return '<Action>login</Action>'
             + '<Username>' + HNAP_AUTH.user + '</Username>'
-            + '<LoginPassword>' + login_pwd.toUpperCase() + '</LoginPassword>'
+            + '<LoginPassword>' + login_pwd + '</LoginPassword>'
             + '<Captcha></Captcha>';
     }
 
@@ -250,9 +253,8 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) {
     function getHnapAuth(SoapAction : string, privateKey : string) : string {
         const current_time = new Date();
         const time_stamp = Math.round(current_time.getTime() / 1000);
-        const auth = crypto.createHmac('md5', privateKey).update(time_stamp + SoapAction).digest('hex');
-        //const auth = md5.hex_hmac_md5(privateKey, time_stamp + SoapAction); //TODO is this the same?
-        return auth.toUpperCase() + ' ' + time_stamp;
+        const auth = hmac(privateKey,time_stamp + SoapAction);
+        return auth + ' ' + time_stamp;
     }
 
     function readResponseValue(body : string, elementName : string | Array<string>) : string | number | boolean | Array<string> | Record<string, string> | undefined {
