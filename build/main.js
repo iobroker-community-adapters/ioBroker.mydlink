@@ -19,8 +19,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_DeviceInfo = require("./lib/DeviceInfo");
-var import_Device = require("./lib/Device");
 var import_autoDetect = require("./lib/autoDetect");
+var import_DeviceFactory = require("./lib/DeviceFactory");
 class Mydlink extends utils.Adapter {
   constructor(options = {}) {
     super({
@@ -85,7 +85,7 @@ class Mydlink extends utils.Adapter {
           break;
         }
       }
-      const device = await import_Device.Device.createFromObject(this, existingDevice);
+      const device = await (0, import_DeviceFactory.createFromObject)(this, existingDevice);
       await device.createDeviceObject();
       if (existingDevice.native.pinNotEncrypted) {
         needUpdateConfig = true;
@@ -99,7 +99,7 @@ class Mydlink extends utils.Adapter {
       }
     }
     for (const configDevice of configDevicesToAdd) {
-      const device = await import_Device.Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
+      const device = await (0, import_DeviceFactory.createFromTable)(this, configDevice, !configDevice.pinNotEncrypted);
       this.log.debug("Device " + device.name + " in config but not in devices -> create and add.");
       const oldDevice = this.devices.find((d) => d.mac === device.mac);
       if (oldDevice) {
@@ -200,7 +200,7 @@ class Mydlink extends utils.Adapter {
         case "identifyDevice": {
           const params = obj.message;
           if (params && params.ip && params.pin) {
-            let device = await import_Device.Device.createFromTable(this, {
+            let device = await (0, import_DeviceFactory.createFromTable)(this, {
               ip: params.ip,
               pin: params.pin
             });

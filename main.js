@@ -19,10 +19,8 @@
 const utils = require('@iobroker/adapter-core');
 const deviceFlags = require('./lib/deviceFlags');
 
-// Load your modules here, e.g.:
-// const fs = require('fs');
-const createSoapClient = require('./lib/soapclient.js');
-const axios = require('axios').default;
+//TODO: Last stub ... do I still need the code below?
+
 
 class MyDlink extends utils.Adapter {
 

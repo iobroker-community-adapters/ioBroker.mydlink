@@ -32,7 +32,6 @@ module.exports = __toCommonJS(soapDevice_exports);
 var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
 var import_soapclient = __toESM(require("./soapclient"));
-var import_KnownDevices = require("./KnownDevices");
 class SoapDevice extends import_Device.Device {
   constructor(adapter, ip, pin, pinEncrypted) {
     super(adapter, ip, pin, pinEncrypted);
@@ -90,10 +89,6 @@ class SoapDevice extends import_Device.Device {
       this.model = settings.ModelName;
       dirty = true;
     }
-    if (!import_KnownDevices.KnownDevices[this.model]) {
-      const xmls = await this.client.getDeviceDescriptionXML();
-      await this.sendModelInfoToSentry(xmls);
-    }
     if (dirty) {
       await this.createDeviceObject();
     }
@@ -150,7 +145,7 @@ class SoapSwitch extends SoapDevice {
       common: {
         name: "totalPowerConsumption",
         type: "number",
-        role: "value.power.consumption",
+        role: "value.energy.consumed",
         unit: "kWh",
         read: true,
         write: false

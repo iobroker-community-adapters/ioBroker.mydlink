@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,20 +17,24 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var autoDetect_exports = {};
 __export(autoDetect_exports, {
   AutoDetector: () => AutoDetector
 });
 module.exports = __toCommonJS(autoDetect_exports);
-var import_mdns_discovery = require("mdns-discovery");
+var import_mdns_discovery = __toESM(require("mdns-discovery"));
 var import_WebSocketDevice = require("./WebSocketDevice");
 class AutoDetector {
   constructor(adapter) {
     this.detectedDevices = {};
     this.debug = false;
     this.adapter = adapter;
-    this.mdns = new import_mdns_discovery.Mdns({
+    this.mdns = new import_mdns_discovery.default({
       timeout: 0,
       name: ["_dhnap._tcp.local", "_dcp._tcp.local"],
       find: "*",

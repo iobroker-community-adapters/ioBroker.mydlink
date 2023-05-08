@@ -30,7 +30,6 @@ module.exports = __toCommonJS(WebSocketDevice_exports);
 var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
 var import_axios = __toESM(require("axios"));
-var import_KnownDevices = require("./KnownDevices");
 var import_dlink_websocketclient = __toESM(require("dlink_websocketclient"));
 class WebSocketDevice extends import_Device.Device {
   constructor(adapter, ip, pin, pinEncrypted) {
@@ -181,10 +180,6 @@ class WebSocketDevice extends import_Device.Device {
         this.model = model;
         await this.createDeviceObject();
       }
-    }
-    if (!import_KnownDevices.KnownDevices[this.model]) {
-      const info = "UNKNOWN WEBSOCKET DEVICE: " + this.model;
-      await this.sendModelInfoToSentry({ info });
     }
     if (this.numSockets > 1) {
       const states = await this.client.state(-1);

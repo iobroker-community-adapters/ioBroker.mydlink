@@ -26,9 +26,6 @@ __export(Device_exports, {
 module.exports = __toCommonJS(Device_exports);
 var import_DeviceInfo = require("./DeviceInfo");
 var import_suffixes = require("./suffixes");
-var import_KnownDevices = require("./KnownDevices");
-var import_soapDevice = require("./soapDevice");
-var import_WebSocketDevice = require("./WebSocketDevice");
 class WrongMacError extends Error {
   constructor(message) {
     super(message);
@@ -50,140 +47,10 @@ function processNetworkError(e) {
     return e.code;
   }
 }
-function deviceObjetToTableDevice(configDevice) {
-  return {
-    name: configDevice.native.name,
-    mac: configDevice.native.mac,
-    ip: configDevice.native.ip,
-    pin: configDevice.native.pin,
-    pollInterval: configDevice.native.pollInterval,
-    enabled: configDevice.native.enabled
-  };
-}
 class Device extends import_DeviceInfo.DeviceInfo {
   constructor(adapter, ip, pin, pinEncrypted) {
     super(ip, pin, pinEncrypted);
     this.adapter = adapter;
-  }
-  static async createFromObject(adapter, configDevice) {
-    const native = configDevice.native;
-    const pinEncrypted = native.mac && !native.pinNotEncrypted;
-    if (native.model) {
-      return Device.createDevice(adapter, {
-        ip: native.ip,
-        pin: native.pin,
-        pinEncrypted,
-        model: native.model,
-        mac: native.mac,
-        name: native.name,
-        enabled: native.enabled,
-        isWebsocket: native.useWebsocket
-      });
-    } else {
-      adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
-      return Device.createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebsocket);
-    }
-  }
-  static async createDevice(adapter, params) {
-    let device;
-    const deviceFlags = import_KnownDevices.KnownDevices[params.model];
-    if (deviceFlags) {
-      device = new deviceFlags.DeviceType(adapter, params.ip, params.pin, params.pinEncrypted);
-    } else {
-      adapter.log.info(`Unknown device type ${params.model} for ${params.name}. Trying to identify.`);
-      if (params.isWebsocket) {
-        device = new import_WebSocketDevice.WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-      } else {
-        device = new import_soapDevice.SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-      }
-    }
-    device.pollInterval = device.pollInterval || params.pollInterval;
-    device.mac = device.mac || params.mac;
-    device.id = device.id || params.id;
-    device.name = device.name || params.name;
-    device.model = params.model;
-    device.enabled = device.enabled || params.enabled;
-    device.isWebsocket = device.isWebsocket || params.isWebsocket;
-    return device;
-  }
-  static async createFromTable(adapter, tableDevice, doDecrypt = false, forceWebsocket = false) {
-    const pinEncrypted = doDecrypt && Boolean(tableDevice.mac);
-    const mac = tableDevice.mac ? tableDevice.mac.toUpperCase() : "";
-    let device;
-    if (!forceWebsocket) {
-      device = new import_soapDevice.SoapDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
-    } else {
-      device = new import_WebSocketDevice.WebSocketDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
-    }
-    device.mac = mac;
-    device.pollInterval = tableDevice.pollInterval !== void 0 && isFinite(Number(tableDevice.pollInterval)) && tableDevice.pollInterval >= 0 ? Number(tableDevice.pollInterval) : 3e4;
-    if (device.mac) {
-      device.idFromMac();
-    }
-    device.name = tableDevice.name || device.name;
-    device.enabled = tableDevice.enabled !== void 0 ? tableDevice.enabled : device.enabled;
-    try {
-      await device.login();
-      if (device.loggedIn) {
-        await device.identify();
-      } else {
-        throw new Error("Device not logged in... why?");
-      }
-    } catch (e) {
-      device.stop();
-      const code = processNetworkError(e);
-      if (!forceWebsocket && (code === 500 || code === "ECONNREFUSED")) {
-        return Device.createFromTable(adapter, tableDevice, doDecrypt, true);
-      }
-      if (e.name === WrongModelError.name) {
-        adapter.log.debug(`Found ${device.model} for ${device.name}. Create a fitting device.`);
-        return Device.createDevice(adapter, {
-          model: device.model,
-          ip: device.ip,
-          pinEncrypted: false,
-          pin: device.pinDecrypted,
-          name: device.name,
-          mac: device.mac,
-          pollInterval: device.pollInterval,
-          id: device.id,
-          isWebsocket: device.isWebsocket,
-          enabled: device.enabled
-        });
-      }
-      if (e.name === WrongMacError.name) {
-        adapter.log.info(`Device with unexpected MAC ${device.mac} reacted on ${device.ip}. Trying to create new device object for it.`);
-        if (device.model) {
-          return Device.createDevice(adapter, {
-            model: device.model,
-            ip: device.ip,
-            pinEncrypted: false,
-            pin: device.pinDecrypted,
-            name: device.name,
-            mac: device.mac,
-            pollInterval: device.pollInterval,
-            id: device.id,
-            isWebsocket: device.isWebsocket,
-            enabled: device.enabled
-          });
-        } else {
-          return Device.createFromTable(adapter, {
-            mac: device.mac,
-            ip: device.ip,
-            pin: device.pinDecrypted,
-            name: device.name,
-            pollInterval: device.pollInterval,
-            enabled: device.enabled
-          });
-        }
-      }
-      adapter.log.debug("Login error: " + e.stack);
-      if (!device.loginErrorPrinted && e.code !== "ETIMEDOUT" && e.code !== "ECONNABORTED" && e.code !== "ECONNRESET") {
-        adapter.log.error(tableDevice.name + " could not login. Please check credentials and if device is online/connected. Error: " + e.code + " - " + e.stack);
-        device.loginErrorPrinted = true;
-      }
-      device.loggedIn = false;
-    }
-    return device;
   }
   async createDeviceObject() {
     if (!this.id) {
@@ -197,7 +64,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
       common: {
         name: this.name,
         statusStates: {
-          onlineId: `${this.adapter.namespace}.${this.id}.${import_suffixes.Suffixes.reachable}`
+          onlineId: `${this.adapter.namespace}.${this.id}${import_suffixes.Suffixes.reachable}`
         }
       },
       native: {
@@ -289,26 +156,6 @@ class Device extends import_DeviceInfo.DeviceInfo {
     }
     return this.loggedIn;
   }
-  async sendModelInfoToSentry(xmls) {
-    if (!import_KnownDevices.KnownDevices[this.model]) {
-      this.adapter.log.info("Found new device, please report the following (full log from file, please) to developer: " + JSON.stringify(xmls, null, 2));
-      if (this.adapter.supportsFeature && this.adapter.supportsFeature("PLUGINS")) {
-        const sentryInstance = this.adapter.getPluginInstance("sentry");
-        if (sentryInstance) {
-          const Sentry = sentryInstance.getSentryObject();
-          if (Sentry) {
-            Sentry.withScope((scope) => {
-              scope.setLevel("info");
-              for (const key of Object.keys(xmls)) {
-                scope.setExtra(key, xmls[key]);
-              }
-              Sentry.captureMessage("Unknown-Device " + this.model, "info");
-            });
-          }
-        }
-      }
-    }
-  }
   async identify() {
     if (!this.name) {
       this.name = this.model;
@@ -369,7 +216,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
           await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
           await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
         } catch (e) {
-          this.adapter.log.error(this.name + " could not get settings: " + e.stack);
+          this.adapter.log.error(this.name + " could not identify device: " + e.stack);
         }
       }
     }
@@ -397,6 +244,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
         this.pollInterval = 0;
         this.adapter.log.debug("Polling of " + this.name + " disabled, interval was " + interval + " (0 means disabled)");
       }
+      result = true;
     }
     return result;
   }

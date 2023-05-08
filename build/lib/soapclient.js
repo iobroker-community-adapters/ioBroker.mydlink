@@ -42,6 +42,9 @@ class HNAP_ERROR extends Error {
     this.body = body;
   }
 }
+function hmac(key, challenge) {
+  return crypto.createHmac("md5", key).update(challenge).digest("hex").toUpperCase();
+}
 const soapClient = function(opt = { url: "", user: "", password: "" }) {
   const HNAP_AUTH = {
     url: opt.url || "",
@@ -65,16 +68,15 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       HNAP_AUTH.challenge = doc.getElementsByTagName("Challenge").item(0).firstChild.nodeValue;
       HNAP_AUTH.publicKey = doc.getElementsByTagName("PublicKey").item(0).firstChild.nodeValue;
       HNAP_AUTH.cookie = doc.getElementsByTagName("Cookie").item(0).firstChild.nodeValue;
-      HNAP_AUTH.privateKey = crypto.createHmac("md5", HNAP_AUTH.publicKey + HNAP_AUTH.pwd).update(HNAP_AUTH.challenge).digest("hex");
-      console.log(HNAP_AUTH);
+      HNAP_AUTH.privateKey = hmac(HNAP_AUTH.publicKey + HNAP_AUTH.pwd, HNAP_AUTH.challenge);
     }
   }
   function loginRequest() {
     return "<Action>request</Action><Username>" + HNAP_AUTH.user + "</Username><LoginPassword></LoginPassword><Captcha></Captcha>";
   }
   function loginParameters() {
-    const login_pwd = crypto.createHmac("md5", HNAP_AUTH.privateKey).update(HNAP_AUTH.challenge).digest("hex");
-    return "<Action>login</Action><Username>" + HNAP_AUTH.user + "</Username><LoginPassword>" + login_pwd.toUpperCase() + "</LoginPassword><Captcha></Captcha>";
+    const login_pwd = hmac(HNAP_AUTH.privateKey, HNAP_AUTH.challenge);
+    return "<Action>login</Action><Username>" + HNAP_AUTH.user + "</Username><LoginPassword>" + login_pwd + "</LoginPassword><Captcha></Captcha>";
   }
   function requestBody(method, parameters) {
     return '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><' + method + ' xmlns="' + HNAP1_XMLNS + '">' + parameters + "</" + method + "></soap:Body></soap:Envelope>";
@@ -165,8 +167,8 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
   function getHnapAuth(SoapAction, privateKey) {
     const current_time = new Date();
     const time_stamp = Math.round(current_time.getTime() / 1e3);
-    const auth = crypto.createHmac("md5", privateKey).update(time_stamp + SoapAction).digest("hex");
-    return auth.toUpperCase() + " " + time_stamp;
+    const auth = hmac(privateKey, time_stamp + SoapAction);
+    return auth + " " + time_stamp;
   }
   function readResponseValue(body, elementName) {
     if (typeof elementName === "object" && typeof elementName.forEach === "function") {
