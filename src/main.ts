@@ -96,13 +96,12 @@ class Mydlink extends utils.Adapter {
         }
 
         // Reset the connection indicator during startup
-        this.setState('info.connection', false, true);
+        await this.delObjectAsync('info', {recursive: true});
 
         //start auto detection:
         this.autoDetector = new AutoDetector(this);
 
         //start existing devices:
-        let haveActiveDevices = false;
         const existingDevices = await this.getDevicesAsync();
         const configDevicesToAdd = [].concat(this.config.devices) as TableDevice[];
         this.log.debug('Got existing devices: ' + JSON.stringify(existingDevices, null, 2));
@@ -132,7 +131,7 @@ class Mydlink extends utils.Adapter {
                 needUpdateConfig = true;
             }
             if (found) {
-                haveActiveDevices = await device.start() || haveActiveDevices;
+                await device.start();
                 //keep config and client for later reference.
                 this.devices.push(device);
             } else {
@@ -153,7 +152,7 @@ class Mydlink extends utils.Adapter {
                 //make sure objects are created:
                 await device.createDeviceObject();
 
-                haveActiveDevices = await device.start() || haveActiveDevices;
+                await device.start();
                 //call this here again, to make sure it happens.
                 await device.createDeviceObject(); //store device settings
                 //keep config and client for later reference.
@@ -183,8 +182,6 @@ class Mydlink extends utils.Adapter {
                 }
             });
         }
-
-        await this.setStateChangedAsync('info.connection', !haveActiveDevices, true); //if no active device -> make green.
     }
 
     /**
