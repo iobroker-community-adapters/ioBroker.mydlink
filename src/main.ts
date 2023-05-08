@@ -6,10 +6,11 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 
-import { DeviceInfo } from './lib/DeviceInfo';
 import {Device} from './lib/Device';
+import { DeviceInfo } from './lib/DeviceInfo';
 import { AutoDetector } from './lib/autoDetect';
 import {TableDevice} from './lib/TableDevice';
+import {createFromObject, createFromTable} from "./lib/DeviceFactory";
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -125,7 +126,7 @@ class Mydlink extends utils.Adapter {
                     break; //break on first copy -> will remove additional copies later.
                 }
             }
-            const device = await Device.createFromObject(this, existingDevice);
+            const device = await createFromObject(this, existingDevice);
             await device.createDeviceObject(); //store new config.
             if (existingDevice.native.pinNotEncrypted) {
                 needUpdateConfig = true;
@@ -142,7 +143,7 @@ class Mydlink extends utils.Adapter {
 
         //add non-existing devices from config:
         for (const configDevice of configDevicesToAdd) {
-            const device = await Device.createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
+            const device = await createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
             this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
             const oldDevice = this.devices.find(d => d.mac === device.mac);
             if (oldDevice) {
@@ -269,7 +270,7 @@ class Mydlink extends utils.Adapter {
                 case 'identifyDevice': {
                     const params = (obj.message) as Record<string, any>;
                     if (params && params.ip && params.pin) {
-                        let device = await Device.createFromTable(this, {
+                        let device = await createFromTable(this, {
                             ip: params.ip,
                             pin: params.pin
                         });

@@ -1,9 +1,14 @@
 //state will be created if canSwitchOnOff: true or type includes 'detection'
 
-import {Device, DeviceConstructor} from './Device';
 import {WebSocketDevice} from './WebSocketDevice';
 import {SoapMotionDetector, SoapSwitch} from './soapDevice';
 import {SoapSieren} from './SoapSierene';
+import {Mydlink} from './mydlink';
+import {Device} from './Device';
+
+export interface DeviceConstructor<T> {
+    new (adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean): T;
+}
 
 export interface DeviceFlags<Type extends Device> {
     type: string;

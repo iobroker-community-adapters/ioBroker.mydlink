@@ -2,14 +2,6 @@ import { Client } from './Clients';
 import { DeviceInfo } from './DeviceInfo';
 import { Suffixes } from './suffixes';
 import {Mydlink} from './mydlink';
-import {KnownDevices} from './KnownDevices';
-import {TableDevice} from './TableDevice';
-import {SoapDevice} from './soapDevice';
-import {WebSocketDevice} from './WebSocketDevice';
-
-export interface DeviceConstructor<T> {
-    new (adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean): T;
-}
 
 export class WrongMacError extends Error {
     name = 'WRONGMAC';
@@ -30,7 +22,7 @@ export class WrongModelError extends Error {
  * @param {Record<string, any>} e
  * @returns {number|string}
  */
-export function processNetworkError(e: Record<string, any>) {
+export function processNetworkError(e: Record<string, any>) : number | string {
     if (e.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
@@ -49,179 +41,12 @@ export function processNetworkError(e: Record<string, any>) {
     }
 }
 
-function deviceObjetToTableDevice(configDevice: ioBroker.DeviceObject) : TableDevice {
-    return {
-        name: configDevice.native.name,
-        mac: configDevice.native.mac,
-        ip: configDevice.native.ip,
-        pin: configDevice.native.pin,
-        pollInterval: configDevice.native.pollInterval,
-        enabled: configDevice.native.enabled,
-    }
-}
-
 export abstract class Device extends DeviceInfo {
     readonly adapter: Mydlink;
     abstract client: Client;
     constructor (adapter : Mydlink, ip : string, pin: string, pinEncrypted: boolean) {
         super(ip, pin, pinEncrypted);
         this.adapter = adapter;
-    }
-
-    /**
-     * Create DeviceInfo from ioBroker object, old createDeviceFromConfig (model known)
-     * @param adapter ioBroker Adapter
-     * @param configDevice ioBroker device object
-     * @returns Promise<Device>
-     */
-    static async createFromObject(adapter : Mydlink, configDevice: ioBroker.DeviceObject) : Promise<Device> {
-        const native = configDevice.native;
-        const pinEncrypted = (native.mac && !native.pinNotEncrypted);
-        if (native.model) {
-            return Device.createDevice(adapter, {
-                ip: native.ip,
-                pin: native.pin,
-                pinEncrypted,
-                model: native.model,
-                mac: native.mac,
-                name: native.name,
-                enabled: native.enabled,
-                isWebsocket: native.useWebsocket
-            });
-        } else {
-            adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
-            return Device.createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebsocket);
-        }
-    }
-
-    /**
-     * Create a device with model known.
-     * @param adapter
-     * @param params
-     */
-    static async createDevice(adapter: Mydlink, params : {
-        ip: string, pin: string, pinEncrypted: boolean, model: string,
-        pollInterval?: number, mac?: string, id?: string,
-        isWebsocket?: boolean, name?: string, enabled?: boolean}) : Promise<Device> {
-
-        let device;
-        const deviceFlags = KnownDevices[params.model];
-        if (deviceFlags) {
-            device = new deviceFlags.DeviceType(adapter, params.ip, params.pin, params.pinEncrypted);
-        } else {
-            adapter.log.info(`Unknown device type ${params.model} for ${params.name}. Trying to identify.`);
-            if (params.isWebsocket) {
-                device = new WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-            } else {
-                device = new SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-            }
-        }
-        device.pollInterval = device.pollInterval || params.pollInterval;
-        device.mac = device.mac || params.mac;
-        device.id = device.id || params.id;
-        device.name = device.name || params.name;
-        device.model = params.model;
-        device.enabled = device.enabled || params.enabled;
-        device.isWebsocket = device.isWebsocket || params.isWebsocket;
-        return device;
-    }
-
-    /**
-     * Creates DeviceInfo from configuration-Table object (model unknown).
-     * @param adapter ioBroker Adapter
-     * @param tableDevice
-     * @param doDecrypt
-     * @returns @returns Promise<Device>
-     */
-    static async createFromTable(adapter : Mydlink, tableDevice: TableDevice, doDecrypt = false, forceWebsocket = false) : Promise<Device> {
-        const pinEncrypted = (doDecrypt && Boolean(tableDevice.mac));
-        const mac = tableDevice.mac ? tableDevice.mac.toUpperCase() : '';
-
-        let device;
-        //first try soap:
-        if (!forceWebsocket) {
-            device = new SoapDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
-        } else {
-            device = new WebSocketDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
-        }
-
-        device.mac = mac;
-        device.pollInterval = tableDevice.pollInterval !== undefined && isFinite(Number(tableDevice.pollInterval)) && tableDevice.pollInterval >= 0 ? Number(tableDevice.pollInterval) : 30000;
-        if (device.mac) {
-            device.idFromMac();
-        }
-        device.name = tableDevice.name || device.name;
-        device.enabled = tableDevice.enabled !== undefined ? tableDevice.enabled : device.enabled;
-
-        try {
-            await device.login();
-            if (device.loggedIn) {
-                //ok, login worked. -> seems to be soap device, identify:
-                await device.identify();
-            } else {
-                throw new Error('Device not logged in... why?');
-            }
-        } catch (e: any) {
-            device.stop(); //stop old device in any case!
-            const code = processNetworkError(e);
-            if (!forceWebsocket && (code === 500 || code === 'ECONNREFUSED')) { //try websocket.
-                return Device.createFromTable(adapter, tableDevice, doDecrypt, true);
-            }
-
-            if (e.name === WrongModelError.name) {
-                //model was wrong -> recreate with new model information.
-                adapter.log.debug(`Found ${device.model} for ${device.name}. Create a fitting device.`);
-                return Device.createDevice(adapter, {
-                    model: device.model,
-                    ip: device.ip,
-                    pinEncrypted: false,
-                    pin: device.pinDecrypted,
-                    name: device.name,
-                    mac: device.mac,
-                    pollInterval: device.pollInterval,
-                    id: device.id,
-                    isWebsocket: device.isWebsocket,
-                    enabled: device.enabled
-                });
-            }
-
-            if (e.name === WrongMacError.name) {
-                adapter.log.info(`Device with unexpected MAC ${device.mac} reacted on ${device.ip}. Trying to create new device object for it.`);
-                if (device.model) {
-                    return Device.createDevice(adapter, {
-                        model: device.model,
-                        ip: device.ip,
-                        pinEncrypted: false,
-                        pin: device.pinDecrypted,
-                        name: device.name,
-                        mac: device.mac,
-                        pollInterval: device.pollInterval,
-                        id: device.id,
-                        isWebsocket: device.isWebsocket,
-                        enabled: device.enabled
-                    });
-                } else {
-                    return Device.createFromTable(adapter, {
-                        mac: device.mac,
-                        ip: device.ip,
-                        pin: device.pinDecrypted,
-                        name: device.name,
-                        pollInterval: device.pollInterval,
-                        enabled: device.enabled
-                    })
-                }
-            }
-
-            adapter.log.debug('Login error: ' + e.stack);
-            if (!device.loginErrorPrinted && e.code !== 'ETIMEDOUT' && e.code !== 'ECONNABORTED' && e.code !== 'ECONNRESET') {
-                adapter.log.error(tableDevice.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.code + ' - ' + e.stack);
-                device.loginErrorPrinted = true;
-            }
-
-            device.loggedIn = false;
-        }
-
-        return device;
     }
 
     /**
@@ -242,7 +67,7 @@ export abstract class Device extends DeviceInfo {
             common: {
                 name: this.name,
                 statusStates: {
-                    onlineId: `${this.adapter.namespace}.${this.id}.${Suffixes.reachable}`
+                    onlineId: `${this.adapter.namespace}.${this.id}${Suffixes.reachable}`
                 }
             } as Partial<ioBroker.DeviceCommon>,
             native: {
@@ -351,28 +176,6 @@ export abstract class Device extends DeviceInfo {
         return this.loggedIn;
     }
 
-    async sendModelInfoToSentry(xmls: Record<string, string>) {
-        if (!KnownDevices[this.model]) {
-            //unknown device -> report to sentry.
-            this.adapter.log.info('Found new device, please report the following (full log from file, please) to developer: ' + JSON.stringify(xmls, null, 2));
-            if (this.adapter.supportsFeature && this.adapter.supportsFeature('PLUGINS')) {
-                const sentryInstance = this.adapter.getPluginInstance('sentry');
-                if (sentryInstance) {
-                    const Sentry = sentryInstance.getSentryObject();
-                    if (Sentry) {
-                        Sentry.withScope((scope : any) => {
-                            scope.setLevel('info');
-                            for (const key of Object.keys(xmls)) {
-                                scope.setExtra(key, xmls[key]);
-                            }
-                            Sentry.captureMessage('Unknown-Device ' + this.model, 'info'); // Level 'info'
-                        });
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * Identification of device needs to happen after successful login.
      * Problem: Maybe needs to create new object of new type. Hm...
@@ -458,7 +261,7 @@ export abstract class Device extends DeviceInfo {
                     await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
                     await this.adapter.setStateAsync(this.id + Suffixes.unreachable, !this.ready, true);
                 } catch (e: any) {
-                    this.adapter.log.error(this.name + ' could not get settings: ' + e.stack);
+                    this.adapter.log.error(this.name + ' could not identify device: ' + e.stack);
                 }
             }
         }
@@ -489,6 +292,7 @@ export abstract class Device extends DeviceInfo {
                 this.pollInterval = 0;
                 this.adapter.log.debug('Polling of ' + this.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
             }
+            result = true;
         }
 
         return result;

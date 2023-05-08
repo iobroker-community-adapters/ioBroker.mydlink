@@ -2,7 +2,6 @@ import {Device, processNetworkError, WrongMacError} from './Device';
 import {Suffixes} from './suffixes';
 import {Mydlink} from './mydlink';
 import {default as axios} from 'axios';
-import {KnownDevices} from './KnownDevices';
 import WebSocketClient from 'dlink_websocketclient';
 
 export class WebSocketDevice extends Device {
@@ -196,12 +195,6 @@ export class WebSocketDevice extends Device {
                 //store new model in device object:
                 await this.createDeviceObject();
             }
-        }
-
-        if (!KnownDevices[this.model]) {
-            //unknown device -> report to sentry.
-            const info = 'UNKNOWN WEBSOCKET DEVICE: ' + this.model;
-            await this.sendModelInfoToSentry({info});
         }
 
         //get current state:

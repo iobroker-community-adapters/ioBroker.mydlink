@@ -4,7 +4,6 @@ import { Suffixes } from './suffixes';
 import { SoapClientInterface } from './Clients';
 import createSoapClient from './soapclient';
 import { Mydlink } from './mydlink';
-import {KnownDevices} from './KnownDevices';
 
 export class SoapDevice extends Device {
     client: SoapClientInterface;
@@ -84,11 +83,6 @@ export class SoapDevice extends Device {
 
         //let canSwitch = this.model.toUpperCase().includes('DSP') ||
         //    ((settings.ModuleTypes as Array<string>).find(t => t.indexOf('Plug') >= 0)); //if is socket, probably can switch on/off
-
-        if (!KnownDevices[this.model]) {
-            const xmls = await this.client.getDeviceDescriptionXML();
-            await this.sendModelInfoToSentry(xmls);
-        }
 
         if (dirty) {
             await this.createDeviceObject();
