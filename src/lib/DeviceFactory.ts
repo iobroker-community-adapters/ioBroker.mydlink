@@ -53,6 +53,7 @@ export async function createFromObject(adapter : Mydlink, configDevice: ioBroker
             pin: native.pin,
             pinEncrypted,
             model: native.model,
+            pollInterval: native.pollInterval,
             mac: native.mac,
             id: configDevice._id.split('.')[2],
             name: native.name,
@@ -91,16 +92,16 @@ export async function createDevice(adapter: Mydlink, params : {
         }
         await sendModelInfoToSentry(adapter, params.model, info);
     }
-    device.pollInterval = device.pollInterval || params.pollInterval;
-    device.mac = device.mac || params.mac;
-    device.id = device.id || params.id;
+    device.pollInterval = params.pollInterval || device.pollInterval;
+    device.mac = params.mac || device.mac;
+    device.id = params.id || device.id;
     if (!device.id) {
         device.idFromMac();
     }
-    device.name = device.name || params.name;
+    device.name = params.name || device.name;
     device.model = params.model;
-    device.enabled = device.enabled || params.enabled;
-    device.isWebsocket = device.isWebsocket || params.isWebsocket;
+    device.enabled = params.enabled !== undefined ? params.enabled : device.enabled;
+    device.isWebsocket = params.isWebsocket !== undefined ? params.isWebsocket : device.isWebsocket;
     return device;
 }
 
@@ -138,7 +139,12 @@ export async function createFromTable(adapter : Mydlink, tableDevice: TableDevic
             //ok, login worked. -> seems to be soap device, identify:
             await device.identify();
         } else {
-            throw new Error('Device not logged in... why?');
+            if (!forceWebsocket) {
+                adapter.log.debug(`${device.name} could not login with SOAP, try websocket.`);
+                return createFromTable(adapter, tableDevice, doDecrypt, true);
+            } else {
+                throw new Error('Device not logged in... why?');
+            }
         }
     } catch (e: any) {
         device.stop(); //stop old device in any case!
@@ -147,7 +153,7 @@ export async function createFromTable(adapter : Mydlink, tableDevice: TableDevic
             return createFromTable(adapter, tableDevice, doDecrypt, true);
         }
 
-        if (e.name === WrongModelError.name) {
+        if (e.name === WrongModelError.errorName) {
             //model was wrong -> recreate with new model information.
             adapter.log.debug(`Found ${device.model} for ${device.name}. Create a fitting device.`);
             return createDevice(adapter, {
@@ -164,7 +170,7 @@ export async function createFromTable(adapter : Mydlink, tableDevice: TableDevic
             });
         }
 
-        if (e.name === WrongMacError.name) {
+        if (e.name === WrongMacError.errorName) {
             adapter.log.info(`Device with unexpected MAC ${device.mac} reacted on ${device.ip}. Trying to create new device object for it.`);
             if (device.model) {
                 return createDevice(adapter, {

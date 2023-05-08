@@ -67,6 +67,7 @@ export class WebSocketDevice extends Device {
             this.client.removeAllListeners('switch');
             this.client.removeAllListeners('error');
             this.client.removeAllListeners('close');
+            this.client.removeAllListeners('message');
         }
     }
 
@@ -117,8 +118,9 @@ export class WebSocketDevice extends Device {
      * starting communication with device from config.
      * @returns {Promise<boolean>}
      */
-    async start() : Promise<boolean> {
-        const result = super.start();
+    async start() : Promise<void> {
+        await super.start();
+
         //event listener:
         this.client.on('switched', (val : boolean, socket : number) => {
             this.adapter.log.debug(`Event from device ${socket} now ${val}`);
@@ -135,8 +137,6 @@ export class WebSocketDevice extends Device {
         await this.adapter.setStateAsync(this.id + Suffixes.unreachable, false, true);
         this.ready = true;
         this.adapter.log.debug('Setup device event listener.');
-
-        return result;
     }
 
     /**
@@ -178,6 +178,7 @@ export class WebSocketDevice extends Device {
             throw new WrongMacError(`${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
         }
         this.mac = mac;
+        this.id = id;
 
         //get model from webserver / wifi-ssid:
         const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
@@ -197,6 +198,9 @@ export class WebSocketDevice extends Device {
             }
         }
 
+        //make sure objects are created.
+        const superResult = await super.identify();
+
         //get current state:
         if (this.numSockets > 1) {
             const states = await this.client.state(-1) as Array<boolean>; //get all states.
@@ -208,6 +212,6 @@ export class WebSocketDevice extends Device {
             await this.adapter.setStateChangedAsync(this.id + Suffixes.state, state, true);
         }
 
-        return super.identify();
+        return superResult;
     }
 }

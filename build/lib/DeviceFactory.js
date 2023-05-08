@@ -66,6 +66,7 @@ async function createFromObject(adapter, configDevice) {
       pin: native.pin,
       pinEncrypted,
       model: native.model,
+      pollInterval: native.pollInterval,
       mac: native.mac,
       id: configDevice._id.split(".")[2],
       name: native.name,
@@ -94,16 +95,16 @@ async function createDevice(adapter, params) {
     }
     await sendModelInfoToSentry(adapter, params.model, info);
   }
-  device.pollInterval = device.pollInterval || params.pollInterval;
-  device.mac = device.mac || params.mac;
-  device.id = device.id || params.id;
+  device.pollInterval = params.pollInterval || device.pollInterval;
+  device.mac = params.mac || device.mac;
+  device.id = params.id || device.id;
   if (!device.id) {
     device.idFromMac();
   }
-  device.name = device.name || params.name;
+  device.name = params.name || device.name;
   device.model = params.model;
-  device.enabled = device.enabled || params.enabled;
-  device.isWebsocket = device.isWebsocket || params.isWebsocket;
+  device.enabled = params.enabled !== void 0 ? params.enabled : device.enabled;
+  device.isWebsocket = params.isWebsocket !== void 0 ? params.isWebsocket : device.isWebsocket;
   return device;
 }
 async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWebsocket = false) {
@@ -127,7 +128,12 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
     if (device.loggedIn) {
       await device.identify();
     } else {
-      throw new Error("Device not logged in... why?");
+      if (!forceWebsocket) {
+        adapter.log.debug(`${device.name} could not login with SOAP, try websocket.`);
+        return createFromTable(adapter, tableDevice, doDecrypt, true);
+      } else {
+        throw new Error("Device not logged in... why?");
+      }
     }
   } catch (e) {
     device.stop();
@@ -135,7 +141,7 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
     if (!forceWebsocket && (code === 500 || code === "ECONNREFUSED")) {
       return createFromTable(adapter, tableDevice, doDecrypt, true);
     }
-    if (e.name === import_Device.WrongModelError.name) {
+    if (e.name === import_Device.WrongModelError.errorName) {
       adapter.log.debug(`Found ${device.model} for ${device.name}. Create a fitting device.`);
       return createDevice(adapter, {
         model: device.model,
@@ -150,7 +156,7 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
         enabled: device.enabled
       });
     }
-    if (e.name === import_Device.WrongMacError.name) {
+    if (e.name === import_Device.WrongMacError.errorName) {
       adapter.log.info(`Device with unexpected MAC ${device.mac} reacted on ${device.ip}. Trying to create new device object for it.`);
       if (device.model) {
         return createDevice(adapter, {

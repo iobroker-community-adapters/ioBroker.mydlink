@@ -83,6 +83,7 @@ class WebSocketDevice extends import_Device.Device {
       this.client.removeAllListeners("switch");
       this.client.removeAllListeners("error");
       this.client.removeAllListeners("close");
+      this.client.removeAllListeners("message");
     }
   }
   async onInterval() {
@@ -118,7 +119,7 @@ class WebSocketDevice extends import_Device.Device {
     }, 1e4);
   }
   async start() {
-    const result = super.start();
+    await super.start();
     this.client.on("switched", (val, socket) => {
       this.adapter.log.debug(`Event from device ${socket} now ${val}`);
       if (this.numSockets > 1) {
@@ -133,7 +134,6 @@ class WebSocketDevice extends import_Device.Device {
     await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.unreachable, false, true);
     this.ready = true;
     this.adapter.log.debug("Setup device event listener.");
-    return result;
   }
   async handleStateChange(id, state) {
     if (typeof state.val === "boolean") {
@@ -166,6 +166,7 @@ class WebSocketDevice extends import_Device.Device {
       throw new import_Device.WrongMacError(`${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
     }
     this.mac = mac;
+    this.id = id;
     const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
     const result = await import_axios.default.get(url);
     if (result.status === 200) {
@@ -181,6 +182,7 @@ class WebSocketDevice extends import_Device.Device {
         await this.createDeviceObject();
       }
     }
+    const superResult = await super.identify();
     if (this.numSockets > 1) {
       const states = await this.client.state(-1);
       for (let index = 1; index <= this.numSockets; index += 1) {
@@ -190,7 +192,7 @@ class WebSocketDevice extends import_Device.Device {
       const state = await this.client.state();
       await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, state, true);
     }
-    return super.identify();
+    return superResult;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

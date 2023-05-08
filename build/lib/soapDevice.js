@@ -78,16 +78,13 @@ class SoapDevice extends import_Device.Device {
     }
     if (this.mac !== settings.DeviceMacId) {
       this.mac = settings.DeviceMacId.toUpperCase();
+      this.idFromMac();
       dirty = true;
-    }
-    if (this.model && this.model !== settings.ModelName) {
-      this.model = settings.ModelName;
-      this.adapter.log.warn(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
-      throw new import_Device.WrongModelError(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
     }
     if (this.model !== settings.ModelName) {
+      this.adapter.log.warn(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
       this.model = settings.ModelName;
-      dirty = true;
+      throw new import_Device.WrongModelError(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
     }
     if (dirty) {
       await this.createDeviceObject();

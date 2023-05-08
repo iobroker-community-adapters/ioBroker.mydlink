@@ -4,6 +4,7 @@ import { Suffixes } from './suffixes';
 import {Mydlink} from './mydlink';
 
 export class WrongMacError extends Error {
+    static errorName = 'WRONGMAC';
     name = 'WRONGMAC';
     constructor(message: string) {
         super(message);
@@ -11,6 +12,7 @@ export class WrongMacError extends Error {
 }
 
 export class WrongModelError extends Error {
+    static errorName = 'WRONGMODEL';
     name = 'WRONGMODEL';
     constructor(message: string) {
         super(message);
@@ -44,7 +46,7 @@ export function processNetworkError(e: Record<string, any>) : number | string {
 export abstract class Device extends DeviceInfo {
     readonly adapter: Mydlink;
     abstract client: Client;
-    constructor (adapter : Mydlink, ip : string, pin: string, pinEncrypted: boolean) {
+    protected constructor (adapter : Mydlink, ip : string, pin: string, pinEncrypted: boolean) {
         super(ip, pin, pinEncrypted);
         this.adapter = adapter;
     }
@@ -160,13 +162,13 @@ export abstract class Device extends DeviceInfo {
         } catch (e : any) {
             this.adapter.log.debug('Login error: ' + e.stack);
 
-            if (!this.loginErrorPrinted && e.code !== 'ETIMEDOUT' && e.code !== 'ECONNABORTED' && e.code !== 'ECONNRESET') {
+            if (!this.loginErrorPrinted && e.code !== 'ETIMEDOUT' && e.code !== 'ECONNABORTED' && e.code !== 'ECONNRESET' && this.model) {
                 this.adapter.log.error(this.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.code + ' - ' + e.stack);
                 this.loginErrorPrinted = true;
             }
 
             this.loggedIn = false;
-            if (!this.pollInterval) { //if no polling takes place, need to retry login!
+            if (!this.pollInterval && this.model) { //if no polling takes place, need to retry login!
                 if (this.intervalHandle) {
                     this.adapter.clearTimeout(this.intervalHandle);
                 }
@@ -200,10 +202,6 @@ export abstract class Device extends DeviceInfo {
         this.ready = false;
         await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
         await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, false, true);
-
-        let connected = false;
-        this.adapter.devices.forEach((device) => { connected = connected || device.ready; }); //turn green if at least one device is ready = reachable.
-        await this.adapter.setStateChangedAsync('info.connection', connected, true);
     }
 
     /**
@@ -223,19 +221,13 @@ export abstract class Device extends DeviceInfo {
                 this.ready = await this.client.isDeviceReady();
                 await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, !this.ready, true);
                 await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
-
-                //prevent more interaction with device and reset connection.
-                if (this.ready) {
-                    //signal that we could at least reach one device:
-                    await this.adapter.setStateChangedAsync('info.connection', true, true);
-                }
             }
         } catch (e: any) {
             await this.handleNetworkError(e);
         }
 
         if (this.pollInterval > 0) { //only start timeout again, if set in settings.
-            this.intervalHandle = this.adapter.setTimeout(() => this.onInterval,
+            this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(),
                 this.pollInterval);
         }
     }
@@ -244,10 +236,12 @@ export abstract class Device extends DeviceInfo {
      * starting communication with device from config.
      * @returns {Promise<boolean>}
      */
-    async start() : Promise<boolean> {
+    async start() : Promise<void> {
         //if device was already started -> stop it.
         //(use case: ip did change or settings did change)
-        this.stop();
+        if (this.ready) {
+            this.stop();
+        }
 
         //interrogate enabled devices
         //this will get MAC for manually configured devices.
@@ -270,13 +264,10 @@ export abstract class Device extends DeviceInfo {
         await this.adapter.setStateAsync(this.id + Suffixes.enabled, {val: this.enabled, ack: true});
 
         //start polling if device is enabled (do this after all is setup).
-        let result = false;
         if (this.enabled) {
             //some devices, for example W245, don't push.. so poll websocket also.
             let interval = this.pollInterval;
             if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
-                this.adapter.log.debug('Start polling for ' + this.name + ' with interval ' + interval);
-                result = true; //only use yellow/green states if polling at least one device.
                 if (interval < 500) {
                     this.adapter.log.warn('Increasing poll rate to twice per second. Please check device config.');
                     interval = 500; //polling twice every second should be enough, right?
@@ -285,17 +276,15 @@ export abstract class Device extends DeviceInfo {
                     interval = 2147483646;
                     this.adapter.log.warn('Poll rate was too high, reduced to prevent issues.');
                 }
+                this.adapter.log.debug('Start polling for ' + this.name + ' with interval ' + interval);
                 this.pollInterval = interval;
-                this.intervalHandle = this.adapter.setTimeout(() => this.onInterval,
+                this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(),
                     this.pollInterval);
             } else {
                 this.pollInterval = 0;
                 this.adapter.log.debug('Polling of ' + this.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
             }
-            result = true;
         }
-
-        return result;
     }
 
     /**

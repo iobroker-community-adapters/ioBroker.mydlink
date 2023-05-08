@@ -68,17 +68,14 @@ export class SoapDevice extends Device {
         }
         if (this.mac !== settings.DeviceMacId) {
             this.mac = (settings.DeviceMacId as string).toUpperCase();
+            this.idFromMac();
             dirty = true;
         }
 
-        if (this.model && this.model !== settings.ModelName) {
-            this.model = settings.ModelName as string;
-            this.adapter.log.warn(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
-            throw new WrongModelError(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
-        }
         if (this.model !== settings.ModelName) {
+            this.adapter.log.warn(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
             this.model = settings.ModelName as string;
-            dirty = true;
+            throw new WrongModelError(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
         }
 
         //let canSwitch = this.model.toUpperCase().includes('DSP') ||

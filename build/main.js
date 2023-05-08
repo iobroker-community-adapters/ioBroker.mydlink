@@ -19,7 +19,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_DeviceInfo = require("./lib/DeviceInfo");
-var import_autoDetect = require("./lib/autoDetect");
 var import_DeviceFactory = require("./lib/DeviceFactory");
 class Mydlink extends utils.Adapter {
   constructor(options = {}) {
@@ -29,7 +28,6 @@ class Mydlink extends utils.Adapter {
     });
     this.devices = [];
     this.unidentifiedDevices = [];
-    this.detectedDevices = {};
     this.autoDetector = void 0;
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
@@ -38,10 +36,12 @@ class Mydlink extends utils.Adapter {
   }
   async deleteDeviceFull(device) {
     device.stop();
-    for (const ip of Object.keys(this.detectedDevices)) {
-      const dectDevice = this.detectedDevices[ip];
-      if (dectDevice.mac === device.id) {
-        dectDevice.alreadyPresent = false;
+    if (this, this.autoDetector) {
+      for (const ip of Object.keys(this.autoDetector.detectedDevices)) {
+        const dectDevice = this.autoDetector.detectedDevices[ip];
+        if (dectDevice.mac === device.id) {
+          dectDevice.alreadyPresent = false;
+        }
       }
     }
     try {
@@ -63,9 +63,7 @@ class Mydlink extends utils.Adapter {
     if (systemConfig) {
       import_DeviceInfo.DeviceInfo.setSecret(systemConfig.native ? systemConfig.native.secret : "RJaeBLRPwvPfh5O");
     }
-    this.setState("info.connection", false, true);
-    this.autoDetector = new import_autoDetect.AutoDetector(this);
-    let haveActiveDevices = false;
+    await this.delObjectAsync("info", { recursive: true });
     const existingDevices = await this.getDevicesAsync();
     const configDevicesToAdd = [].concat(this.config.devices);
     this.log.debug("Got existing devices: " + JSON.stringify(existingDevices, null, 2));
@@ -91,7 +89,7 @@ class Mydlink extends utils.Adapter {
         needUpdateConfig = true;
       }
       if (found) {
-        haveActiveDevices = await device.start() || haveActiveDevices;
+        await device.start();
         this.devices.push(device);
       } else {
         this.log.debug("Deleting " + device.name);
@@ -107,7 +105,7 @@ class Mydlink extends utils.Adapter {
         needUpdateConfig = true;
       } else {
         await device.createDeviceObject();
-        haveActiveDevices = await device.start() || haveActiveDevices;
+        await device.start();
         await device.createDeviceObject();
         this.devices.push(device);
       }
@@ -133,7 +131,6 @@ class Mydlink extends utils.Adapter {
         }
       });
     }
-    await this.setStateChangedAsync("info.connection", !haveActiveDevices, true);
   }
   onUnload(callback) {
     try {
@@ -170,10 +167,12 @@ class Mydlink extends utils.Adapter {
         case "discovery": {
           if (obj.callback) {
             const devices = [];
-            for (const key of Object.keys(this.detectedDevices)) {
-              const device = this.detectedDevices[key];
-              device.readOnly = true;
-              devices.push(device);
+            if (this.autoDetector) {
+              for (const key of Object.keys(this.autoDetector.detectedDevices)) {
+                const device = this.autoDetector.detectedDevices[key];
+                device.readOnly = true;
+                devices.push(device);
+              }
             }
             this.sendTo(obj.from, obj.command, devices, obj.callback);
           }
@@ -203,7 +202,7 @@ class Mydlink extends utils.Adapter {
             let device = await (0, import_DeviceFactory.createFromTable)(this, {
               ip: params.ip,
               pin: params.pin
-            });
+            }, false);
             try {
               await device.start();
               if (device.loggedIn && device.identified) {

@@ -32,12 +32,14 @@ class WrongMacError extends Error {
     this.name = "WRONGMAC";
   }
 }
+WrongMacError.errorName = "WRONGMAC";
 class WrongModelError extends Error {
   constructor(message) {
     super(message);
     this.name = "WRONGMODEL";
   }
 }
+WrongModelError.errorName = "WRONGMODEL";
 function processNetworkError(e) {
   if (e.response) {
     return e.response.status;
@@ -142,12 +144,12 @@ class Device extends import_DeviceInfo.DeviceInfo {
       }
     } catch (e) {
       this.adapter.log.debug("Login error: " + e.stack);
-      if (!this.loginErrorPrinted && e.code !== "ETIMEDOUT" && e.code !== "ECONNABORTED" && e.code !== "ECONNRESET") {
+      if (!this.loginErrorPrinted && e.code !== "ETIMEDOUT" && e.code !== "ECONNABORTED" && e.code !== "ECONNRESET" && this.model) {
         this.adapter.log.error(this.name + " could not login. Please check credentials and if device is online/connected. Error: " + e.code + " - " + e.stack);
         this.loginErrorPrinted = true;
       }
       this.loggedIn = false;
-      if (!this.pollInterval) {
+      if (!this.pollInterval && this.model) {
         if (this.intervalHandle) {
           this.adapter.clearTimeout(this.intervalHandle);
         }
@@ -173,11 +175,6 @@ class Device extends import_DeviceInfo.DeviceInfo {
     this.ready = false;
     await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
     await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, false, true);
-    let connected = false;
-    this.adapter.devices.forEach((device) => {
-      connected = connected || device.ready;
-    });
-    await this.adapter.setStateChangedAsync("info.connection", connected, true);
   }
   async onInterval() {
     try {
@@ -191,22 +188,21 @@ class Device extends import_DeviceInfo.DeviceInfo {
         this.ready = await this.client.isDeviceReady();
         await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
         await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
-        if (this.ready) {
-          await this.adapter.setStateChangedAsync("info.connection", true, true);
-        }
       }
     } catch (e) {
       await this.handleNetworkError(e);
     }
     if (this.pollInterval > 0) {
       this.intervalHandle = this.adapter.setTimeout(
-        () => this.onInterval,
+        () => this.onInterval(),
         this.pollInterval
       );
     }
   }
   async start() {
-    this.stop();
+    if (this.ready) {
+      this.stop();
+    }
     if (this.enabled) {
       await this.login();
       if (this.loggedIn) {
@@ -221,12 +217,9 @@ class Device extends import_DeviceInfo.DeviceInfo {
       }
     }
     await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.enabled, { val: this.enabled, ack: true });
-    let result = false;
     if (this.enabled) {
       let interval = this.pollInterval;
       if (interval !== void 0 && !Number.isNaN(interval) && interval > 0) {
-        this.adapter.log.debug("Start polling for " + this.name + " with interval " + interval);
-        result = true;
         if (interval < 500) {
           this.adapter.log.warn("Increasing poll rate to twice per second. Please check device config.");
           interval = 500;
@@ -235,18 +228,17 @@ class Device extends import_DeviceInfo.DeviceInfo {
           interval = 2147483646;
           this.adapter.log.warn("Poll rate was too high, reduced to prevent issues.");
         }
+        this.adapter.log.debug("Start polling for " + this.name + " with interval " + interval);
         this.pollInterval = interval;
         this.intervalHandle = this.adapter.setTimeout(
-          () => this.onInterval,
+          () => this.onInterval(),
           this.pollInterval
         );
       } else {
         this.pollInterval = 0;
         this.adapter.log.debug("Polling of " + this.name + " disabled, interval was " + interval + " (0 means disabled)");
       }
-      result = true;
     }
-    return result;
   }
   async handleStateChange(_id, _state) {
     if (this.loggedIn) {
