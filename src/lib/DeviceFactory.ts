@@ -54,6 +54,7 @@ export async function createFromObject(adapter : Mydlink, configDevice: ioBroker
             pinEncrypted,
             model: native.model,
             mac: native.mac,
+            id: configDevice._id.split('.')[2],
             name: native.name,
             enabled: native.enabled,
             isWebsocket: native.useWebsocket
@@ -93,6 +94,9 @@ export async function createDevice(adapter: Mydlink, params : {
     device.pollInterval = device.pollInterval || params.pollInterval;
     device.mac = device.mac || params.mac;
     device.id = device.id || params.id;
+    if (!device.id) {
+        device.idFromMac();
+    }
     device.name = device.name || params.name;
     device.model = params.model;
     device.enabled = device.enabled || params.enabled;
