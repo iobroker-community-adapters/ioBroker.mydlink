@@ -150,7 +150,7 @@ export class SoapSwitch extends SoapDevice {
             common: {
                 name: 'totalPowerConsumption',
                 type: 'number',
-                role: 'value.power.consumption',
+                role: 'value.energy.consumed',
                 unit: 'kWh',
                 read: true,
                 write: false
