@@ -1,10 +1,12 @@
+/// <reference types="./mdns-discovery" />
+
 import { Mydlink } from './mydlink';
-import { Mdns } from 'mdns-discovery';
+import MulticastDNS from 'mdns-discovery';
 
 import { WebSocketDevice } from './WebSocketDevice';
 
 export class AutoDetector {
-    mdns: Mdns;
+    mdns: MulticastDNS;
 
     adapter: Mydlink;
 
@@ -154,7 +156,7 @@ export class AutoDetector {
 
     constructor (adapter : Mydlink) {
         this.adapter = adapter;
-        this.mdns = new Mdns({
+        this.mdns = new MulticastDNS({
             timeout: 0, //0 == stay active??
             name: [ '_dhnap._tcp.local', '_dcp._tcp.local' ],
             find: '*',

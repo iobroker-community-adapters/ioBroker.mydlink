@@ -1,9 +1,11 @@
-declare module 'mdns-discovery' {
-    class Mdns {
-        constructor(parameters: Record<string, any>);
 
-        on(event: string, callback: method);
-        run(callback: method);
-        close();
+declare module 'mdns-discovery' {
+    export class MulticastDNS {
+        constructor(opts: any);
+        close() : void;
+        on(event : string, callback : function) : void;
+        run(callback : function) : void;
     }
+
+    export default MulticastDNS;
 }
