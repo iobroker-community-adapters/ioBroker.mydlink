@@ -78,7 +78,10 @@ const KnownDevices = {
     hasPower: false,
     hasTotalPower: false,
     hasLastDetected: false,
-    DeviceType: import_WebSocketDevice.WebSocketDevice
+    DeviceType: import_WebSocketDevice.WebSocketDevice,
+    moreSetup: (device) => {
+      device.numSockets = 4;
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

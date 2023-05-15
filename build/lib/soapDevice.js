@@ -82,9 +82,10 @@ class SoapDevice extends import_Device.Device {
       dirty = true;
     }
     if (this.model !== settings.ModelName) {
-      this.adapter.log.warn(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
+      const oldModel = this.model;
       this.model = settings.ModelName;
-      throw new import_Device.WrongModelError(`${this.name} model changed from ${this.model} to ${settings.ModelName}`);
+      this.adapter.log.warn(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
+      throw new import_Device.WrongModelError(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
     }
     if (dirty) {
       await this.createDeviceObject();

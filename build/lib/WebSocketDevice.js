@@ -177,9 +177,10 @@ class WebSocketDevice extends import_Device.Device {
       }
       this.adapter.log.debug("Got model " + model + " during identification of " + this.name);
       if (model !== this.model) {
-        this.adapter.log.debug("Model updated from " + (this.model || "unknown") + " to " + model);
+        const oldModel = this.model;
         this.model = model;
-        await this.createDeviceObject();
+        this.adapter.log.info("Model updated from " + (oldModel || "unknown") + " to " + model);
+        throw new import_Device.WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
       }
     }
     const superResult = await super.identify();

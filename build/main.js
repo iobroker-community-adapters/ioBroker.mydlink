@@ -19,6 +19,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_DeviceInfo = require("./lib/DeviceInfo");
+var import_autoDetect = require("./lib/autoDetect");
 var import_DeviceFactory = require("./lib/DeviceFactory");
 class Mydlink extends utils.Adapter {
   constructor(options = {}) {
@@ -64,6 +65,7 @@ class Mydlink extends utils.Adapter {
       import_DeviceInfo.DeviceInfo.setSecret(systemConfig.native ? systemConfig.native.secret : "RJaeBLRPwvPfh5O");
     }
     await this.delObjectAsync("info", { recursive: true });
+    this.autoDetector = new import_autoDetect.AutoDetector(this);
     const existingDevices = await this.getDevicesAsync();
     const configDevicesToAdd = [].concat(this.config.devices);
     this.log.debug("Got existing devices: " + JSON.stringify(existingDevices, null, 2));
