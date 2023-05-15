@@ -1,5 +1,3 @@
-import { DeviceInfo } from './DeviceInfo';
-
 export interface Client {
     /**
      * Read state(s) of socket/device index. Use -1 to get all states.

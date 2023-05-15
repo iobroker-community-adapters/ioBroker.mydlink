@@ -54,7 +54,7 @@ class Mydlink extends utils.Adapter {
      * deletes all objects of an device and the device itself (deleteDeviceAsync does not work somehow...?)
      * @param {Device} device
      */
-    async deleteDeviceFull(device: Device) {
+    async deleteDeviceFull(device: Device) : Promise<void> {
         //stop device:
         device.stop();
 

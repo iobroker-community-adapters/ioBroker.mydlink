@@ -4,7 +4,7 @@
  * @param value
  * @returns string
  */
-function encryptDecrypt(key : string, value : string) {
+function encryptDecrypt(key : string, value : string) : string {
     if (!value || !key) {
         return value;
     }
@@ -22,7 +22,7 @@ export class DeviceInfo {
      * Used to set secret from main.ts -> so we can use it here to decrypt stuff if necessary.
      * @param secret
      */
-    static setSecret (secret : string) {
+    static setSecret (secret : string) : void {
         DeviceInfo.secret = secret;
     }
 
@@ -44,7 +44,7 @@ export class DeviceInfo {
      * @param pin
      * @param encrypted
      */
-    setPin(pin : string, encrypted = false) {
+    setPin(pin : string, encrypted = false) : void {
         if (encrypted) {
             this.pinEncrypted = pin;
             this.pinDecrypted = encryptDecrypt(DeviceInfo.secret, pin);
@@ -109,7 +109,7 @@ export class DeviceInfo {
      * @param {string} mac
      * @returns {string}
      */
-    idFromMac() {
+    idFromMac() : void {
         this.id = this.mac.toUpperCase().replace(/:/g, '');
     }
 

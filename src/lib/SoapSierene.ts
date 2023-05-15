@@ -12,7 +12,7 @@ export class SoapSieren extends SoapDevice {
      * @param id
      * @param state
      */
-    async handleStateChange(id : string, state : ioBroker.State) {
+    async handleStateChange(id : string, state : ioBroker.State) : Promise<void> {
         await super.handleStateChange(id, state);
 
         if (id.endsWith(Suffixes.state)) {
@@ -55,7 +55,7 @@ export class SoapSieren extends SoapDevice {
     /**
      * Creates objects for the device.
      */
-    async createObjects() {
+    async createObjects() : Promise<void> {
         await super.createObjects();
 
         //siren uses "state" to switch sirene on/off (or report state)

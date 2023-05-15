@@ -148,7 +148,7 @@ export class AutoDetector {
         }
     }
 
-    close () {
+    close () : void {
         if (this.mdns && typeof this.mdns.close === 'function') {
             this.mdns.close();
         }
