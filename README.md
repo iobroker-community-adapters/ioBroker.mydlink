@@ -68,7 +68,9 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-* add reboot button for SOAP devices (seems they tend to die now the servers are gone) 
+* add reboot button for SOAP devices (seems they tend to die now the servers are gone)
+* reworked code to type-script (please report errors / things that work worse than before)
+* add support for siren devices
 
 ### 1.2.1 (2022-09-01)
 * fix release...
