@@ -19,6 +19,7 @@ export interface DeviceFlags<Type extends Device> {
     hasLastDetected?: boolean;
     numSockets?: number;
     DeviceType: DeviceConstructor<Type>;
+    moreSetup?(d: Device): void;
 }
 
 export const KnownDevices : Record<string, DeviceFlags<any>> = {
@@ -84,6 +85,7 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasPower: false,
         hasTotalPower: false,
         hasLastDetected: false,
-        DeviceType: WebSocketDevice
+        DeviceType: WebSocketDevice,
+        moreSetup: (device) => { (device as WebSocketDevice).numSockets = 4 }
     }
 };

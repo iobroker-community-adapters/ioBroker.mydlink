@@ -80,6 +80,9 @@ export async function createDevice(adapter: Mydlink, params : {
     const deviceFlags = KnownDevices[params.model];
     if (deviceFlags) {
         device = new deviceFlags.DeviceType(adapter, params.ip, params.pin, params.pinEncrypted);
+        if (typeof deviceFlags.moreSetup === 'function') {
+            deviceFlags.moreSetup(device);
+        }
     } else {
         adapter.log.info(`Unknown device type ${params.model} for ${params.name}.`);
         let info;

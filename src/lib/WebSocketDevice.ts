@@ -1,4 +1,4 @@
-import {Device, processNetworkError, WrongMacError} from './Device';
+import {Device, processNetworkError, WrongMacError, WrongModelError} from './Device';
 import {Suffixes} from './suffixes';
 import {Mydlink} from './mydlink';
 import {default as axios} from 'axios';
@@ -191,10 +191,10 @@ export class WebSocketDevice extends Device {
             }
             this.adapter.log.debug('Got model ' + model + ' during identification of ' + this.name);
             if (model !== this.model) {
-                this.adapter.log.debug('Model updated from ' + (this.model || 'unknown') + ' to ' + model);
+                const oldModel = this.model;
                 this.model = model;
-                //store new model in device object:
-                await this.createDeviceObject();
+                this.adapter.log.info('Model updated from ' + (oldModel || 'unknown') + ' to ' + model);
+                throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
             }
         }
 
