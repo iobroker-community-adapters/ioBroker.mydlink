@@ -67,7 +67,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	Placeholder for next versions (this needs to be indented):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.3.0 (2023-05-15)
 * reworked code to type-script (please report errors / things that work worse than before)
 * added: reboot button for SOAP devices (seems they tend to die now the servers are gone)
 * added: support for siren devices
