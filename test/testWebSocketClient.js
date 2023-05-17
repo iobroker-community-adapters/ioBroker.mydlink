@@ -9,7 +9,7 @@ async function main() {
 
     await client.login();
     console.log('Signed in!');
-    let state = await client.state();
+    const state = await client.state();
     console.log('Socket is ' + (state ? 'on' : 'off'));
 
     await client.switchLED(false);

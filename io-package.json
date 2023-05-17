@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "1.2.1",
+    "version": "1.3.0",
     "news": {
+      "1.3.0": {
+        "en": "reworked code to type-script (please report errors / things that work worse than before)\nadded: reboot button for SOAP devices (seems they tend to die now the servers are gone)\nadded: support for siren devices\nadded: device connection status displayed in admin.\nremoved: info.connection state.",
+        "de": "Adapter weitgehend neugeschrieben (bitte fehler melden / dinge, die schlechter arbeiten als zuvor)\nhinzugefügt: Neustart-Taste für SOAP-Geräte (Sie neigen dazu, zu sterben jetzt die Server sind weg)\nzusätzlich: unterstützung für siren-geräte\nhinzugefügt: geräteanschlussstatus angezeigt in admin.\nentfernt: info.connection state.",
+        "ru": "переработанный код для type-script (пожалуйста, сообщите об ошибках / вещах, которые работают хуже, чем раньше)\nдобавлено: перезагрузка кнопки для устройств SOAP (см. они склонны умереть сейчас серверы уходят)\nдобавлено: поддержка устройств сирены\nдобавлено: состояние подключения устройства, отображаемое в админе.\nудалено: info.connection состояние.",
+        "pt": "código retrabalhado para escrever (por favor, reporte erros / coisas que funcionam pior do que antes)\nadicionado: botão de reinicialização para dispositivos SOAP (parece que eles tendem a morrer agora os servidores desapareceram)\nadicionado: suporte para dispositivos de sirene\nadicionado: status de conexão de dispositivo exibido no admin.\nremovido: info.connection state.",
+        "nl": "vertaling:\ntoegevoegd: herstart knop voor SOAP apparaten (zeems ze neigen te sterven nu de servers weg zijn)\nvertaling:\ntoegevoegd: apparaatverbindingsstatus vertoond in administratie.\nverwijderd: info. connectie staat.",
+        "fr": "retravaillé code à type-script (veuillez signaler les erreurs / choses qui fonctionnent pire qu'avant)\najouté: reboot bouton pour les périphériques SOAP (ils ont tendance à mourir maintenant les serveurs sont partis)\najouté: support pour les dispositifs de sirène\najouté: état de connexion de périphérique affiché en admin.\nenlevé: info.connection état.",
+        "it": "reworked code to type-script (si prega di segnalare errori / cose che funzionano peggio di prima)\naggiunto: pulsante di riavvio per dispositivi SOAP (sembra che tendono a morire ora i server sono andati)\naggiunto: supporto per dispositivi sirene\naggiunto: stato di connessione del dispositivo visualizzato in admin.\nrimosso: info.connection state.",
+        "es": "reworked code to type-script (por favor reportar errores / cosas que funcionan peor que antes)\nañadido: botón de reinicio para dispositivos SOAP (parece que tienden a morir ahora los servidores se han ido)\nañadido: soporte para dispositivos de sirena\nañadido: estado de conexión del dispositivo mostrado en admin.\neliminado: info. estado de conexión.",
+        "pl": "przepracowywane kody do pisemnego (pease report error / facts that work worse than before)\ndodano: przycisk rebootu dla urządzeń SOAP (seemy, które mają tendencję do umierania, są już serwerami)\n: wsparcie dla urządzeń syrenowych\ndodano: status połączenia urządzenia wyświetlany w admininie.\nzniesiony: info.connection state.",
+        "uk": "перероблений код на тип-script (повідомлення помилок / речей, які працюють гірше ніж раніше)\nдоданий: перезавантаження кнопки для пристроїв SOAP (див. їх, як правило, померти зараз сервери пішли)\nдоданий: підтримка пристроїв siren\nдодано: стан підключення пристрою відображається в адмін.\nвидалено: info.connection state.",
+        "zh-cn": "改写成类写法(报告错误/工作比以前更加糟糕)\n增加:对SOAP装置的重新安排和顿(见它们现在往往死于服务器)\n增加:支持兄弟装置\n添加:在注释中展示的装置连接状况。.\n删除:集中国家。."
+      },
       "1.2.1": {
         "en": "fix release...",
         "de": "wiederherstellen.",
@@ -74,18 +87,6 @@
         "es": "traducciones actualizadas",
         "pl": "zaktualizowane tłumaczenia",
         "zh-cn": "更新的翻译"
-      },
-      "1.1.8": {
-        "en": "added: `telnet` token is now case insensitive\nfixed: prevent object missing warning on new devices",
-        "de": "hinzugefügt: `Telnet` Token ist jetzt unabhängig von Groß- und Kleinschreibung\nbehoben: Verhindert, dass auf neuen Geräten eine Warnung zum Fehlen eines Objekts angezeigt wird",
-        "ru": "добавлено: токен telnet теперь нечувствителен к регистру\nисправлено: предотвращение предупреждения об отсутствии объекта на новых устройствах",
-        "pt": "adicionado: o token `telnet` agora não diferencia maiúsculas de minúsculas\ncorrigido: evita o aviso de falta de objeto em novos dispositivos",
-        "nl": "toegevoegd: `telnet`-token is nu niet hoofdlettergevoelig\nopgelost: voorkom dat een object ontbreekt op nieuwe apparaten",
-        "fr": "ajouté: le jeton `telnet` est maintenant insensible à la casse\ncorrigé: empêcher l'avertissement d'objet manquant sur les nouveaux appareils",
-        "it": "aggiunto: il token `telnet` ora non fa distinzione tra maiuscole e minuscole\nrisolto: impedisce l'avviso di mancanza di oggetto sui nuovi dispositivi",
-        "es": "agregado: el token `telnet` ahora no distingue entre mayúsculas y minúsculas\nsolucionado: evitar la advertencia de falta de objeto en dispositivos nuevos",
-        "pl": "dodano: token `telnet` nie rozróżnia teraz wielkości liter\nnaprawiono: zapobiegaj ostrzeżeniu o braku obiektu na nowych urządzeniach",
-        "zh-cn": "补充：`telnet`令牌现在不区分大小写\n固定：防止对象在新设备上丢失警告"
       }
     },
     "title": "mydlink",
@@ -94,33 +95,39 @@
       "de": "mydlink",
       "ru": "mydlink",
       "pt": "mydlink",
-      "nl": "mydlink",
-      "fr": "mydlink",
+      "nl": "mijndlink",
+      "fr": "mondlink",
       "it": "mydlink",
       "es": "mydlink",
       "pl": "mydlink",
       "zh-cn": "mydlink"
     },
-    "tier": 2,
     "desc": {
       "en": "connects mydlink plugs and sensors to ioBroker",
-      "de": "verbindet mydlink Steckdosen und Sensoren mit ioBroker",
-      "ru": "подключает разъемы и датчики mydlink к ioBroker",
-      "pt": "conecta plugues e sensores do mydlink ao ioBroker",
-      "nl": "verbindt mydlink-stekkers en sensoren met ioBroker",
-      "fr": "connecte les connecteurs et capteurs mydlink à ioBroker",
-      "it": "collega connettori e sensori mydlink a ioBroker",
-      "es": "conecta enchufes y sensores mydlink a ioBroker",
+      "de": "verbindet mydlink Stecker und Sensoren mit ioBroker",
+      "ru": "подключает вилки и датчики mydlink к ioBroker",
+      "pt": "conecta plugues mydlink e sensores ao ioBroker",
+      "nl": "verbindt mydlink-stekkers en -sensoren met ioBroker",
+      "fr": "connecte les prises et capteurs mydlink à ioBroker",
+      "it": "collega le spine e i sensori mydlink a ioBroker",
+      "es": "conecta enchufes mydlink y sensores a ioBroker",
       "pl": "łączy wtyczki i czujniki mydlink z ioBroker",
-      "zh-cn": "将mydlink插头和传感器连接到ioBroker"
+      "zh-cn": "将 mydlink 插头和传感器连接到 ioBroker"
     },
     "authors": [
       "Garfonso <garfonso@mobo.info>"
     ],
+    "keywords": [
+      "mydlink",
+      "dlink",
+      "dsp-w215",
+      "dsp-w115",
+      "dch-s150"
+    ],
     "license": "MIT",
     "platform": "Javascript/Node.js",
+    "main": "build/main.js",
     "icon": "mydlink.png",
-    "main": "main.js",
     "enabled": true,
     "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.mydlink/master/admin/mydlink.png",
     "readme": "https://github.com/iobroker-community-adapters/ioBroker.mydlink/blob/master/README.md",
@@ -130,22 +137,21 @@
     "compact": true,
     "connectionType": "local",
     "dataSource": "poll",
-    "keywords": [
-      "mydlink",
-      "dsp-w215",
-      "dsp-w115",
-      "dch-s150"
-    ],
+    "adminUI": {
+      "config": "materialize"
+    },
     "docs": {
       "de": "docs/de/README.md",
       "en": "docs/en/README.md"
     },
-    "materialize": true,
-    "supportCustoms": false,
-    "messagebox": true,
     "dependencies": [
       {
-        "js-controller": ">=2.0.0"
+        "js-controller": ">=3.3.22"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=5.0.0"
       }
     ],
     "plugins": {
@@ -169,27 +175,5 @@
     "devices": []
   },
   "objects": [],
-  "instanceObjects": [
-    {
-      "_id": "info",
-      "type": "channel",
-      "common": {
-        "name": "Information"
-      },
-      "native": {}
-    },
-    {
-      "_id": "info.connection",
-      "type": "state",
-      "common": {
-        "role": "indicator.connected",
-        "name": "connection status to wifi determined by at least one device responding",
-        "type": "boolean",
-        "read": true,
-        "write": false,
-        "def": false
-      },
-      "native": {}
-    }
-  ]
+  "instanceObjects": []
 }

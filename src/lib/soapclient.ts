@@ -2,6 +2,8 @@
     Mostly based on the work of bikerp, see: https://github.com/bikerp/dsp-w215-hnap
     Modifications to fit newer firmware and be used as library by Garfonso.
 
+    Control of Sirens possible because of mtfluds work here: https://github.com/mtflud/DCH-S220-Web-Control
+
     The MIT License (MIT)
 
     Copyright (c) 2015 bikerp
@@ -25,22 +27,42 @@
     SOFTWARE.
 */
 
-const md5 = require('./hmac_md5');
-const axios = require('axios');
-const DOMParser = require('xmldom').DOMParser;
-const AES = require('./AES');
-const http = require('http');
+import * as crypto from 'crypto';
+import axios from 'axios';
+import {DOMParser} from '@xmldom/xmldom';
+import http from 'http';
 
 const HNAP1_XMLNS = 'http://purenetworks.com/HNAP1/';
 //const HNAP_METHOD = 'POST';
 //const HNAP_BODY_ENCODING = 'UTF8';
 const HNAP_LOGIN_METHOD = 'Login';
 
+class HNAP_ERROR extends Error {
+    errno: number;
+    code: number;
+    body: string;
+    constructor(message: string, errno : number, body: string, code = -1) {
+        super(message);
+        this.errno = errno;
+        this.code = code >= 0 ? code : errno;
+        this.body = body;
+    }
+}
+
+/**
+ * Encrypt stuff like we need it with HNAP. No clue, what I am doing here. Ignore name of parameters. ;-)
+ * @param key
+ * @param challenge
+ */
+function hmac(key : string, challenge : string): string {
+    return crypto.createHmac('md5', key).update(challenge).digest('hex').toUpperCase();
+}
+
 /**
  * Creates a soapClient.
  * @param opt - parameters, must have url, user and password.
  */
-const soapClient = function (opt = {}) {
+export const soapClient = function (opt = { url: '', user: '', password: ''}) {
     const HNAP_AUTH = {
         url: opt.url || '',
         user: opt.user || '',
@@ -61,31 +83,33 @@ const soapClient = function (opt = {}) {
     });
 
     //extract tokens from login response into HNAP_AUTH object
-    function save_login_result(body) {
+    function save_login_result(body : string) : void {
         const doc = new DOMParser().parseFromString(body);
-        HNAP_AUTH.result = doc.getElementsByTagName(HNAP_LOGIN_METHOD + 'Result').item(0).firstChild.nodeValue;
-        HNAP_AUTH.challenge = doc.getElementsByTagName('Challenge').item(0).firstChild.nodeValue;
-        HNAP_AUTH.publicKey = doc.getElementsByTagName('PublicKey').item(0).firstChild.nodeValue;
-        HNAP_AUTH.cookie = doc.getElementsByTagName('Cookie').item(0).firstChild.nodeValue;
-        HNAP_AUTH.privateKey = md5.hex_hmac_md5(HNAP_AUTH.publicKey + HNAP_AUTH.pwd, HNAP_AUTH.challenge).toUpperCase();
+        if (doc) {
+            HNAP_AUTH.result = doc.getElementsByTagName(HNAP_LOGIN_METHOD + 'Result')!.item(0)!.firstChild!.nodeValue!;
+            HNAP_AUTH.challenge = doc.getElementsByTagName('Challenge')!.item(0)!.firstChild!.nodeValue!;
+            HNAP_AUTH.publicKey = doc.getElementsByTagName('PublicKey')!.item(0)!.firstChild!.nodeValue!;
+            HNAP_AUTH.cookie = doc.getElementsByTagName('Cookie')!.item(0)!.firstChild!.nodeValue!;
+            HNAP_AUTH.privateKey = hmac(HNAP_AUTH.publicKey + HNAP_AUTH.pwd, HNAP_AUTH.challenge);
+        }
     }
 
-    function loginRequest() {
+    function loginRequest() : string {
         return '<Action>request</Action>'
             + '<Username>' + HNAP_AUTH.user + '</Username>'
             + '<LoginPassword></LoginPassword>'
             + '<Captcha></Captcha>';
     }
 
-    function loginParameters() {
-        const login_pwd = md5.hex_hmac_md5(HNAP_AUTH.privateKey, HNAP_AUTH.challenge);
+    function loginParameters() : string {
+        const login_pwd = hmac(HNAP_AUTH.privateKey, HNAP_AUTH.challenge);
         return '<Action>login</Action>'
             + '<Username>' + HNAP_AUTH.user + '</Username>'
-            + '<LoginPassword>' + login_pwd.toUpperCase() + '</LoginPassword>'
+            + '<LoginPassword>' + login_pwd + '</LoginPassword>'
             + '<Captcha></Captcha>';
     }
 
-    function requestBody(method, parameters) {
+    function requestBody(method : string, parameters : string) : string {
         return '<?xml version="1.0" encoding="utf-8"?>' +
             '<soap:Envelope ' +
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
@@ -106,9 +130,8 @@ const soapClient = function (opt = {}) {
      * @param {boolean} [fullBody] if true will return fullBody xml instead of only result value.
      * @returns {Promise<any>}
      */
-    function soapAction(method, responseElement, body, fullBody = false) {
+    function soapAction(method : string, responseElement : string | Array<string>, body : string, fullBody = false) : Promise<string | number | boolean | Array<string> | Record<string, string>> {
         //console.log('Sending Body ' + body);
-        // @ts-ignore
         return axios.post(HNAP_AUTH.url, body,
             {
                 headers: {
@@ -122,21 +145,17 @@ const soapClient = function (opt = {}) {
             }).then(function (response) {
             const incomingBody = response.data;
             if (response.status === 403) {
-                const e = new Error('Unauthorized, need to login.');
-                // @ts-ignore augment error
-                e.errno = 403; e.code = 403; e.body = incomingBody;
-                throw e;
+                throw new HNAP_ERROR('Unauthorized, need to login.', 403, incomingBody);
             }
-            //console.debug('StatusCode: ' + response.status + ' Body: ' + incomingBody);
+            console.debug('StatusCode: ' + response.status + ' Body: ' + incomingBody);
             if (fullBody) { //return full body if requested.
                 return incomingBody;
             }
             const result = readResponseValue(incomingBody, method + 'Result');
-            if (result.toUpperCase() === 'ERROR') {
-                const e = new Error('Request not successful. Probably need to login again. Status: ' + response.status);
-                // @ts-ignore augment error
-                e.errno = response.status; e.code = response.status < 300 ? 403 : response.status; e.body = incomingBody;
-                throw e;
+            if (typeof result === 'string' && result.toUpperCase() === 'ERROR') {
+                throw new HNAP_ERROR(
+                    'Request not successful. Probably need to login again. Status: ' + response.status,
+                    response.status, incomingBody, response.status < 300 ? 403 : response.status);
             }
             return readResponseValue(incomingBody, responseElement);
         }).catch(function (err) {
@@ -145,21 +164,58 @@ const soapClient = function (opt = {}) {
         });
     }
 
-    function moduleParameters(module) {
+    function moduleParameters(module : string | number) : string {
         return '<ModuleID>' + module + '</ModuleID>';
     }
 
-    function controlParameters(module, status) {
+    function controlParameters(module : string | number, status : string | boolean) : string {
         return moduleParameters(module) +
             '<NickName>Socket 1</NickName><Description>Socket 1</Description>' +
             '<OPStatus>' + status + '</OPStatus><Controller>1</Controller>';
     }
 
-    function radioParameters(radio) {
+    function radioParameters(radio : string) : string {
         return '<RadioID>' + radio + '</RadioID>';
     }
 
-    function APClientParameters() {
+    /**
+     * Returns an Object of possible sounds with LABELS and the numbers they translate in.
+     * @returns {{EMERGENCY: number, DOOR_CHIME: number, BEEP: number, AMBULANCE: number, FIRE: number, POLICE: number}}
+     */
+    function getSounds() : {EMERGENCY: number, DOOR_CHIME: number, BEEP: number, AMBULANCE: number, FIRE: number, POLICE: number} {
+        return {
+            EMERGENCY: 1,
+            FIRE: 2,
+            AMBULANCE: 3,
+            POLICE: 4,
+            DOOR_CHIME: 5,
+            BEEP: 6
+        };
+    }
+
+    /**
+     * Create parameters for SetPlaySound request
+     * @param [soundnum] should be one of the string from getSounds 1-6
+     * @param [volume] 1-100
+     * @param [duration] 1-88888 (with 88888 = infinite)
+     * @returns {string}
+     */
+    function soundParameters(soundnum? : number, volume? : number, duration? : number) : string {
+        let params = `<ModuleID>1</ModuleID>
+                     <Controller>1</Controller>`;
+        if (soundnum !== undefined) {
+            params += `<SoundType>${soundnum}</SoundType>`;
+        }
+        if (volume !== undefined) {
+            params += `<Volume>${volume}</Volume>`;
+        }
+        if (duration !== undefined) {
+            params += `<Duration>${duration}</Duration>`;
+        }
+        return params;
+    }
+
+    function APClientParameters() : string {
         return '<Enabled>true</Enabled>' +
             '<RadioID>RADIO_2.4GHz</RadioID>' +
             '<SSID>My_Network</SSID>' +
@@ -173,13 +229,13 @@ const soapClient = function (opt = {}) {
             '</Encryptions>' +
             '</SecurityInfo>' +
             '</SupportedSecurity>' +
-            '<Key>' + AES.AES_Encrypt128('password', HNAP_AUTH.privateKey) + '</Key>';
+            '';//'<Key>' + AES.AES_Encrypt128('password', HNAP_AUTH.privateKey) + '</Key>'; //TODO: commented out.. do I need that at all??
     }
 
-    function groupParameters(group) {
+    function groupParameters(group : string | number) : string {
         return '<ModuleGroupID>' + group + '</ModuleGroupID>';
     }
-    function temperatureSettingsParameters(module) {
+    function temperatureSettingsParameters(module : string | number) : string {
         return moduleParameters(module) +
             '<NickName>TemperatureMonitor 3</NickName>' +
             '<Description>Temperature Monitor 3</Description>' +
@@ -187,29 +243,29 @@ const soapClient = function (opt = {}) {
             '<LowerBound>Not Available</LowerBound>' +
             '<OPStatus>true</OPStatus>';
     }
-    function powerWarningParameters() {
+    function powerWarningParameters() : string {
         return '<Threshold>28</Threshold>' +
             '<Percentage>70</Percentage>' +
             '<PeriodicType>Weekly</PeriodicType>' +
             '<StartTime>1</StartTime>';
     }
 
-    function getHnapAuth(SoapAction, privateKey) {
+    function getHnapAuth(SoapAction : string, privateKey : string) : string {
         const current_time = new Date();
         const time_stamp = Math.round(current_time.getTime() / 1000);
-        const auth = md5.hex_hmac_md5(privateKey, time_stamp + SoapAction);
-        return auth.toUpperCase() + ' ' + time_stamp;
+        const auth = hmac(privateKey,time_stamp + SoapAction);
+        return auth + ' ' + time_stamp;
     }
 
-    function readResponseValue(body, elementName) {
-        if (typeof elementName.forEach === 'function') { //sloppy isArray check.
-            const results = {};
-            elementName.forEach(function (elemName) {
-                results[elemName] = readResponseValue(body, elemName);
+    function readResponseValue(body : string, elementName : string | Array<string>) : string | number | boolean | Array<string> | Record<string, string> | undefined {
+        if (typeof elementName === 'object' && typeof elementName.forEach === 'function') { //sloppy isArray check.
+            const results = {} as Record<string, string>;
+            elementName.forEach(function (elemName : string): void {
+                results[elemName] = readResponseValue(body, elemName) as string;
             });
             return results;
         } else {
-            if (body && elementName) {
+            if (body && elementName && typeof elementName === 'string') {
                 const doc = new DOMParser().parseFromString(body);
                 const node = doc.getElementsByTagName(elementName).item(0);
                 // Check that we have children of node.
@@ -217,26 +273,27 @@ const soapClient = function (opt = {}) {
                 //    console.debug('node: ', node, ' firstChild: ', node.firstChild, ' nodeValue: ', node.firstChild.nodeValue);
                 //    console.debug('Content: ', node.textContent);
                 //}
-                let result = (node && node.firstChild) ? node.firstChild.nodeValue : 'ERROR';
+                const result = (node && node.firstChild) ? node.firstChild.nodeValue : 'ERROR';
                 if (result === null) { //array of values requested like Module Types or SOAP Actions:
-                    result = [];
-                    //console.debug('Have arrway:', node);
-                    Object.keys(node.childNodes).forEach(function (key) {
-                        const child = node.childNodes[key];
+                    const results = [] as Array<string>;
+                    //console.debug('Have array:', node);
+                    Object.keys(node!.childNodes).forEach(function (value : string, key : number) {
+                        const child = node!.childNodes[key];
                         //console.debug('Child:', child);
                         if (child && child.firstChild) {
-                            result.push(child.firstChild.nodeValue);
+                            results.push(child.firstChild.nodeValue as string);
                         }
                     });
+                    return results;
+                } else {
+                    return result;
                 }
-                return result;
             }
         }
     }
 
-    function login() {
+    function login() : Promise<boolean> {
         //console.log('Sending Body ' + loginRequest());
-        // @ts-ignore
         return axios.post(HNAP_AUTH.url,
             requestBody(HNAP_LOGIN_METHOD, loginRequest()),
             { //first request challenge and stuff
@@ -269,23 +326,15 @@ const soapClient = function (opt = {}) {
      * Get full device description XMLs -> used to support new devices.
      * @returns {Promise<unknown>}
      */
-    function getDeviceDescriptionXML() {
-        let promise = soapAction('GetDeviceSettings',
-            'Result',
-            requestBody('GetDeviceSettings', ''), true); //get full body of DeviceSettings
-
-        const result = {};
-        promise = promise.then((deviceSettingsXML) => {
-            result.deviceSettingsXML = deviceSettingsXML;
-            return soapAction('GetModuleSOAPActions', 'SOAPActions', requestBody('GetModuleSOAPActions', moduleParameters(0)), true);
-        });
-
-        promise = promise.then((modulesSoapActions) => {
-            result.moduleSoapActions = modulesSoapActions;
-            return result;
-        });
-
-        return promise;
+    async function getDeviceDescriptionXML() : Promise<{deviceSettingsXML: string, modulesSoapActions: string}> {
+        return {
+            deviceSettingsXML: await soapAction('GetDeviceSettings',
+                'Result',
+                requestBody('GetDeviceSettings', ''), true) as string,
+            modulesSoapActions: await soapAction('GetModuleSOAPActions',
+                'SOAPActions',
+                requestBody('GetModuleSOAPActions', moduleParameters('0')), true) as string
+        }; //get full body of DeviceSettings
     }
 
     //API:
@@ -301,7 +350,7 @@ const soapClient = function (opt = {}) {
          * @param {boolean} on target status
          * @returns {Promise<*>}
          */
-        switch: function (on) {
+        switch: function (on : boolean) {
             return soapAction('SetSocketSettings', 'SetSocketSettingsResult', requestBody('SetSocketSettings', controlParameters(1, on)));
         },
 
@@ -321,29 +370,27 @@ const soapClient = function (opt = {}) {
         },
 
         //polls last detection
-        lastDetection: function () {
-            return soapAction('GetLatestDetection', 'LatestDetectTime', requestBody('GetLatestDetection', moduleParameters(1))).then(function (res) {
-                //console.debug('Latest Detection: ' + res);
-                return res * 1000; //make detection time in js timestamp.
-            });
+        lastDetection: async function () {
+            const result = await soapAction('GetLatestDetection', 'LatestDetectTime', requestBody('GetLatestDetection', moduleParameters(1))) as number;
+            return result * 1000;
         },
 
         //polls power consumption
         consumption: function () {
-            return soapAction('GetCurrentPowerConsumption', 'CurrentConsumption', requestBody('GetCurrentPowerConsumption', moduleParameters(2)));
+            return soapAction('GetCurrentPowerConsumption', 'CurrentConsumption', requestBody('GetCurrentPowerConsumption', moduleParameters(2))) as Promise<number>;
         },
 
         //polls total power consumption
         totalConsumption: function () {
-            return soapAction('GetPMWarningThreshold', 'TotalConsumption', requestBody('GetPMWarningThreshold', moduleParameters(2)));
+            return soapAction('GetPMWarningThreshold', 'TotalConsumption', requestBody('GetPMWarningThreshold', moduleParameters(2))) as Promise<number>;
         },
 
         //polls current temperature
         temperature: function () {
-            return soapAction('GetCurrentTemperature', 'CurrentTemperature', requestBody('GetCurrentTemperature', moduleParameters(3)));
+            return soapAction('GetCurrentTemperature', 'CurrentTemperature', requestBody('GetCurrentTemperature', moduleParameters(3))) as Promise<number>;
         },
 
-        //gets information about wifi
+        //gets information about Wi-Fi
         getAPClientSettings: function () {
             return soapAction('GetAPClientSettings', 'GetAPClientSettingsResult', requestBody('GetAPClientSettings', radioParameters('RADIO_2.4GHz')));
         },
@@ -358,9 +405,9 @@ const soapClient = function (opt = {}) {
             return soapAction('GetPMWarningThreshold', 'GetPMWarningThresholdResult', requestBody('GetPMWarningThreshold', moduleParameters(2)));
         },
 
-        //returns model name and firmware version. Could be very interesting in supporting addtional devices.
+        //returns model name and firmware version. Could be very interesting for supporting additional devices.
         //also useful to know which states to create for a device (i.e. plug or motion detection)
-        getDeviceSettings: function () {
+        getDeviceSettings: function () : Promise<Record<string, string>> {
             return soapAction('GetDeviceSettings',
                 [
                     'GetDeviceSettingsResult',
@@ -372,7 +419,7 @@ const soapClient = function (opt = {}) {
                     'PresentationURL',
                     'ModuleTypes' //not yet helpfully implemented. Hm
                 ],
-                requestBody('GetDeviceSettings', ''));
+                requestBody('GetDeviceSettings', '')) as Promise<Record<string, string>>;
         },
 
         //not very interesting, returns timezone and set locale.
@@ -459,9 +506,23 @@ const soapClient = function (opt = {}) {
             return soapAction('SettriggerADIC', 'SettriggerADICResult', requestBody('SettriggerADIC', ''));
         },
 
-        getDeviceDescriptionXML: getDeviceDescriptionXML
+        setSoundPlay: function (sound : number, volume : number, duration : number) {
+            return soapAction('SetSoundPlay', 'SetSoundPlayResult', requestBody('SetSoundPlay', soundParameters(sound, volume, duration)));
+        },
+
+        setAlarmDismissed: function () {
+            return soapAction('SetAlarmDismissed', 'SetAlarmDismissedResult', requestBody('SetAlarmDismissed', soundParameters()));
+        },
+
+        getSoundPlay: function () {
+            return soapAction('GetSirenAlarmSettings', 'IsSounding', requestBody('GetSirenAlarmSettings', soundParameters()));
+        },
+
+        getDeviceDescriptionXML: getDeviceDescriptionXML,
+
+        getSounds: getSounds
     };
 };
 
-module.exports = soapClient;
+export default soapClient;
 
