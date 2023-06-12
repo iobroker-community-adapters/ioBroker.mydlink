@@ -37,7 +37,7 @@ class Mydlink extends utils.Adapter {
   }
   async deleteDeviceFull(device) {
     device.stop();
-    if (this, this.autoDetector) {
+    if (this.autoDetector) {
       for (const ip of Object.keys(this.autoDetector.detectedDevices)) {
         const dectDevice = this.autoDetector.detectedDevices[ip];
         if (dectDevice.mac === device.id) {

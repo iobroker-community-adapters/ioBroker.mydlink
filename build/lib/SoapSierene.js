@@ -18,12 +18,12 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var SoapSierene_exports = {};
 __export(SoapSierene_exports, {
-  SoapSieren: () => SoapSieren
+  SoapSiren: () => SoapSiren
 });
 module.exports = __toCommonJS(SoapSierene_exports);
 var import_suffixes = require("./suffixes");
 var import_soapDevice = require("./soapDevice");
-class SoapSieren extends import_soapDevice.SoapDevice {
+class SoapSiren extends import_soapDevice.SoapDevice {
   constructor() {
     super(...arguments);
     this.soundToPlay = 1;
@@ -35,8 +35,12 @@ class SoapSieren extends import_soapDevice.SoapDevice {
     if (id.endsWith(import_suffixes.Suffixes.state)) {
       if (typeof state.val === "boolean") {
         try {
-          await this.client.switch(state.val);
-          const newVal = await this.client.state();
+          let newVal;
+          if (state.val) {
+            newVal = await this.client.setSoundPlay(this.soundToPlay, this.volume, this.duration);
+          } else {
+            newVal = !await this.client.setAlarmDismissed();
+          }
           await this.adapter.setStateAsync(id, newVal, true);
         } catch (e) {
           await this.handleNetworkError(e);
@@ -92,6 +96,7 @@ class SoapSieren extends import_soapDevice.SoapDevice {
         write: true,
         min: 1,
         max: 6,
+        def: 1,
         states: {
           1: "EMERGENCY",
           2: "FIRE",
@@ -113,7 +118,8 @@ class SoapSieren extends import_soapDevice.SoapDevice {
         read: true,
         write: true,
         min: 1,
-        max: 100
+        max: 100,
+        def: 50
       },
       native: {}
     });
@@ -128,15 +134,39 @@ class SoapSieren extends import_soapDevice.SoapDevice {
         write: true,
         unit: "s",
         min: 1,
-        max: 88888
+        max: 88888,
+        def: 60
       },
       native: {}
     });
     await this.adapter.subscribeStatesAsync(this.id + import_suffixes.Suffixes.soundVolume);
+    let state = await this.adapter.getStateAsync(this.id + import_suffixes.Suffixes.soundType);
+    if (state && state.val !== null && state.val >= 0) {
+      this.soundToPlay = state.val;
+    }
+    state = await this.adapter.getStateAsync(this.id + import_suffixes.Suffixes.soundVolume);
+    if (state && state.val !== null && state.val >= 0) {
+      this.volume = state.val;
+    }
+    state = await this.adapter.getStateAsync(this.id + import_suffixes.Suffixes.soundDuration);
+    if (state && state.val !== null && state.val >= 0) {
+      this.duration = state.val;
+    }
+  }
+  async onInterval() {
+    await super.onInterval();
+    if (this.ready) {
+      try {
+        const val = await this.client.getSoundPlay();
+        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
+      } catch (e) {
+        await this.handleNetworkError(e);
+      }
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  SoapSieren
+  SoapSiren
 });
 //# sourceMappingURL=SoapSierene.js.map

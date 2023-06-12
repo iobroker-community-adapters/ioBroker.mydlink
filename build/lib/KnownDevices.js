@@ -50,7 +50,7 @@ const KnownDevices = {
     hasPower: false,
     hasTotalPower: false,
     hasLastDetected: false,
-    DeviceType: import_SoapSierene.SoapSieren
+    DeviceType: import_SoapSierene.SoapSiren
   },
   "DSP-W115": {
     type: "Smart plug",

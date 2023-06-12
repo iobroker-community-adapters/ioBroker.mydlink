@@ -37,9 +37,9 @@ function deviceObjetToTableDevice(configDevice) {
     enabled: configDevice.native.enabled
   };
 }
-async function sendModelInfoToSentry(adapter, model, xmls) {
+async function sendModelInfoToSentry(adapter, model, xml) {
   if (!import_KnownDevices.KnownDevices[model]) {
-    adapter.log.info("Found new device, please report the following (full log from file, please) to developer: " + JSON.stringify(xmls, null, 2));
+    adapter.log.info("Found new device, please report the following (full log from file, please) to developer: " + JSON.stringify(xml, null, 2));
     if (adapter.supportsFeature && adapter.supportsFeature("PLUGINS")) {
       const sentryInstance = adapter.getPluginInstance("sentry");
       if (sentryInstance) {
@@ -47,8 +47,8 @@ async function sendModelInfoToSentry(adapter, model, xmls) {
         if (Sentry) {
           Sentry.withScope((scope) => {
             scope.setLevel("info");
-            for (const key of Object.keys(xmls)) {
-              scope.setExtra(key, xmls[key]);
+            for (const key of Object.keys(xml)) {
+              scope.setExtra(key, xml[key]);
             }
             Sentry.captureMessage("Unknown-Device " + model, "info");
           });
@@ -88,15 +88,20 @@ async function createDevice(adapter, params) {
     }
   } else {
     adapter.log.info(`Unknown device type ${params.model} for ${params.name}.`);
-    let info;
-    if (params.isWebsocket) {
-      device = new import_WebSocketDevice.WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-      info = { info: "UNKNOWN WEBSOCKET DEVICE: " + params.model };
-    } else {
-      device = new import_soapDevice.SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-      info = await device.client.getDeviceDescriptionXML();
+    try {
+      let info;
+      if (params.isWebsocket) {
+        device = new import_WebSocketDevice.WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+        const body = await device.getModelInfoForSentry();
+        info = { info: "UNKNOWN WEBSOCKET DEVICE: " + params.model, body };
+      } else {
+        device = new import_soapDevice.SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+        info = await device.client.getDeviceDescriptionXML();
+      }
+      await sendModelInfoToSentry(adapter, params.model, info);
+    } catch (e) {
+      adapter.log.error("Could not send device information to sentry. Please report. Error was: " + e.stack);
     }
-    await sendModelInfoToSentry(adapter, params.model, info);
   }
   device.pollInterval = params.pollInterval || device.pollInterval;
   device.mac = params.mac || device.mac;

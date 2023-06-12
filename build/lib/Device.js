@@ -168,7 +168,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
   }
   async handleNetworkError(e) {
     const code = processNetworkError(e);
-    if (code === 403 || this.ready) {
+    if ([403, 424].includes(code) || this.ready) {
       this.loggedIn = false;
     }
     this.adapter.log.debug("Error during communication " + this.name + ": " + code + " - " + e.stack + " - " + e.body);

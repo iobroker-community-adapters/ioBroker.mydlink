@@ -89,16 +89,20 @@ class WebSocketDevice extends import_Device.Device {
   async onInterval() {
     await super.onInterval();
     if (this.ready) {
-      if (this.numSockets > 1) {
-        const states = await this.client.state(-1);
-        for (let index = 1; index <= this.numSockets; index += 1) {
-          const id = this.id + import_suffixes.Suffixes.state + "_" + index;
-          const val = states[index - 1];
-          await this.adapter.setStateChangedAsync(id, val, true);
+      try {
+        if (this.numSockets > 1) {
+          const states = await this.client.state(-1);
+          for (let index = 1; index <= this.numSockets; index += 1) {
+            const id = this.id + import_suffixes.Suffixes.state + "_" + index;
+            const val = states[index - 1];
+            await this.adapter.setStateChangedAsync(id, val, true);
+          }
+        } else {
+          const val = await this.client.state(0);
+          await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
         }
-      } else {
-        const val = await this.client.state(0);
-        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
+      } catch (e) {
+        await this.handleNetworkError(e);
       }
     }
   }
@@ -159,6 +163,11 @@ class WebSocketDevice extends import_Device.Device {
       this.adapter.log.warn("Wrong state type. Only boolean accepted for switch.");
     }
   }
+  async getModelInfoForSentry() {
+    const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+    const result = await import_axios.default.get(url);
+    return result.data;
+  }
   async identify() {
     const id = this.client.getDeviceId();
     const mac = id.match(/.{2}/g).join(":").toUpperCase();
@@ -182,6 +191,8 @@ class WebSocketDevice extends import_Device.Device {
         this.adapter.log.info("Model updated from " + (oldModel || "unknown") + " to " + model);
         throw new import_Device.WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
       }
+    } else {
+      this.adapter.log.warn(`${this.name} could not be identified: ${result.data}`);
     }
     const superResult = await super.identify();
     if (this.numSockets > 1) {
