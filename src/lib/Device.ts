@@ -195,7 +195,7 @@ export abstract class Device extends DeviceInfo {
 
     async handleNetworkError(e: any) : Promise<void> {
         const code = processNetworkError(e);
-        if (code === 403 || this.ready) {
+        if ([403, 424].includes(code as number) || this.ready) {
             this.loggedIn = false; //login next polling.
         }
         this.adapter.log.debug('Error during communication ' + this.name + ': ' + code + ' - ' + e.stack + ' - ' + e.body);
