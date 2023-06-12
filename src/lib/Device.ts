@@ -263,9 +263,9 @@ export abstract class Device extends DeviceInfo {
         //transfer enabled flag to object:
         await this.adapter.setStateAsync(this.id + Suffixes.enabled, {val: this.enabled, ack: true});
 
-        //start polling if device is enabled (do this after all is setup).
+        //start polling if device is enabled (do this after all is set up).
         if (this.enabled) {
-            //some devices, for example W245, don't push.. so poll websocket also.
+            //some devices, for example W245, don't push. So poll websocket also.
             let interval = this.pollInterval;
             if (interval !== undefined && !Number.isNaN(interval) && interval > 0) {
                 if (interval < 500) {
@@ -288,7 +288,7 @@ export abstract class Device extends DeviceInfo {
     }
 
     /**
-     * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
+     * process a state change.
      * @param _id
      * @param _state
      */

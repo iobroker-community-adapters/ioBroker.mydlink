@@ -11,7 +11,7 @@ export class SoapDevice extends Device {
     constructor(adapter : Mydlink, ip: string, pin: string, pinEncrypted: boolean) {
         super(adapter, ip, pin, pinEncrypted);
 
-        //does only setup soapClient -> no connection, yet.
+        //does only set up soapClient -> no connection, yet.
         this.client = createSoapClient({
             user: 'Admin',
             password: this.pinDecrypted,
@@ -40,7 +40,7 @@ export class SoapDevice extends Device {
     }
 
     /**
-     * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
+     * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      * @param id
      * @param _state
      */
@@ -189,7 +189,7 @@ export class SoapSwitch extends SoapDevice {
     }
 
     /**
-     * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
+     * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      * @param id
      * @param state
      */

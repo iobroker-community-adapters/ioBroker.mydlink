@@ -67,7 +67,7 @@ export class DeviceInfo {
      */
     name = '';
     /**
-     * did we login or do we need to try that again?
+     * did we log in or do we need to try that again?
      */
     loggedIn = false;
     /**
@@ -106,17 +106,16 @@ export class DeviceInfo {
 
     /**
      * create id from mac:
-     * @param {string} mac
-     * @returns {string}
      */
     idFromMac() : void {
         this.id = this.mac.toUpperCase().replace(/:/g, '');
     }
 
     /**
-     * Create DeviceInfor only from Ip and Pin, old createDeviceFromIpAndPin
+     * Create DeviceInfo only from Ip and Pin, old createDeviceFromIpAndPin
      * @param ip
      * @param pin
+     * @param pinEncrypted - is the supplied pin encrypted?
      * @constructor
      */
     constructor(ip: string, pin: string, pinEncrypted: boolean) {

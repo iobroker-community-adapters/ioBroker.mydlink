@@ -21,21 +21,6 @@ export interface Client {
     isDeviceReady(): Promise<boolean> | boolean;
 }
 
-export interface WebSocketClientInterface extends Client {
-
-    /**
-     * Change the state of a socket.
-     * @param on new value of switch.
-     * @param index
-     */
-    switch(on: boolean, index?: number) : Promise<boolean>;
-
-    getDeviceId(): string;
-
-    on(event: string, callback: (valueOrCodeOrMessage?: boolean | number | string, indexOrError?: number | Error | undefined) => void) : void;
-    removeAllListeners(event: string): void;
-}
-
 export interface SoapClientInterface extends Client {
     getDeviceSettings():  Promise<Record<string, string>>;
     lastDetection(): Promise<number>;
@@ -51,7 +36,6 @@ export interface SoapClientInterface extends Client {
     /**
      * Change the state of a socket.
      * @param on new value of switch.
-     * @param index
      */
     switch(on: boolean) : Promise<boolean | void>;
 }

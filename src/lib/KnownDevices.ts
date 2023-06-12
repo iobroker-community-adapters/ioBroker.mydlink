@@ -2,7 +2,7 @@
 
 import {WebSocketDevice} from './WebSocketDevice';
 import {SoapMotionDetector, SoapSwitch} from './soapDevice';
-import {SoapSieren} from './SoapSierene';
+import {SoapSiren} from './SoapSierene';
 import {Mydlink} from './mydlink';
 import {Device} from './Device';
 
@@ -48,7 +48,7 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasPower: false,
         hasTotalPower: false,
         hasLastDetected: false,
-        DeviceType: SoapSieren
+        DeviceType: SoapSiren
     },
     /*'DCH-S160-UNTESTED': {
         type: 'Water detection', //'sensor.alarm.flood'

@@ -2,13 +2,13 @@
 import {Suffixes} from './suffixes';
 import {SoapDevice} from './soapDevice';
 
-export class SoapSieren extends SoapDevice {
+export class SoapSiren extends SoapDevice {
     soundToPlay = 1;
     volume = 100;
     duration = 10;
 
     /**
-     * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
+     * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      * @param id
      * @param state
      */

@@ -16,10 +16,10 @@ function deviceObjetToTableDevice(configDevice: ioBroker.DeviceObject) : TableDe
         enabled: configDevice.native.enabled,
     }
 }
-async function sendModelInfoToSentry(adapter : Mydlink, model : string, xmls: Record<string, string>) : Promise<void> {
+async function sendModelInfoToSentry(adapter : Mydlink, model : string, xml: Record<string, string>) : Promise<void> {
     if (!KnownDevices[model]) {
         //unknown device -> report to sentry.
-        adapter.log.info('Found new device, please report the following (full log from file, please) to developer: ' + JSON.stringify(xmls, null, 2));
+        adapter.log.info('Found new device, please report the following (full log from file, please) to developer: ' + JSON.stringify(xml, null, 2));
         if (adapter.supportsFeature && adapter.supportsFeature('PLUGINS')) {
             const sentryInstance = adapter.getPluginInstance('sentry');
             if (sentryInstance) {
@@ -27,8 +27,8 @@ async function sendModelInfoToSentry(adapter : Mydlink, model : string, xmls: Re
                 if (Sentry) {
                     Sentry.withScope((scope : any) => {
                         scope.setLevel('info');
-                        for (const key of Object.keys(xmls)) {
-                            scope.setExtra(key, xmls[key]);
+                        for (const key of Object.keys(xml)) {
+                            scope.setExtra(key, xml[key]);
                         }
                         Sentry.captureMessage('Unknown-Device ' + model, 'info'); // Level 'info'
                     });

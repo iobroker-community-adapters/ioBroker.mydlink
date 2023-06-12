@@ -51,7 +51,7 @@ class Mydlink extends utils.Adapter {
     }
 
     /**
-     * deletes all objects of an device and the device itself (deleteDeviceAsync does not work somehow...?)
+     * deletes all objects of a device and the device itself (deleteDeviceAsync does not work somehow...?)
      * @param {Device} device
      */
     async deleteDeviceFull(device: Device) : Promise<void> {
@@ -59,7 +59,7 @@ class Mydlink extends utils.Adapter {
         device.stop();
 
         //check if detected device:
-        if (this,this.autoDetector) {
+        if (this.autoDetector) {
             for (const ip of Object.keys(this.autoDetector.detectedDevices)) {
                 const dectDevice = this.autoDetector.detectedDevices[ip];
                 if (dectDevice.mac === device.id) {
