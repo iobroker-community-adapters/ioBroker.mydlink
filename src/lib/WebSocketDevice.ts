@@ -170,6 +170,12 @@ export class WebSocketDevice extends Device {
         }
     }
 
+    async getModelInfoForSentry() {
+        const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+        const result = await axios.get(url);
+        return result.data;
+    }
+
     async identify() : Promise<boolean> {
         const id = this.client.getDeviceId();
         const mac = id.match(/.{2}/g)!.join(':').toUpperCase(); //add back the :.
@@ -196,6 +202,8 @@ export class WebSocketDevice extends Device {
                 this.adapter.log.info('Model updated from ' + (oldModel || 'unknown') + ' to ' + model);
                 throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
             }
+        } else {
+            this.adapter.log.warn(`${this.name} could not be identified: ${result.data}`);
         }
 
         //make sure objects are created.

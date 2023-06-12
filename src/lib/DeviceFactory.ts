@@ -85,15 +85,20 @@ export async function createDevice(adapter: Mydlink, params : {
         }
     } else {
         adapter.log.info(`Unknown device type ${params.model} for ${params.name}.`);
-        let info;
-        if (params.isWebsocket) {
-            device = new WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-            info = {info: 'UNKNOWN WEBSOCKET DEVICE: ' + params.model};
-        } else {
-            device = new SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-            info = await device.client.getDeviceDescriptionXML();
+        try {
+            let info;
+            if (params.isWebsocket) {
+                device = new WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+                const body = await device.getModelInfoForSentry();
+                info = {info: 'UNKNOWN WEBSOCKET DEVICE: ' + params.model, body};
+            } else {
+                device = new SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+                info = await device.client.getDeviceDescriptionXML();
+            }
+            await sendModelInfoToSentry(adapter, params.model, info);
+        } catch (e: any) {
+            adapter.log.error('Could not send device information to sentry. Please report. Error was: ' + e.stack);
         }
-        await sendModelInfoToSentry(adapter, params.model, info);
     }
     device.pollInterval = params.pollInterval || device.pollInterval;
     device.mac = params.mac || device.mac;
