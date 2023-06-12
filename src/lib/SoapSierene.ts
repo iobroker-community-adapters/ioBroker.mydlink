@@ -131,15 +131,15 @@ export class SoapSiren extends SoapDevice {
 
         //get initial values:
         let state = await this.adapter.getStateAsync(this.id + Suffixes.soundType);
-        if (state && state.val !== null && state.val >= 0) {
+        if (state && state.val !== null && state.val as number >= 0) {
             this.soundToPlay = state.val as number;
         }
         state = await this.adapter.getStateAsync(this.id + Suffixes.soundVolume);
-        if (state && state.val !== null && state.val >= 0) {
+        if (state && state.val !== null && state.val as number >= 0) {
             this.volume = state.val as number;
         }
         state = await this.adapter.getStateAsync(this.id + Suffixes.soundDuration);
-        if (state && state.val !== null && state.val >= 0) {
+        if (state && state.val !== null && state.val as number >= 0) {
             this.duration = state.val as number;
         }
     }
