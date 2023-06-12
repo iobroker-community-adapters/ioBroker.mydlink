@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "news": {
+      "1.3.1": {
+        "en": "fix minor errors\nimproved siren supprt.",
+        "de": "kleinere fehler beheben\nverbesserte sirene.",
+        "ru": "исправить незначительные ошибки\nулучшенный сирен supprt.",
+        "pt": "corrigir erros menores\nmelhorou o jantar de sirene.",
+        "nl": "kleine fouten\nverbeter sirene.",
+        "fr": "corriger des erreurs mineures\nune sirène améliorée.",
+        "it": "correggere errori minori\nmigliore sirena supprt.",
+        "es": "corregir errores menores\nmejorada sirena supprt.",
+        "pl": "pomyłki\npoprawiony przez syrenę.",
+        "uk": "виправлено незначні помилки\nпокращений supprt.",
+        "zh-cn": "f 轻微错误\n山素季的改善。."
+      },
       "1.3.0": {
         "en": "reworked code to type-script (please report errors / things that work worse than before)\nadded: reboot button for SOAP devices (seems they tend to die now the servers are gone)\nadded: support for siren devices\nadded: device connection status displayed in admin.\nremoved: info.connection state.",
         "de": "Adapter weitgehend neugeschrieben (bitte fehler melden / dinge, die schlechter arbeiten als zuvor)\nhinzugefügt: Neustart-Taste für SOAP-Geräte (Sie neigen dazu, zu sterben jetzt die Server sind weg)\nzusätzlich: unterstützung für siren-geräte\nhinzugefügt: geräteanschlussstatus angezeigt in admin.\nentfernt: info.connection state.",
@@ -75,18 +88,6 @@
         "es": "corregir advertencias de tipo\ntraducciones y dependencias actualizadas",
         "pl": "Ostrzeżenia o poprawkach\nzaktualizowane tłumaczenia i zależności",
         "zh-cn": "修复类型警告\n更新的翻译和依赖项"
-      },
-      "1.1.9": {
-        "en": "updated translations",
-        "de": "aktualisierte Übersetzungen",
-        "ru": "обновленные переводы",
-        "pt": "traduções atualizadas",
-        "nl": "bijgewerkte vertalingen",
-        "fr": "traductions mises à jour",
-        "it": "traduzioni aggiornate",
-        "es": "traducciones actualizadas",
-        "pl": "zaktualizowane tłumaczenia",
-        "zh-cn": "更新的翻译"
       }
     },
     "title": "mydlink",
