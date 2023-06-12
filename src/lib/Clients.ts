@@ -44,6 +44,9 @@ export interface SoapClientInterface extends Client {
     totalConsumption(): Promise<number>;
     reboot(): Promise<boolean>;
     getDeviceDescriptionXML(): Promise<{deviceSettingsXML: string, modulesSoapActions: string}>;
+    getSoundPlay(): Promise<boolean>;
+    setSoundPlay(sound: number, volume: number, duration : number) : Promise<boolean>;
+    setAlarmDismissed(): Promise<boolean>;
 
     /**
      * Change the state of a socket.

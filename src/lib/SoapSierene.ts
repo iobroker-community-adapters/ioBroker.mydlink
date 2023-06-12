@@ -18,8 +18,12 @@ export class SoapSieren extends SoapDevice {
         if (id.endsWith(Suffixes.state)) {
             if (typeof state.val === 'boolean') {
                 try {
-                    await this.client.switch(state.val);
-                    const newVal = (await this.client.state()) as boolean;
+                    let newVal;
+                    if (state.val) {
+                        newVal = await this.client.setSoundPlay(this.soundToPlay, this.volume, this.duration);
+                    } else {
+                        newVal = !(await this.client.setAlarmDismissed());
+                    }
                     await this.adapter.setStateAsync(id, newVal, true);
                 } catch(e: any) {
                     await this.handleNetworkError(e);
@@ -82,6 +86,7 @@ export class SoapSieren extends SoapDevice {
                 write: true,
                 min: 1,
                 max: 6,
+                def: 1,
                 states: {
                     1: 'EMERGENCY', 2: 'FIRE', 3: 'AMBULANCE',
                     4: 'POLICE', 5: 'DOOR_CHIME', 6: 'BEEP'
@@ -100,7 +105,8 @@ export class SoapSieren extends SoapDevice {
                 read: true,
                 write: true,
                 min: 1,
-                max: 100
+                max: 100,
+                def: 50
             },
             native: {}
         });
@@ -116,10 +122,43 @@ export class SoapSieren extends SoapDevice {
                 write: true,
                 unit: 's',
                 min: 1,
-                max: 88888
+                max: 88888,
+                def: 60
             },
             native: {}
         });
         await this.adapter.subscribeStatesAsync(this.id + Suffixes.soundVolume);
+
+        //get initial values:
+        let state = await this.adapter.getStateAsync(this.id + Suffixes.soundType);
+        if (state && state.val !== null && state.val >= 0) {
+            this.soundToPlay = state.val as number;
+        }
+        state = await this.adapter.getStateAsync(this.id + Suffixes.soundVolume);
+        if (state && state.val !== null && state.val >= 0) {
+            this.volume = state.val as number;
+        }
+        state = await this.adapter.getStateAsync(this.id + Suffixes.soundDuration);
+        if (state && state.val !== null && state.val >= 0) {
+            this.duration = state.val as number;
+        }
+    }
+
+    /**
+     * Do polling here.
+     * @returns {Promise<void>}
+     */
+    async onInterval() : Promise<void> {
+        await super.onInterval();
+        // if not ready -> communication did fail, will be retried on next poll.
+        if (this.ready) {
+            //check switch status:
+            try {
+                const val = await this.client.getSoundPlay() as boolean;
+                await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
+            } catch (e: any) {
+                await this.handleNetworkError(e);
+            }
+        }
     }
 }
