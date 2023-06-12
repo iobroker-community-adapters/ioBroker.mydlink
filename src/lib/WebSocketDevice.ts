@@ -79,16 +79,20 @@ export class WebSocketDevice extends Device {
         await super.onInterval();
         // if not ready -> communication did fail, will be retried on next poll.
         if (this.ready) {
-            if (this.numSockets > 1) {
-                const states = await this.client.state(-1) as Array<boolean>; //get all socket states.
-                for (let index = 1; index <= this.numSockets; index += 1) {
-                    const id = this.id + Suffixes.state + '_' + index;
-                    const val = states[index - 1];
-                    await this.adapter.setStateChangedAsync(id, val, true);
+            try {
+                if (this.numSockets > 1) {
+                    const states = await this.client.state(-1) as Array<boolean>; //get all socket states.
+                    for (let index = 1; index <= this.numSockets; index += 1) {
+                        const id = this.id + Suffixes.state + '_' + index;
+                        const val = states[index - 1];
+                        await this.adapter.setStateChangedAsync(id, val, true);
+                    }
+                } else {
+                    const val = await this.client.state(0) as boolean;
+                    await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
                 }
-            } else {
-                const val = await this.client.state(0) as boolean;
-                await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
+            } catch (e) {
+                await this.handleNetworkError(e);
             }
         }
     }
@@ -140,7 +144,7 @@ export class WebSocketDevice extends Device {
     }
 
     /**
-     * process a state change. Device will just try to switch plug. Childs will have to overwrite this behaviour.
+     * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      * @param id
      * @param state
      */
@@ -170,7 +174,7 @@ export class WebSocketDevice extends Device {
         }
     }
 
-    async getModelInfoForSentry() {
+    async getModelInfoForSentry() : Promise<any> {
         const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
         const result = await axios.get(url);
         return result.data;
