@@ -67,9 +67,12 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	Placeholder for next versions (this needs to be indented):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* better handle possible exception on unload.
+
 ### 1.3.1 (2023-06-12)
 * fix minor errors
-* improved siren supprt.
+* improved siren support.
 
 ### 1.3.0 (2023-05-15)
 * reworked code to type-script (please report errors / things that work worse than before)
