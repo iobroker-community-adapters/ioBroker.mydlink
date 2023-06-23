@@ -126,12 +126,12 @@ export class WebSocketDevice extends Device {
         await super.start();
 
         //event listener:
-        this.client.on('switched', (val : boolean, socket : number) => {
+        this.client.on('switched', async (val : boolean, socket : number) => {
             this.adapter.log.debug(`Event from device ${socket} now ${val}`);
             if (this.numSockets > 1) {
-                this.adapter.setStateAsync(this.id + Suffixes.state + '_' + (socket + 1), val, true);
+                await this.adapter.setStateAsync(this.id + Suffixes.state + '_' + (socket + 1), val, true);
             } else {
-                this.adapter.setStateAsync(this.id + Suffixes.state, val, true);
+                await this.adapter.setStateAsync(this.id + Suffixes.state, val, true);
             }
         });
         //error handling:
