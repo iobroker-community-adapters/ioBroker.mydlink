@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "1.3.2",
+    "version": "1.3.3",
     "news": {
+      "1.3.3": {
+        "en": "fix: crash with js-controller 5.x",
+        "de": "fix: crash mit js-controller 5.x",
+        "ru": "исправить: сбой с js-controller 5.x",
+        "pt": "correção: acidente com js-controller 5.x",
+        "nl": "vertaling:",
+        "fr": "fix: crash avec js-controller 5.x",
+        "it": "fix: crash con js-controller 5.x",
+        "es": "fijación: choque con js-controller 5.x",
+        "pl": "reakcja: rozbicie z kontrolerem 5.x",
+        "uk": "виправити:crash with js-controller 5.x",
+        "zh-cn": "fix:与控制的手枪5.x"
+      },
       "1.3.2": {
         "en": "better handle possible exception on unload.",
         "de": "bessere handhabung möglicher ausnahme beim entladen.",
@@ -77,18 +90,6 @@
         "es": "Actualizar traducciones",
         "pl": "Zaktualizuj tłumaczenia",
         "zh-cn": "更新翻译"
-      },
-      "1.1.11": {
-        "en": "adjusted types & roles to type-detector.",
-        "de": "Angepasste Typen & Rollen an Typ-Detektor.",
-        "ru": "скорректированные типы и роли для детектора типа.",
-        "pt": "tipos e funções ajustados para detector de tipo.",
-        "nl": "aangepaste typen & rollen naar type-detector.",
-        "fr": "types et rôles ajustés au détecteur de type.",
-        "it": "tipi e ruoli adattati al tipo-rilevatore.",
-        "es": "tipos y roles ajustados al detector de tipos.",
-        "pl": "dostosowane typy i role do detektora typów.",
-        "zh-cn": "将类型和角色调整为类型检测器。"
       }
     },
     "title": "mydlink",
