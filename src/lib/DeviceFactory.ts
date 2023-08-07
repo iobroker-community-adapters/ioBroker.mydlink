@@ -53,7 +53,7 @@ export async function createFromObject(adapter : Mydlink, configDevice: ioBroker
             pin: native.pin,
             pinEncrypted,
             model: native.model,
-            pollInterval: native.pollInterval,
+            pollInterval: Number(native.pollInterval),
             mac: native.mac,
             id: configDevice._id.split('.')[2],
             name: native.name,
@@ -100,7 +100,7 @@ export async function createDevice(adapter: Mydlink, params : {
             adapter.log.error('Could not send device information to sentry. Please report. Error was: ' + e.stack);
         }
     }
-    device.pollInterval = params.pollInterval || device.pollInterval;
+    device.pollInterval = Number(params.pollInterval || device.pollInterval);
     device.mac = params.mac || device.mac;
     device.id = params.id || device.id;
     if (!device.id) {

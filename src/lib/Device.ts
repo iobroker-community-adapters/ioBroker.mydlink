@@ -76,7 +76,7 @@ export abstract class Device extends DeviceInfo {
                 ip: this.ip,
                 mac: this.mac,
                 pin: this.pinEncrypted,
-                pollInterval: this.pollInterval,
+                pollInterval: Number(this.pollInterval),
                 enabled: this.enabled,
                 name: this.name,
                 model: this.model,
