@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "1.3.3",
+    "version": "1.3.4",
     "news": {
+      "1.3.4": {
+        "en": "fixed: missing build...",
+        "de": "fix: fehlender bau.",
+        "ru": "исправлено: отсутствует постройка.",
+        "pt": "corrigido: falta de construção.",
+        "nl": "vermiste bouw.",
+        "fr": "fixe: construction manquante.",
+        "it": "fisso: costruzione mancante.",
+        "es": "fijo: construcción perdida.",
+        "pl": "uwaga: brak budowy.",
+        "uk": "фіксована: відсутність збірки.",
+        "zh-cn": "固定:缺失的建筑物。."
+      },
       "1.3.3": {
         "en": "fix: crash with js-controller 5.x",
         "de": "fix: crash mit js-controller 5.x",
@@ -78,18 +91,6 @@
         "es": "* Traducciones actualizadas \" dependencias\n* Añadido: soporte para dispositivos con múltiples sockets\n* Cambio: los dispositivos websocket ahora también son encuestados",
         "pl": "* Tłumaczenie i zależności\n* Added: obsługa urządzeń z wieloma gniazdami\n* Changed: Websocket devices również są zanieczyszczone",
         "zh-cn": "* A/64/50。 最新翻译和频率\n* 增编:用多种装置支助装置\n* 修改:网络装置现在也受到污染。"
-      },
-      "1.1.12": {
-        "en": "Update translations",
-        "de": "Übersetzungen aktualisieren",
-        "ru": "Обновить переводы",
-        "pt": "Atualizar traduções",
-        "nl": "Vertalingen bijwerken",
-        "fr": "Mettre à jour les traductions",
-        "it": "Aggiorna traduzioni",
-        "es": "Actualizar traducciones",
-        "pl": "Zaktualizuj tłumaczenia",
-        "zh-cn": "更新翻译"
       }
     },
     "title": "mydlink",
