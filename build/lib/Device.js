@@ -173,8 +173,11 @@ class Device extends import_DeviceInfo.DeviceInfo {
     }
     this.adapter.log.debug("Error during communication " + this.name + ": " + code + " - " + e.stack + " - " + e.body);
     this.ready = false;
-    await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
-    await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, false, true);
+    if (this.id) {
+      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
+      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, false, true);
+    }
+    return code;
   }
   async onInterval() {
     try {

@@ -192,22 +192,37 @@ export class WebSocketDevice extends Device {
 
         //get model from webserver / wifi-ssid:
         const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
-        const result = await axios.get(url);
-        if (result.status === 200) {
-            const startPos = result.data.indexOf('SSID: ') + 6;
-            const model = result.data.substring(startPos, startPos + 8);
-            if (!model) {
-                this.adapter.log.warn(`${this.name} identify responded with unknown result, please report: ${result.data}`);
+        try {
+            const result = await axios.get(url);
+            if (result.status === 200) {
+                const startPos = result.data.indexOf('SSID: ') + 6;
+                const model = result.data.substring(startPos, startPos + 8);
+                if (!model) {
+                    this.adapter.log.warn(`${this.name} identify responded with unknown result, please report: ${result.data}`);
+                }
+                this.adapter.log.debug('Got model ' + model + ' during identification of ' + this.name);
+                if (model !== this.model) {
+                    const oldModel = this.model;
+                    this.model = model;
+                    this.adapter.log.info('Model updated from ' + (oldModel || 'unknown') + ' to ' + model);
+                    throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
+                }
+            } else {
+                this.adapter.log.warn(`${this.name} could not be identified: ${result.data}`);
             }
-            this.adapter.log.debug('Got model ' + model + ' during identification of ' + this.name);
-            if (model !== this.model) {
-                const oldModel = this.model;
-                this.model = model;
-                this.adapter.log.info('Model updated from ' + (oldModel || 'unknown') + ' to ' + model);
-                throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
+        } catch (e) {
+            const code = await this.handleNetworkError(e);
+            console.log('Got code: ' + code);
+            if (code === 'ECONNREFUSED') {
+                this.adapter.log.debug('Failed to identify -> for now assume W118, because that one is nasty.');
+                const model = 'DSP-W118';
+                if (model !== this.model) {
+                    const oldModel = this.model;
+                    this.model = model;
+                    this.adapter.log.info('Model updated from ' + (oldModel || 'unknown') + ' to ' + model);
+                    throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
+                }
             }
-        } else {
-            this.adapter.log.warn(`${this.name} could not be identified: ${result.data}`);
         }
 
         //make sure objects are created.

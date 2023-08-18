@@ -193,15 +193,18 @@ export abstract class Device extends DeviceInfo {
         return this.identified;
     }
 
-    async handleNetworkError(e: any) : Promise<void> {
+    async handleNetworkError(e: any) : Promise<number|string> {
         const code = processNetworkError(e);
         if ([403, 424].includes(code as number) || this.ready) {
             this.loggedIn = false; //login next polling.
         }
         this.adapter.log.debug('Error during communication ' + this.name + ': ' + code + ' - ' + e.stack + ' - ' + e.body);
         this.ready = false;
-        await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
-        await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, false, true);
+        if (this.id) {
+            await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
+            await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, false, true);
+        }
+        return code;
     }
 
     /**
