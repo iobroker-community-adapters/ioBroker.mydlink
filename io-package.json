@@ -5,7 +5,7 @@
     "news": {
       "1.3.5": {
         "en": "fixed: wrong type warnings with legacy devices",
-        "de": "fest: falsche typwarnungen mit altgeräten",
+        "de": "fixed: falsche typwarnungen mit altgeräten",
         "ru": "исправлено: неправильные предупреждения типа с устройствами наследия",
         "pt": "corrigido: avisos de tipo errado com dispositivos legados",
         "nl": "verkeerde type waarschuwingen met nalatenschap apparatuur",
