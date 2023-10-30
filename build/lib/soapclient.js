@@ -254,21 +254,25 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     off: function() {
       return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, false)));
     },
-    state: function() {
-      return soapAction("GetSocketSettings", "OPStatus", requestBody("GetSocketSettings", moduleParameters(1)));
+    state: async function() {
+      const val = await soapAction("GetSocketSettings", "OPStatus", requestBody("GetSocketSettings", moduleParameters(1)));
+      return val === "true";
     },
     lastDetection: async function() {
       const result = await soapAction("GetLatestDetection", "LatestDetectTime", requestBody("GetLatestDetection", moduleParameters(1)));
       return result * 1e3;
     },
-    consumption: function() {
-      return soapAction("GetCurrentPowerConsumption", "CurrentConsumption", requestBody("GetCurrentPowerConsumption", moduleParameters(2)));
+    consumption: async function() {
+      const result = await soapAction("GetCurrentPowerConsumption", "CurrentConsumption", requestBody("GetCurrentPowerConsumption", moduleParameters(2)));
+      return Number(result);
     },
-    totalConsumption: function() {
-      return soapAction("GetPMWarningThreshold", "TotalConsumption", requestBody("GetPMWarningThreshold", moduleParameters(2)));
+    totalConsumption: async function() {
+      const result = await soapAction("GetPMWarningThreshold", "TotalConsumption", requestBody("GetPMWarningThreshold", moduleParameters(2)));
+      return Number(result);
     },
-    temperature: function() {
-      return soapAction("GetCurrentTemperature", "CurrentTemperature", requestBody("GetCurrentTemperature", moduleParameters(3)));
+    temperature: async function() {
+      const result = await soapAction("GetCurrentTemperature", "CurrentTemperature", requestBody("GetCurrentTemperature", moduleParameters(3)));
+      return Number(result);
     },
     getAPClientSettings: function() {
       return soapAction("GetAPClientSettings", "GetAPClientSettingsResult", requestBody("GetAPClientSettings", radioParameters("RADIO_2.4GHz")));
@@ -359,8 +363,9 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     setAlarmDismissed: function() {
       return soapAction("SetAlarmDismissed", "SetAlarmDismissedResult", requestBody("SetAlarmDismissed", soundParameters()));
     },
-    getSoundPlay: function() {
-      return soapAction("GetSirenAlarmSettings", "IsSounding", requestBody("GetSirenAlarmSettings", soundParameters()));
+    getSoundPlay: async function() {
+      const result = await soapAction("GetSirenAlarmSettings", "IsSounding", requestBody("GetSirenAlarmSettings", soundParameters()));
+      return result === "true";
     },
     getDeviceDescriptionXML,
     getSounds

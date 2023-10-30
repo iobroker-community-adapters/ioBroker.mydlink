@@ -365,8 +365,9 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) {
         },
 
         //polls current state
-        state: function () {
-            return soapAction('GetSocketSettings', 'OPStatus', requestBody('GetSocketSettings', moduleParameters(1)));
+        state: async function () {
+            const val = await soapAction('GetSocketSettings', 'OPStatus', requestBody('GetSocketSettings', moduleParameters(1)));
+            return val === 'true';
         },
 
         //polls last detection
@@ -376,18 +377,21 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) {
         },
 
         //polls power consumption
-        consumption: function () {
-            return soapAction('GetCurrentPowerConsumption', 'CurrentConsumption', requestBody('GetCurrentPowerConsumption', moduleParameters(2))) as Promise<number>;
+        consumption: async function () {
+            const result = await soapAction('GetCurrentPowerConsumption', 'CurrentConsumption', requestBody('GetCurrentPowerConsumption', moduleParameters(2)));
+            return Number(result);
         },
 
         //polls total power consumption
-        totalConsumption: function () {
-            return soapAction('GetPMWarningThreshold', 'TotalConsumption', requestBody('GetPMWarningThreshold', moduleParameters(2))) as Promise<number>;
+        totalConsumption: async function () {
+            const result = await soapAction('GetPMWarningThreshold', 'TotalConsumption', requestBody('GetPMWarningThreshold', moduleParameters(2)));
+            return Number(result);
         },
 
         //polls current temperature
-        temperature: function () {
-            return soapAction('GetCurrentTemperature', 'CurrentTemperature', requestBody('GetCurrentTemperature', moduleParameters(3))) as Promise<number>;
+        temperature: async function () {
+            const result = await soapAction('GetCurrentTemperature', 'CurrentTemperature', requestBody('GetCurrentTemperature', moduleParameters(3)));
+            return Number(result);
         },
 
         //gets information about Wi-Fi
@@ -514,8 +518,9 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) {
             return soapAction('SetAlarmDismissed', 'SetAlarmDismissedResult', requestBody('SetAlarmDismissed', soundParameters()));
         },
 
-        getSoundPlay: function () {
-            return soapAction('GetSirenAlarmSettings', 'IsSounding', requestBody('GetSirenAlarmSettings', soundParameters()));
+        getSoundPlay: async function () {
+            const result = await soapAction('GetSirenAlarmSettings', 'IsSounding', requestBody('GetSirenAlarmSettings', soundParameters()));
+            return result === 'true';
         },
 
         getDeviceDescriptionXML: getDeviceDescriptionXML,
