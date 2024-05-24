@@ -17,7 +17,7 @@ export class WebSocketDevice extends Device {
             ip: this.ip,
             pin: this.pinDecrypted,
             keepAlive: 5,
-            useTelnetForToken: this.pinDecrypted.toUpperCase() === 'TELNET',
+            useTelnetForToken: this.pinDecrypted?.toUpperCase() === 'TELNET',
             log: console.debug
         });
     }
