@@ -9,7 +9,7 @@ import * as utils from '@iobroker/adapter-core';
 import {Device} from './lib/Device';
 import { DeviceInfo } from './lib/DeviceInfo';
 import { AutoDetector } from './lib/autoDetect';
-import {TableDevice} from './lib/TableDevice';
+import {sanitizeTableDevice, TableDevice} from './lib/TableDevice';
 import {createFromObject, createFromTable} from './lib/DeviceFactory';
 
 // Load your modules here, e.g.:
@@ -110,6 +110,7 @@ class Mydlink extends utils.Adapter {
         for (const existingDevice of existingDevices) {
             let found = false;
             for (const configDevice of this.config.devices as TableDevice[]) {
+                sanitizeTableDevice(configDevice);
                 needUpdateConfig = !configDevice.mac;
                 if ((configDevice.mac && configDevice.mac === existingDevice.native.mac) ||
                     (!configDevice.mac && configDevice.ip === existingDevice.native.ip)) {
@@ -142,6 +143,7 @@ class Mydlink extends utils.Adapter {
 
         //add non-existing devices from config:
         for (const configDevice of configDevicesToAdd) {
+            sanitizeTableDevice(configDevice);
             const device = await createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
             this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
             const oldDevice = this.devices.find(d => d.mac === device.mac);

@@ -131,19 +131,6 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
   function controlParameters(module2, status) {
     return moduleParameters(module2) + "<NickName>Socket 1</NickName><Description>Socket 1</Description><OPStatus>" + status + "</OPStatus><Controller>1</Controller>";
   }
-  function radioParameters(radio) {
-    return "<RadioID>" + radio + "</RadioID>";
-  }
-  function getSounds() {
-    return {
-      EMERGENCY: 1,
-      FIRE: 2,
-      AMBULANCE: 3,
-      POLICE: 4,
-      DOOR_CHIME: 5,
-      BEEP: 6
-    };
-  }
   function soundParameters(soundnum, volume, duration) {
     let params = `<ModuleID>1</ModuleID>
                      <Controller>1</Controller>`;
@@ -157,18 +144,6 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       params += `<Duration>${duration}</Duration>`;
     }
     return params;
-  }
-  function APClientParameters() {
-    return "<Enabled>true</Enabled><RadioID>RADIO_2.4GHz</RadioID><SSID>My_Network</SSID><MacAddress>XX:XX:XX:XX:XX:XX</MacAddress><ChannelWidth>0</ChannelWidth><SupportedSecurity><SecurityInfo><SecurityType>WPA2-PSK</SecurityType><Encryptions><string>AES</string></Encryptions></SecurityInfo></SupportedSecurity>";
-  }
-  function groupParameters(group) {
-    return "<ModuleGroupID>" + group + "</ModuleGroupID>";
-  }
-  function temperatureSettingsParameters(module2) {
-    return moduleParameters(module2) + "<NickName>TemperatureMonitor 3</NickName><Description>Temperature Monitor 3</Description><UpperBound>80</UpperBound><LowerBound>Not Available</LowerBound><OPStatus>true</OPStatus>";
-  }
-  function powerWarningParameters() {
-    return "<Threshold>28</Threshold><Percentage>70</Percentage><PeriodicType>Weekly</PeriodicType><StartTime>1</StartTime>";
   }
   function getHnapAuth(SoapAction, privateKey) {
     const current_time = /* @__PURE__ */ new Date();
@@ -260,14 +235,6 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     switch: function(on) {
       return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, on)));
     },
-    //switches plug on
-    on: function() {
-      return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, true)));
-    },
-    //switches plug off
-    off: function() {
-      return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, false)));
-    },
     //polls current state
     state: async function() {
       const val = await soapAction("GetSocketSettings", "OPStatus", requestBody("GetSocketSettings", moduleParameters(1)));
@@ -293,18 +260,6 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       const result = await soapAction("GetCurrentTemperature", "CurrentTemperature", requestBody("GetCurrentTemperature", moduleParameters(3)));
       return Number(result);
     },
-    //gets information about Wi-Fi
-    getAPClientSettings: function() {
-      return soapAction("GetAPClientSettings", "GetAPClientSettingsResult", requestBody("GetAPClientSettings", radioParameters("RADIO_2.4GHz")));
-    },
-    //set power warning?
-    setPowerWarning: function() {
-      return soapAction("SetPMWarningThreshold", "SetPMWarningThresholdResult", requestBody("SetPMWarningThreshold", powerWarningParameters()));
-    },
-    //poll power warning
-    getPowerWarning: function() {
-      return soapAction("GetPMWarningThreshold", "GetPMWarningThresholdResult", requestBody("GetPMWarningThreshold", moduleParameters(2)));
-    },
     //returns model name and firmware version. Could be very interesting for supporting additional devices.
     //also useful to know which states to create for a device (i.e. plug or motion detection)
     getDeviceSettings: function() {
@@ -324,25 +279,6 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
         requestBody("GetDeviceSettings", "")
       );
     },
-    //not very interesting, returns timezone and set locale.
-    getDeviceSettings2: function() {
-      return soapAction("GetDeviceSettings2", "GetDeviceSettings2Result", requestBody("GetDeviceSettings2", ""));
-    },
-    getTemperatureSettings: function() {
-      return soapAction("GetTempMonitorSettings", "GetTempMonitorSettingsResult", requestBody("GetTempMonitorSettings", moduleParameters(3)));
-    },
-    setTemperatureSettings: function() {
-      return soapAction("SetTempMonitorSettings", "SetTempMonitorSettingsResult", requestBody("SetTempMonitorSettings", temperatureSettingsParameters(3)));
-    },
-    getSiteSurvey: function() {
-      return soapAction("GetSiteSurvey", "GetSiteSurveyResult", requestBody("GetSiteSurvey", radioParameters("RADIO_2.4GHz")));
-    },
-    triggerWirelessSiteSurvey: function() {
-      return soapAction("SetTriggerWirelessSiteSurvey", "SetTriggerWirelessSiteSurveyResult", requestBody("SetTriggerWirelessSiteSurvey", radioParameters("RADIO_2.4GHz")));
-    },
-    latestDetection: function() {
-      return soapAction("GetLatestDetection", "GetLatestDetectionResult", requestBody("GetLatestDetection", moduleParameters(2)));
-    },
     //reboot device
     reboot: function() {
       return soapAction("Reboot", "RebootResult", requestBody("Reboot", ""));
@@ -355,40 +291,6 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       const result = await soapAction("IsDeviceReady", "IsDeviceReadyResult", requestBody("IsDeviceReady", ""));
       return result === "OK";
     },
-    getModuleSchedule: function() {
-      return soapAction("GetModuleSchedule", "GetModuleScheduleResult", requestBody("GetModuleSchedule", moduleParameters(0)));
-    },
-    getModuleEnabled: function() {
-      return soapAction("GetModuleEnabled", "GetModuleEnabledResult", requestBody("GetModuleEnabled", moduleParameters(0)));
-    },
-    getModuleGroup: function() {
-      return soapAction("GetModuleGroup", "GetModuleGroupResult", requestBody("GetModuleGroup", groupParameters(0)));
-    },
-    //get actions supported by module
-    getModuleSOAPActions: function(module2 = 0) {
-      return soapAction("GetModuleSOAPActions", "SOAPActions", requestBody("GetModuleSOAPActions", moduleParameters(module2)));
-    },
-    getMotionDetectorSettings: function(module2 = 1) {
-      return soapAction("GetMotionDetectorSettings", "GetMotionDetectorSettingsResult", requestBody("GetMotionDetectorSettings", moduleParameters(module2)));
-    },
-    getScheduleSettings: function() {
-      return soapAction("GetScheduleSettings", "GetScheduleSettingsResult", requestBody("GetScheduleSettings", ""));
-    },
-    setFactoryDefault: function() {
-      return soapAction("SetFactoryDefault", "SetFactoryDefaultResult", requestBody("SetFactoryDefault", ""));
-    },
-    getWLanRadios: function() {
-      return soapAction("GetWLanRadios", "GetWLanRadiosResult", requestBody("GetWLanRadios", ""));
-    },
-    getInternetSettings: function() {
-      return soapAction("GetInternetSettings", "GetInternetSettingsResult", requestBody("GetInternetSettings", ""));
-    },
-    setAPClientSettings: function() {
-      return soapAction("SetAPClientSettings", "SetAPClientSettingsResult", requestBody("SetAPClientSettings", APClientParameters()));
-    },
-    settriggerADIC: function() {
-      return soapAction("SettriggerADIC", "SettriggerADICResult", requestBody("SettriggerADIC", ""));
-    },
     setSoundPlay: function(sound, volume, duration) {
       return soapAction("SetSoundPlay", "SetSoundPlayResult", requestBody("SetSoundPlay", soundParameters(sound, volume, duration)));
     },
@@ -399,8 +301,90 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       const result = await soapAction("GetSirenAlarmSettings", "IsSounding", requestBody("GetSirenAlarmSettings", soundParameters()));
       return result === "true";
     },
-    getDeviceDescriptionXML,
-    getSounds
+    getDeviceDescriptionXML
+    //getSounds: getSounds
+    /* unused stuff.
+            //gets information about Wi-Fi
+            getAPClientSettings: function () {
+                return soapAction('GetAPClientSettings', 'GetAPClientSettingsResult', requestBody('GetAPClientSettings', radioParameters('RADIO_2.4GHz')));
+            },
+    
+            //set power warning?
+            setPowerWarning: function () {
+                return soapAction('SetPMWarningThreshold', 'SetPMWarningThresholdResult', requestBody('SetPMWarningThreshold', powerWarningParameters()));
+            },
+    
+            //poll power warning
+            getPowerWarning: function () {
+                return soapAction('GetPMWarningThreshold', 'GetPMWarningThresholdResult', requestBody('GetPMWarningThreshold', moduleParameters(2)));
+            },
+    
+            //not very interesting, returns timezone and set locale.
+            getDeviceSettings2: function () {
+                return soapAction('GetDeviceSettings2', 'GetDeviceSettings2Result', requestBody('GetDeviceSettings2', ''));
+            },
+    
+            getTemperatureSettings: function () {
+                return soapAction('GetTempMonitorSettings', 'GetTempMonitorSettingsResult', requestBody('GetTempMonitorSettings', moduleParameters(3)));
+            },
+    
+            setTemperatureSettings: function () {
+                return soapAction('SetTempMonitorSettings', 'SetTempMonitorSettingsResult', requestBody('SetTempMonitorSettings', temperatureSettingsParameters(3)));
+            },
+    
+            getSiteSurvey: function () {
+                return soapAction('GetSiteSurvey', 'GetSiteSurveyResult', requestBody('GetSiteSurvey', radioParameters('RADIO_2.4GHz')));
+            },
+    
+            triggerWirelessSiteSurvey: function () {
+                return soapAction('SetTriggerWirelessSiteSurvey', 'SetTriggerWirelessSiteSurveyResult', requestBody('SetTriggerWirelessSiteSurvey', radioParameters('RADIO_2.4GHz')));
+            },
+    
+            getModuleSchedule: function () {
+                return soapAction('GetModuleSchedule', 'GetModuleScheduleResult', requestBody('GetModuleSchedule', moduleParameters(0)));
+            },
+    
+            getModuleEnabled: function () {
+                return soapAction('GetModuleEnabled', 'GetModuleEnabledResult', requestBody('GetModuleEnabled', moduleParameters(0)));
+            },
+    
+            getModuleGroup: function () {
+                return soapAction('GetModuleGroup', 'GetModuleGroupResult', requestBody('GetModuleGroup', groupParameters(0)));
+            },
+    
+            //get actions supported by module
+            getModuleSOAPActions: function (module = 0) {
+                return soapAction('GetModuleSOAPActions', 'SOAPActions', requestBody('GetModuleSOAPActions', moduleParameters(module)));
+            },
+    
+            getMotionDetectorSettings: function(module = 1) {
+                return soapAction('GetMotionDetectorSettings', 'GetMotionDetectorSettingsResult', requestBody('GetMotionDetectorSettings', moduleParameters(module)));
+            },
+    
+            getScheduleSettings: function () {
+                return soapAction('GetScheduleSettings', 'GetScheduleSettingsResult', requestBody('GetScheduleSettings', ''));
+            },
+    
+            setFactoryDefault: function () {
+                return soapAction('SetFactoryDefault', 'SetFactoryDefaultResult', requestBody('SetFactoryDefault', ''));
+            },
+    
+            getWLanRadios: function () {
+                return soapAction('GetWLanRadios', 'GetWLanRadiosResult', requestBody('GetWLanRadios', ''));
+            },
+    
+            getInternetSettings: function () {
+                return soapAction('GetInternetSettings', 'GetInternetSettingsResult', requestBody('GetInternetSettings', ''));
+            },
+    
+            setAPClientSettings: function () {
+                return soapAction('SetAPClientSettings', 'SetAPClientSettingsResult', requestBody('SetAPClientSettings', APClientParameters()));
+            },
+    
+            settriggerADIC: function () {
+                return soapAction('SettriggerADIC', 'SettriggerADICResult', requestBody('SettriggerADIC', ''));
+            },
+            */
   };
 };
 var soapclient_default = soapClient;

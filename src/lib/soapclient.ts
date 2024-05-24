@@ -31,6 +31,7 @@ import * as crypto from 'crypto';
 import axios from 'axios';
 import {DOMParser} from '@xmldom/xmldom';
 import http from 'http';
+import {SoapClientInterface} from './Clients';
 
 const HNAP1_XMLNS = 'http://purenetworks.com/HNAP1/';
 //const HNAP_METHOD = 'POST';
@@ -62,7 +63,7 @@ function hmac(key : string, challenge : string): string {
  * Creates a soapClient.
  * @param opt - parameters, must have url, user and password.
  */
-export const soapClient = function (opt = { url: '', user: '', password: ''}) : Record<string, unknown> {
+export const soapClient = function (opt = { url: '', user: '', password: ''}) : SoapClientInterface {
     const HNAP_AUTH = {
         url: opt.url || '',
         user: opt.user || '',
@@ -174,25 +175,6 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
             '<OPStatus>' + status + '</OPStatus><Controller>1</Controller>';
     }
 
-    function radioParameters(radio : string) : string {
-        return '<RadioID>' + radio + '</RadioID>';
-    }
-
-    /**
-     * Returns an Object of possible sounds with LABELS and the numbers they translate in.
-     * @returns {{EMERGENCY: number, DOOR_CHIME: number, BEEP: number, AMBULANCE: number, FIRE: number, POLICE: number}}
-     */
-    function getSounds() : {EMERGENCY: number, DOOR_CHIME: number, BEEP: number, AMBULANCE: number, FIRE: number, POLICE: number} {
-        return {
-            EMERGENCY: 1,
-            FIRE: 2,
-            AMBULANCE: 3,
-            POLICE: 4,
-            DOOR_CHIME: 5,
-            BEEP: 6
-        };
-    }
-
     /**
      * Create parameters for SetPlaySound request
      * @param [soundnum] should be one of the string from getSounds 1-6
@@ -215,6 +197,26 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
         return params;
     }
 
+    /**
+     * Returns an Object of possible sounds with LABELS and the numbers they translate in.
+     * @returns {{EMERGENCY: number, DOOR_CHIME: number, BEEP: number, AMBULANCE: number, FIRE: number, POLICE: number}}
+     */
+    /*function getSounds() : {EMERGENCY: number, DOOR_CHIME: number, BEEP: number, AMBULANCE: number, FIRE: number, POLICE: number} {
+        return {
+            EMERGENCY: 1,
+            FIRE: 2,
+            AMBULANCE: 3,
+            POLICE: 4,
+            DOOR_CHIME: 5,
+            BEEP: 6
+        };
+    }*/
+
+    /*
+       unused stuff
+    function radioParameters(radio : string) : string {
+        return '<RadioID>' + radio + '</RadioID>';
+    }
     function APClientParameters() : string {
         return '<Enabled>true</Enabled>' +
             '<RadioID>RADIO_2.4GHz</RadioID>' +
@@ -249,6 +251,7 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
             '<PeriodicType>Weekly</PeriodicType>' +
             '<StartTime>1</StartTime>';
     }
+     */
 
     function getHnapAuth(SoapAction : string, privateKey : string) : string {
         const current_time = new Date();
@@ -350,18 +353,8 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
          * @param {boolean} on target status
          * @returns {Promise<*>}
          */
-        switch: function (on : boolean) {
-            return soapAction('SetSocketSettings', 'SetSocketSettingsResult', requestBody('SetSocketSettings', controlParameters(1, on)));
-        },
-
-        //switches plug on
-        on: function () {
-            return soapAction('SetSocketSettings', 'SetSocketSettingsResult', requestBody('SetSocketSettings', controlParameters(1, true)));
-        },
-
-        //switches plug off
-        off: function () {
-            return soapAction('SetSocketSettings', 'SetSocketSettingsResult', requestBody('SetSocketSettings', controlParameters(1, false)));
+        switch: function (on : boolean) : Promise<boolean> {
+            return soapAction('SetSocketSettings', 'SetSocketSettingsResult', requestBody('SetSocketSettings', controlParameters(1, on))) as Promise<boolean>
         },
 
         //polls current state
@@ -394,21 +387,6 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
             return Number(result);
         },
 
-        //gets information about Wi-Fi
-        getAPClientSettings: function () {
-            return soapAction('GetAPClientSettings', 'GetAPClientSettingsResult', requestBody('GetAPClientSettings', radioParameters('RADIO_2.4GHz')));
-        },
-
-        //set power warning?
-        setPowerWarning: function () {
-            return soapAction('SetPMWarningThreshold', 'SetPMWarningThresholdResult', requestBody('SetPMWarningThreshold', powerWarningParameters()));
-        },
-
-        //poll power warning
-        getPowerWarning: function () {
-            return soapAction('GetPMWarningThreshold', 'GetPMWarningThresholdResult', requestBody('GetPMWarningThreshold', moduleParameters(2)));
-        },
-
         //returns model name and firmware version. Could be very interesting for supporting additional devices.
         //also useful to know which states to create for a device (i.e. plug or motion detection)
         getDeviceSettings: function () : Promise<Record<string, string>> {
@@ -424,6 +402,53 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
                     'ModuleTypes' //not yet helpfully implemented. Hm
                 ],
                 requestBody('GetDeviceSettings', '')) as Promise<Record<string, string>>;
+        },
+
+        //reboot device
+        reboot: function () : Promise<boolean> {
+            return soapAction('Reboot', 'RebootResult', requestBody('Reboot', '')) as Promise<boolean>;
+        },
+
+        /**
+         * Returns true if device is ready.
+         * @returns {Promise<boolean>}
+         */
+        isDeviceReady: async function () {
+            const result = await soapAction('IsDeviceReady', 'IsDeviceReadyResult', requestBody('IsDeviceReady', ''));
+            return result === 'OK';
+        },
+
+        setSoundPlay: function (sound : number, volume : number, duration : number) : Promise<boolean> {
+            return soapAction('SetSoundPlay', 'SetSoundPlayResult', requestBody('SetSoundPlay', soundParameters(sound, volume, duration))) as Promise<boolean>;
+        },
+
+        setAlarmDismissed: function () : Promise<boolean> {
+            return soapAction('SetAlarmDismissed', 'SetAlarmDismissedResult', requestBody('SetAlarmDismissed', soundParameters())) as Promise<boolean>;
+        },
+
+        getSoundPlay: async function () {
+            const result = await soapAction('GetSirenAlarmSettings', 'IsSounding', requestBody('GetSirenAlarmSettings', soundParameters()));
+            return result === 'true';
+        },
+
+        getDeviceDescriptionXML: getDeviceDescriptionXML,
+
+        //getSounds: getSounds
+
+        /* unused stuff.
+        //gets information about Wi-Fi
+        getAPClientSettings: function () {
+            return soapAction('GetAPClientSettings', 'GetAPClientSettingsResult', requestBody('GetAPClientSettings', radioParameters('RADIO_2.4GHz')));
+        },
+
+        //set power warning?
+        setPowerWarning: function () {
+            return soapAction('SetPMWarningThreshold', 'SetPMWarningThresholdResult', requestBody('SetPMWarningThreshold', powerWarningParameters()));
+        },
+
+        //poll power warning
+        getPowerWarning: function () {
+            return soapAction('GetPMWarningThreshold', 'GetPMWarningThresholdResult', requestBody('GetPMWarningThreshold', moduleParameters(2)));
         },
 
         //not very interesting, returns timezone and set locale.
@@ -445,24 +470,6 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
 
         triggerWirelessSiteSurvey: function () {
             return soapAction('SetTriggerWirelessSiteSurvey', 'SetTriggerWirelessSiteSurveyResult', requestBody('SetTriggerWirelessSiteSurvey', radioParameters('RADIO_2.4GHz')));
-        },
-
-        latestDetection: function () {
-            return soapAction('GetLatestDetection', 'GetLatestDetectionResult', requestBody('GetLatestDetection', moduleParameters(2)));
-        },
-
-        //reboot device
-        reboot: function () {
-            return soapAction('Reboot', 'RebootResult', requestBody('Reboot', ''));
-        },
-
-        /**
-         * Returns true if device is ready.
-         * @returns {Promise<boolean>}
-         */
-        isDeviceReady: async function () {
-            const result = await soapAction('IsDeviceReady', 'IsDeviceReadyResult', requestBody('IsDeviceReady', ''));
-            return result === 'OK';
         },
 
         getModuleSchedule: function () {
@@ -509,23 +516,7 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
         settriggerADIC: function () {
             return soapAction('SettriggerADIC', 'SettriggerADICResult', requestBody('SettriggerADIC', ''));
         },
-
-        setSoundPlay: function (sound : number, volume : number, duration : number) {
-            return soapAction('SetSoundPlay', 'SetSoundPlayResult', requestBody('SetSoundPlay', soundParameters(sound, volume, duration)));
-        },
-
-        setAlarmDismissed: function () {
-            return soapAction('SetAlarmDismissed', 'SetAlarmDismissedResult', requestBody('SetAlarmDismissed', soundParameters()));
-        },
-
-        getSoundPlay: async function () {
-            const result = await soapAction('GetSirenAlarmSettings', 'IsSounding', requestBody('GetSirenAlarmSettings', soundParameters()));
-            return result === 'true';
-        },
-
-        getDeviceDescriptionXML: getDeviceDescriptionXML,
-
-        getSounds: getSounds
+        */
     };
 };
 

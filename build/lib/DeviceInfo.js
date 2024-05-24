@@ -113,6 +113,9 @@ class DeviceInfo {
    * @param encrypted
    */
   setPin(pin, encrypted = false) {
+    if (!pin) {
+      pin = "INVALID";
+    }
     if (encrypted) {
       this.pinEncrypted = pin;
       this.pinDecrypted = encryptDecrypt(DeviceInfo.secret, pin);

@@ -45,6 +45,9 @@ export class DeviceInfo {
      * @param encrypted
      */
     setPin(pin : string, encrypted = false) : void {
+        if (!pin) {
+            pin = 'INVALID';
+        }
         if (encrypted) {
             this.pinEncrypted = pin;
             this.pinDecrypted = encryptDecrypt(DeviceInfo.secret, pin);
