@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -44,6 +48,9 @@ class WebSocketDevice extends import_Device.Device {
       log: console.debug
     });
   }
+  /**
+   * Creates objects for the device.
+   */
   async createObjects() {
     await super.createObjects();
     if (this.numSockets > 1) {
@@ -86,6 +93,10 @@ class WebSocketDevice extends import_Device.Device {
       this.client.removeAllListeners("message");
     }
   }
+  /**
+   * Do polling here.
+   * @returns {Promise<void>}
+   */
   async onInterval() {
     await super.onInterval();
     if (this.ready) {
@@ -106,6 +117,9 @@ class WebSocketDevice extends import_Device.Device {
       }
     }
   }
+  /**
+   * Error handler for event base client.
+   */
   async onError(code, err) {
     await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
     if (code || err) {
@@ -122,6 +136,10 @@ class WebSocketDevice extends import_Device.Device {
       this.start();
     }, 1e4);
   }
+  /**
+   * starting communication with device from config.
+   * @returns {Promise<boolean>}
+   */
   async start() {
     await super.start();
     this.client.on("switched", async (val, socket) => {
@@ -139,6 +157,11 @@ class WebSocketDevice extends import_Device.Device {
     this.ready = true;
     this.adapter.log.debug("Setup device event listener.");
   }
+  /**
+   * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
+   * @param id
+   * @param state
+   */
   async handleStateChange(id, state) {
     if (typeof state.val === "boolean") {
       if (!this.loggedIn) {

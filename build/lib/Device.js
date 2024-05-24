@@ -54,6 +54,9 @@ class Device extends import_DeviceInfo.DeviceInfo {
     super(ip, pin, pinEncrypted);
     this.adapter = adapter;
   }
+  /**
+   * Stores device configuration as Device Object in ioBroker Database.
+   */
   async createDeviceObject() {
     if (!this.id) {
       if (!this.mac) {
@@ -82,6 +85,9 @@ class Device extends import_DeviceInfo.DeviceInfo {
       }
     });
   }
+  /**
+   * Creates state-objects for the device.
+   */
   async createObjects() {
     await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.enabled, {
       type: "state",
@@ -127,6 +133,9 @@ class Device extends import_DeviceInfo.DeviceInfo {
     this.ready = false;
     this.loggedIn = false;
   }
+  /**
+   * Starts log in for device. Needs to be done before additional commands can work.
+   **/
   async login() {
     try {
       const loginResult = await this.client.login();
@@ -158,6 +167,10 @@ class Device extends import_DeviceInfo.DeviceInfo {
     }
     return this.loggedIn;
   }
+  /**
+   * Identification of device needs to happen after successful login.
+   * Problem: Maybe needs to create new object of new type. Hm...
+   */
   async identify() {
     if (!this.name) {
       this.name = this.model;
@@ -179,6 +192,10 @@ class Device extends import_DeviceInfo.DeviceInfo {
     }
     return code;
   }
+  /**
+   * Do polling here.
+   * @returns {Promise<void>}
+   */
   async onInterval() {
     try {
       if (!this.loggedIn) {
@@ -202,6 +219,10 @@ class Device extends import_DeviceInfo.DeviceInfo {
       );
     }
   }
+  /**
+   * starting communication with device from config.
+   * @returns {Promise<boolean>}
+   */
   async start() {
     if (this.ready) {
       this.stop();
@@ -243,6 +264,11 @@ class Device extends import_DeviceInfo.DeviceInfo {
       }
     }
   }
+  /**
+   * process a state change.
+   * @param _id
+   * @param _state
+   */
   async handleStateChange(_id, _state) {
     if (this.loggedIn) {
       await this.login();

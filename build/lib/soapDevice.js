@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -41,6 +45,9 @@ class SoapDevice extends import_Device.Device {
       url: "http://" + this.ip + "/HNAP1"
     });
   }
+  /**
+   * Creates objects for the device.
+   */
   async createObjects() {
     await super.createObjects();
     await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.reboot, {
@@ -56,6 +63,11 @@ class SoapDevice extends import_Device.Device {
     });
     await this.adapter.subscribeStatesAsync(this.id + import_suffixes.Suffixes.reboot);
   }
+  /**
+   * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
+   * @param id
+   * @param _state
+   */
   async handleStateChange(id, _state) {
     if (this.loggedIn) {
       await this.login();
@@ -96,10 +108,14 @@ class SoapDevice extends import_Device.Device {
 class SoapSwitch extends SoapDevice {
   constructor() {
     super(...arguments);
+    //currently only know DSP-W215 as soap switch which has all those.
     this.hasTemp = true;
     this.hasPower = true;
     this.hasTotalPower = true;
   }
+  /**
+   * Creates objects for the device.
+   */
   async createObjects() {
     await super.createObjects();
     await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.state, {
@@ -151,6 +167,10 @@ class SoapSwitch extends SoapDevice {
       native: {}
     });
   }
+  /**
+   * Do polling here.
+   * @returns {Promise<void>}
+   */
   async onInterval() {
     await super.onInterval();
     if (this.ready) {
@@ -174,6 +194,11 @@ class SoapSwitch extends SoapDevice {
       }
     }
   }
+  /**
+   * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
+   * @param id
+   * @param state
+   */
   async handleStateChange(id, state) {
     await super.handleStateChange(id, state);
     if (typeof state.val === "boolean") {
@@ -192,6 +217,10 @@ class SoapSwitch extends SoapDevice {
   }
 }
 class SoapMotionDetector extends SoapDevice {
+  /**
+   * Do polling here.
+   * @returns {Promise<void>}
+   */
   async onInterval() {
     await super.onInterval();
     if (this.ready) {
@@ -210,6 +239,9 @@ class SoapMotionDetector extends SoapDevice {
       }
     }
   }
+  /**
+   * Creates objects for the device.
+   */
   async createObjects() {
     await super.createObjects();
     await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.state, {

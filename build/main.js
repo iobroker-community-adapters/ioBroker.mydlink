@@ -14,6 +14,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -27,14 +31,35 @@ class Mydlink extends utils.Adapter {
       ...options,
       name: "mydlink"
     });
+    /**
+     * Array of devices.
+     *  Device consists of:
+     *      config: which includes IP, PIN, ... set by the user
+     *      client: soapclient for interaction with device
+     * @type {Array<Device>}
+     */
     this.devices = [];
+    /**
+     * Store devices here, that we only have information from, but can not yet talk to.
+     * Especially if model is missing, and we currently can not retrieve it (because device not online)
+     * This will happen.
+     */
     this.unidentifiedDevices = [];
+    /**
+     * Auto-detected devices. Store here and aggregate until we are sure it is mydlink and have mac
+     *  -> multiple messages.
+     * @type {{}}
+     */
     this.autoDetector = void 0;
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
+  /**
+   * deletes all objects of a device and the device itself (deleteDeviceAsync does not work somehow...?)
+   * @param {Device} device
+   */
   async deleteDeviceFull(device) {
     device.stop();
     if (this.autoDetector) {
@@ -59,6 +84,9 @@ class Mydlink extends utils.Adapter {
       this.log.error("Error during deletion of " + device.id + ": " + e.stack);
     }
   }
+  /**
+   * Is called when databases are connected and adapter received configuration.
+   */
   async onReady() {
     const systemConfig = await this.getForeignObjectAsync("system.config");
     if (systemConfig) {
@@ -134,6 +162,9 @@ class Mydlink extends utils.Adapter {
       });
     }
   }
+  /**
+   * Is called when adapter shuts down - callback has to be called under any circumstances!
+   */
   onUnload(callback) {
     try {
       this.log.debug("Stop polling");
@@ -149,6 +180,9 @@ class Mydlink extends utils.Adapter {
       callback();
     }
   }
+  /**
+   * Is called if a subscribed state changes
+   */
   async onStateChange(id, state) {
     if (state) {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
@@ -163,6 +197,11 @@ class Mydlink extends utils.Adapter {
       }
     }
   }
+  // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
+  // /**
+  //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
+  //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
+  //  */
   async onMessage(obj) {
     if (typeof obj === "object" && obj.message) {
       switch (obj.command) {

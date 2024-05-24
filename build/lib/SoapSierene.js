@@ -30,6 +30,11 @@ class SoapSiren extends import_soapDevice.SoapDevice {
     this.volume = 100;
     this.duration = 10;
   }
+  /**
+   * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
+   * @param id
+   * @param state
+   */
   async handleStateChange(id, state) {
     await super.handleStateChange(id, state);
     if (id.endsWith(import_suffixes.Suffixes.state)) {
@@ -72,6 +77,9 @@ class SoapSiren extends import_soapDevice.SoapDevice {
       }
     }
   }
+  /**
+   * Creates objects for the device.
+   */
   async createObjects() {
     await super.createObjects();
     await this.adapter.setObjectNotExistsAsync(this.id + import_suffixes.Suffixes.state, {
@@ -153,6 +161,10 @@ class SoapSiren extends import_soapDevice.SoapDevice {
       this.duration = state.val;
     }
   }
+  /**
+   * Do polling here.
+   * @returns {Promise<void>}
+   */
   async onInterval() {
     await super.onInterval();
     if (this.ready) {

@@ -52,6 +52,15 @@ const KnownDevices = {
     hasLastDetected: false,
     DeviceType: import_SoapSierene.SoapSiren
   },
+  /*'DCH-S160-UNTESTED': {
+      type: 'Water detection', //'sensor.alarm.flood'
+      canSwitchOnOff: false,
+      hasTemp: false,
+      hasPower: false,
+      hasTotalPower: false,
+      hasLastDetected: true,
+      DeviceType: Device
+  },*/
   "DSP-W115": {
     type: "Smart plug",
     canSwitchOnOff: true,

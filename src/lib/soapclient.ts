@@ -62,7 +62,7 @@ function hmac(key : string, challenge : string): string {
  * Creates a soapClient.
  * @param opt - parameters, must have url, user and password.
  */
-export const soapClient = function (opt = { url: '', user: '', password: ''}) {
+export const soapClient = function (opt = { url: '', user: '', password: ''}) : Record<string, unknown> {
     const HNAP_AUTH = {
         url: opt.url || '',
         user: opt.user || '',

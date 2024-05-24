@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -58,6 +62,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
   };
   const agent = new import_http.default.Agent({
     keepAlive: true,
+    //maxSockets: 1,
     keepAliveMsecs: 6e4,
     timeout: 1e4
   });
@@ -93,6 +98,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
           "cookie": "uid=" + HNAP_AUTH.cookie
         },
         timeout: 1e4,
+        //timeout in ms
         httpAgent: agent
       }
     ).then(function(response) {
@@ -165,7 +171,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     return "<Threshold>28</Threshold><Percentage>70</Percentage><PeriodicType>Weekly</PeriodicType><StartTime>1</StartTime>";
   }
   function getHnapAuth(SoapAction, privateKey) {
-    const current_time = new Date();
+    const current_time = /* @__PURE__ */ new Date();
     const time_stamp = Math.round(current_time.getTime() / 1e3);
     const auth = hmac(privateKey, time_stamp + SoapAction);
     return auth + " " + time_stamp;
@@ -202,6 +208,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       HNAP_AUTH.url,
       requestBody(HNAP_LOGIN_METHOD, loginRequest()),
       {
+        //first request challenge and stuff
         headers: {
           "Content-Type": "text/xml; charset=utf-8",
           "SOAPAction": '"' + HNAP1_XMLNS + HNAP_LOGIN_METHOD + '"',
@@ -245,44 +252,61 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     disconnect: function() {
       agent.destroy();
     },
+    /**
+     * Switches Plug
+     * @param {boolean} on target status
+     * @returns {Promise<*>}
+     */
     switch: function(on) {
       return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, on)));
     },
+    //switches plug on
     on: function() {
       return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, true)));
     },
+    //switches plug off
     off: function() {
       return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, false)));
     },
+    //polls current state
     state: async function() {
       const val = await soapAction("GetSocketSettings", "OPStatus", requestBody("GetSocketSettings", moduleParameters(1)));
       return val === "true";
     },
+    //polls last detection
     lastDetection: async function() {
       const result = await soapAction("GetLatestDetection", "LatestDetectTime", requestBody("GetLatestDetection", moduleParameters(1)));
       return result * 1e3;
     },
+    //polls power consumption
     consumption: async function() {
       const result = await soapAction("GetCurrentPowerConsumption", "CurrentConsumption", requestBody("GetCurrentPowerConsumption", moduleParameters(2)));
       return Number(result);
     },
+    //polls total power consumption
     totalConsumption: async function() {
       const result = await soapAction("GetPMWarningThreshold", "TotalConsumption", requestBody("GetPMWarningThreshold", moduleParameters(2)));
       return Number(result);
     },
+    //polls current temperature
     temperature: async function() {
       const result = await soapAction("GetCurrentTemperature", "CurrentTemperature", requestBody("GetCurrentTemperature", moduleParameters(3)));
       return Number(result);
     },
+    //gets information about Wi-Fi
     getAPClientSettings: function() {
       return soapAction("GetAPClientSettings", "GetAPClientSettingsResult", requestBody("GetAPClientSettings", radioParameters("RADIO_2.4GHz")));
     },
+    //set power warning?
     setPowerWarning: function() {
       return soapAction("SetPMWarningThreshold", "SetPMWarningThresholdResult", requestBody("SetPMWarningThreshold", powerWarningParameters()));
     },
+    //poll power warning
     getPowerWarning: function() {
       return soapAction("GetPMWarningThreshold", "GetPMWarningThresholdResult", requestBody("GetPMWarningThreshold", moduleParameters(2)));
     },
+    //returns model name and firmware version. Could be very interesting for supporting additional devices.
+    //also useful to know which states to create for a device (i.e. plug or motion detection)
     getDeviceSettings: function() {
       return soapAction(
         "GetDeviceSettings",
@@ -295,10 +319,12 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
           "FirmwareVersion",
           "PresentationURL",
           "ModuleTypes"
+          //not yet helpfully implemented. Hm
         ],
         requestBody("GetDeviceSettings", "")
       );
     },
+    //not very interesting, returns timezone and set locale.
     getDeviceSettings2: function() {
       return soapAction("GetDeviceSettings2", "GetDeviceSettings2Result", requestBody("GetDeviceSettings2", ""));
     },
@@ -317,9 +343,14 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     latestDetection: function() {
       return soapAction("GetLatestDetection", "GetLatestDetectionResult", requestBody("GetLatestDetection", moduleParameters(2)));
     },
+    //reboot device
     reboot: function() {
       return soapAction("Reboot", "RebootResult", requestBody("Reboot", ""));
     },
+    /**
+     * Returns true if device is ready.
+     * @returns {Promise<boolean>}
+     */
     isDeviceReady: async function() {
       const result = await soapAction("IsDeviceReady", "IsDeviceReadyResult", requestBody("IsDeviceReady", ""));
       return result === "OK";
@@ -333,6 +364,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     getModuleGroup: function() {
       return soapAction("GetModuleGroup", "GetModuleGroupResult", requestBody("GetModuleGroup", groupParameters(0)));
     },
+    //get actions supported by module
     getModuleSOAPActions: function(module2 = 0) {
       return soapAction("GetModuleSOAPActions", "SOAPActions", requestBody("GetModuleSOAPActions", moduleParameters(module2)));
     },

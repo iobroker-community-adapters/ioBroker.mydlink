@@ -32,27 +32,86 @@ function encryptDecrypt(key, value) {
   return result;
 }
 class DeviceInfo {
+  /**
+   * Create DeviceInfo only from Ip and Pin, old createDeviceFromIpAndPin
+   * @param ip
+   * @param pin
+   * @param pinEncrypted - is the supplied pin encrypted?
+   * @constructor
+   */
   constructor(ip, pin, pinEncrypted) {
+    /**
+     * pin of device, needed for login. Should be protected.
+     */
     this.pinDecrypted = "";
+    /**
+     * pin of device, needed for login. Should be protected.
+     */
     this.pinEncrypted = "";
+    /**
+     * mac of device, used as base for ID. Should not change.
+     */
     this.mac = "";
+    /**
+     * id of device, derived from MAC and usable as part of ioBroker object id.
+     */
     this.id = "";
+    /**
+     * name of device, used for easier debug output. ;-) Should be derived from user / object settings
+     */
     this.name = "";
+    /**
+     * did we log in or do we need to try that again?
+     */
     this.loggedIn = false;
+    /**
+     * were we able to identify the device, yet, i.e. determine the model and see if right device is at the IP?
+     */
     this.identified = false;
+    /**
+     * device is ready to report / receive commands
+     */
     this.ready = false;
+    /**
+     * prevent to print loginError on every poll.
+     */
     this.loginErrorPrinted = false;
+    /**
+     * Should we poll? If so, how often?
+     */
     this.pollInterval = 3e4;
+    /**
+     * handle for the pollInterval. Used to clear it on exit.
+     * (is a timeout handle!!) (might also be used to retry login, even if no polling is enabled!)
+     */
     this.intervalHandle = void 0;
+    /**
+     * Model of the device.
+     */
     this.model = "";
+    /**
+     * is device enabled? if not -> don't look for it.
+     */
     this.enabled = true;
+    /**
+     * How to get rid of that here?? Hm...
+     */
     this.isWebsocket = false;
     this.ip = ip;
     this.setPin(pin, pinEncrypted);
   }
+  /**
+   * Used to set secret from main.ts -> so we can use it here to decrypt stuff if necessary.
+   * @param secret
+   */
   static setSecret(secret) {
     DeviceInfo.secret = secret;
   }
+  /**
+   * Set Pin, please supply if it is encrypted or decrypted.
+   * @param pin
+   * @param encrypted
+   */
   setPin(pin, encrypted = false) {
     if (encrypted) {
       this.pinEncrypted = pin;
@@ -62,6 +121,9 @@ class DeviceInfo {
       this.pinDecrypted = pin;
     }
   }
+  /**
+   * create id from mac:
+   */
   idFromMac() {
     this.id = this.mac.toUpperCase().replace(/:/g, "");
   }
