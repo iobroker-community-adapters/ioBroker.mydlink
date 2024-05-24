@@ -8,7 +8,7 @@ export type TableDevice = {
     pin: string;
     pollInterval?: number;
     enabled?: boolean;
-    [key: string]: string | number | boolean;
+    [key: string]: string | number | boolean | undefined;
 }
 
 /**

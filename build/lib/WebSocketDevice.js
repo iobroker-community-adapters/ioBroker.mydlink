@@ -37,6 +37,7 @@ var import_axios = __toESM(require("axios"));
 var import_dlink_websocketclient = __toESM(require("dlink_websocketclient"));
 class WebSocketDevice extends import_Device.Device {
   constructor(adapter, ip, pin, pinEncrypted) {
+    var _a;
     super(adapter, ip, pin, pinEncrypted);
     this.numSockets = 1;
     this.isWebsocket = true;
@@ -44,7 +45,7 @@ class WebSocketDevice extends import_Device.Device {
       ip: this.ip,
       pin: this.pinDecrypted,
       keepAlive: 5,
-      useTelnetForToken: this.pinDecrypted.toUpperCase() === "TELNET",
+      useTelnetForToken: ((_a = this.pinDecrypted) == null ? void 0 : _a.toUpperCase()) === "TELNET",
       log: console.debug
     });
   }
