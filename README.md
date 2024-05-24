@@ -67,7 +67,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	Placeholder for next versions (this needs to be indented):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.3.6 (2024-05-24)
 * fixed: crash with empty pin.
 
 ### 1.3.5 (2023-10-30)

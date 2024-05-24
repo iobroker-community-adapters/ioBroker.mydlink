@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "1.3.5",
+    "version": "1.3.6",
     "news": {
+      "1.3.6": {
+        "en": "fixed: crash with empty pin.",
+        "de": "fixiert: absturz mit leerem stift.",
+        "ru": "фиксируется: крушение с пустым штырем.",
+        "pt": "fixo: acidente com pino vazio.",
+        "nl": "vast: crash met lege pin.",
+        "fr": "corrigé: crash avec une broche vide.",
+        "it": "fisso: crash con perno vuoto.",
+        "es": "fijo: choca con pin vacío.",
+        "pl": "stałe: zderzenie z pustym szpilkiem.",
+        "uk": "фіксована: аварійна з порожнім шпилькою.",
+        "zh-cn": "固定 : 用空针崩溃 ."
+      },
       "1.3.5": {
         "en": "fixed: wrong type warnings with legacy devices",
         "de": "fixed: falsche typwarnungen mit altgeräten",
@@ -80,18 +93,6 @@
         "pl": "przepracowywane kody do pisemnego (pease report error / facts that work worse than before)\ndodano: przycisk rebootu dla urządzeń SOAP (seemy, które mają tendencję do umierania, są już serwerami)\n: wsparcie dla urządzeń syrenowych\ndodano: status połączenia urządzenia wyświetlany w admininie.\nzniesiony: info.connection state.",
         "uk": "перероблений код на тип-script (повідомлення помилок / речей, які працюють гірше ніж раніше)\nдоданий: перезавантаження кнопки для пристроїв SOAP (див. їх, як правило, померти зараз сервери пішли)\nдоданий: підтримка пристроїв siren\nдодано: стан підключення пристрою відображається в адмін.\nвидалено: info.connection state.",
         "zh-cn": "改写成类写法(报告错误/工作比以前更加糟糕)\n增加:对SOAP装置的重新安排和顿(见它们现在往往死于服务器)\n增加:支持兄弟装置\n添加:在注释中展示的装置连接状况。.\n删除:集中国家。."
-      },
-      "1.2.1": {
-        "en": "fix release...",
-        "de": "wiederherstellen.",
-        "ru": "исправить релиз.",
-        "pt": "corrigir a liberação.",
-        "nl": "loslaten.",
-        "fr": "correction.",
-        "it": "risolvere il rilascio.",
-        "es": "arregla la liberación.",
-        "pl": "reaktywacja.",
-        "zh-cn": "fix 释放。."
       }
     },
     "title": "mydlink",
