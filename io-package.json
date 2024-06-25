@@ -95,7 +95,6 @@
         "zh-cn": "改写成类写法(报告错误/工作比以前更加糟糕)\n增加:对SOAP装置的重新安排和顿(见它们现在往往死于服务器)\n增加:支持兄弟装置\n添加:在注释中展示的装置连接状况。.\n删除:集中国家。."
       }
     },
-    "title": "mydlink",
     "titleLang": {
       "en": "mydlink",
       "de": "mydlink",
@@ -106,19 +105,21 @@
       "it": "mydlink",
       "es": "mydlink",
       "pl": "mydlink",
+      "uk": "mydlink",
       "zh-cn": "mydlink"
     },
     "desc": {
       "en": "connects mydlink plugs and sensors to ioBroker",
-      "de": "verbindet mydlink Stecker und Sensoren mit ioBroker",
-      "ru": "подключает вилки и датчики mydlink к ioBroker",
-      "pt": "conecta plugues mydlink e sensores ao ioBroker",
-      "nl": "verbindt mydlink-stekkers en -sensoren met ioBroker",
-      "fr": "connecte les prises et capteurs mydlink à ioBroker",
-      "it": "collega le spine e i sensori mydlink a ioBroker",
-      "es": "conecta enchufes mydlink y sensores a ioBroker",
-      "pl": "łączy wtyczki i czujniki mydlink z ioBroker",
-      "zh-cn": "将 mydlink 插头和传感器连接到 ioBroker"
+      "de": "verbindet Mydlink-Stecker und Sensoren mit ioBroker",
+      "ru": "подключает плагины и датчики mydlink к ioBroker",
+      "pt": "conecta plugs mydlink e sensores ao ioBroker",
+      "nl": "verbindt mydlink pluggen en sensoren met ioBroker",
+      "fr": "connecte les plugs et capteurs mydlink à ioBroker",
+      "it": "collega spine e sensori mydlink a ioBroker",
+      "es": "conecta los conectores y sensores de midlink a ioBroker",
+      "pl": "łączy wtyczki i czujniki mydlink z joBrokerem",
+      "uk": "підключає мідлінк штекер і датчики до ioBroker",
+      "zh-cn": "连接 Mydlink 插件和传感器到 ioBroker"
     },
     "authors": [
       "Garfonso <garfonso@mobo.info>"
@@ -130,9 +131,11 @@
       "dsp-w115",
       "dch-s150"
     ],
-    "license": "MIT",
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
     "platform": "Javascript/Node.js",
-    "main": "build/main.js",
     "icon": "mydlink.png",
     "enabled": true,
     "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.mydlink/master/admin/mydlink.png",
@@ -146,6 +149,7 @@
     "adminUI": {
       "config": "materialize"
     },
+    "tier": 2,
     "docs": {
       "de": "docs/de/README.md",
       "en": "docs/en/README.md"
