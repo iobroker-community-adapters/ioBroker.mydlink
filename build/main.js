@@ -27,31 +27,31 @@ var import_autoDetect = require("./lib/autoDetect");
 var import_TableDevice = require("./lib/TableDevice");
 var import_DeviceFactory = require("./lib/DeviceFactory");
 class Mydlink extends utils.Adapter {
+  /**
+   * Array of devices.
+   *  Device consists of:
+   *      config: which includes IP, PIN, ... set by the user
+   *      client: soapclient for interaction with device
+   * @type {Array<Device>}
+   */
+  devices = [];
+  /**
+   * Store devices here, that we only have information from, but can not yet talk to.
+   * Especially if model is missing, and we currently can not retrieve it (because device not online)
+   * This will happen.
+   */
+  unidentifiedDevices = [];
+  /**
+   * Auto-detected devices. Store here and aggregate until we are sure it is mydlink and have mac
+   *  -> multiple messages.
+   * @type {{}}
+   */
+  autoDetector = void 0;
   constructor(options = {}) {
     super({
       ...options,
       name: "mydlink"
     });
-    /**
-     * Array of devices.
-     *  Device consists of:
-     *      config: which includes IP, PIN, ... set by the user
-     *      client: soapclient for interaction with device
-     * @type {Array<Device>}
-     */
-    this.devices = [];
-    /**
-     * Store devices here, that we only have information from, but can not yet talk to.
-     * Especially if model is missing, and we currently can not retrieve it (because device not online)
-     * This will happen.
-     */
-    this.unidentifiedDevices = [];
-    /**
-     * Auto-detected devices. Store here and aggregate until we are sure it is mydlink and have mac
-     *  -> multiple messages.
-     * @type {{}}
-     */
-    this.autoDetector = void 0;
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("message", this.onMessage.bind(this));

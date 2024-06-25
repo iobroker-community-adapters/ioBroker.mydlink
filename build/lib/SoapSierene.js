@@ -24,12 +24,9 @@ module.exports = __toCommonJS(SoapSierene_exports);
 var import_suffixes = require("./suffixes");
 var import_soapDevice = require("./soapDevice");
 class SoapSiren extends import_soapDevice.SoapDevice {
-  constructor() {
-    super(...arguments);
-    this.soundToPlay = 1;
-    this.volume = 100;
-    this.duration = 10;
-  }
+  soundToPlay = 1;
+  volume = 100;
+  duration = 10;
   /**
    * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
    * @param id

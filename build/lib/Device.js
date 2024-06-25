@@ -27,19 +27,19 @@ module.exports = __toCommonJS(Device_exports);
 var import_DeviceInfo = require("./DeviceInfo");
 var import_suffixes = require("./suffixes");
 class WrongMacError extends Error {
+  static errorName = "WRONGMAC";
+  name = "WRONGMAC";
   constructor(message) {
     super(message);
-    this.name = "WRONGMAC";
   }
 }
-WrongMacError.errorName = "WRONGMAC";
 class WrongModelError extends Error {
+  static errorName = "WRONGMODEL";
+  name = "WRONGMODEL";
   constructor(message) {
     super(message);
-    this.name = "WRONGMODEL";
   }
 }
-WrongModelError.errorName = "WRONGMODEL";
 function processNetworkError(e) {
   if (e.response) {
     return e.response.status;
@@ -50,6 +50,7 @@ function processNetworkError(e) {
   }
 }
 class Device extends import_DeviceInfo.DeviceInfo {
+  adapter;
   constructor(adapter, ip, pin, pinEncrypted) {
     super(ip, pin, pinEncrypted);
     this.adapter = adapter;

@@ -39,6 +39,9 @@ var import_http = __toESM(require("http"));
 const HNAP1_XMLNS = "http://purenetworks.com/HNAP1/";
 const HNAP_LOGIN_METHOD = "Login";
 class HNAP_ERROR extends Error {
+  errno;
+  code;
+  body;
   constructor(message, errno, body, code = -1) {
     super(message);
     this.errno = errno;

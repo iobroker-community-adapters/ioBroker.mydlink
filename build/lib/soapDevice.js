@@ -37,6 +37,7 @@ var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
 var import_soapclient = __toESM(require("./soapclient"));
 class SoapDevice extends import_Device.Device {
+  client;
   constructor(adapter, ip, pin, pinEncrypted) {
     super(adapter, ip, pin, pinEncrypted);
     this.client = (0, import_soapclient.default)({
@@ -106,13 +107,10 @@ class SoapDevice extends import_Device.Device {
   }
 }
 class SoapSwitch extends SoapDevice {
-  constructor() {
-    super(...arguments);
-    //currently only know DSP-W215 as soap switch which has all those.
-    this.hasTemp = true;
-    this.hasPower = true;
-    this.hasTotalPower = true;
-  }
+  //currently only know DSP-W215 as soap switch which has all those.
+  hasTemp = true;
+  hasPower = true;
+  hasTotalPower = true;
   /**
    * Creates objects for the device.
    */

@@ -36,10 +36,11 @@ var import_suffixes = require("./suffixes");
 var import_axios = __toESM(require("axios"));
 var import_dlink_websocketclient = __toESM(require("dlink_websocketclient"));
 class WebSocketDevice extends import_Device.Device {
+  client;
+  numSockets = 1;
   constructor(adapter, ip, pin, pinEncrypted) {
     var _a;
     super(adapter, ip, pin, pinEncrypted);
-    this.numSockets = 1;
     this.isWebsocket = true;
     this.client = new import_dlink_websocketclient.default({
       ip: this.ip,

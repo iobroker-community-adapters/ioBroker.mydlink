@@ -34,23 +34,10 @@ module.exports = __toCommonJS(autoDetect_exports);
 var import_mdns_discovery = __toESM(require("mdns-discovery"));
 var import_WebSocketDevice = require("./WebSocketDevice");
 class AutoDetector {
-  constructor(adapter) {
-    this.detectedDevices = {};
-    this.debug = false;
-    this.adapter = adapter;
-    this.mdns = new import_mdns_discovery.default({
-      timeout: 0,
-      //0 == stay active??
-      name: ["_dhnap._tcp.local", "_dcp._tcp.local"],
-      find: "*",
-      broadcast: false
-    });
-    this.logDebug("Auto detection started");
-    if (this.mdns !== void 0) {
-      this.mdns.on("entry", this.onDetection.bind(this));
-      this.mdns.run(() => adapter.log.info("Discovery done"));
-    }
-  }
+  mdns;
+  adapter;
+  detectedDevices = {};
+  debug = false;
   logDebug(message) {
     if (this.debug) {
       this.adapter.log.debug(message);
@@ -163,6 +150,21 @@ class AutoDetector {
   close() {
     if (this.mdns && typeof this.mdns.close === "function") {
       this.mdns.close();
+    }
+  }
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.mdns = new import_mdns_discovery.default({
+      timeout: 0,
+      //0 == stay active??
+      name: ["_dhnap._tcp.local", "_dcp._tcp.local"],
+      find: "*",
+      broadcast: false
+    });
+    this.logDebug("Auto detection started");
+    if (this.mdns !== void 0) {
+      this.mdns.on("entry", this.onDetection.bind(this));
+      this.mdns.run(() => adapter.log.info("Discovery done"));
     }
   }
 }
