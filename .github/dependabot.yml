@@ -3,21 +3,21 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
       time: "04:00"
       timezone: Europe/Berlin
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 5
     assignees:
       - Garfonso
 
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
       time: "04:00"
       timezone: Europe/Berlin
     versioning-strategy: increase
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 5
     assignees:
       - Garfonso
     ignore:
@@ -29,10 +29,10 @@ updates:
   - package-ecosystem: npm
     directory: "/src"
     schedule:
-      interval: monthly
+      interval: weekly
       time: "04:00"
       timezone: Europe/Berlin
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 5
     assignees:
       - Garfonso
     versioning-strategy: increase
