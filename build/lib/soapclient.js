@@ -70,7 +70,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     timeout: 1e4
   });
   function save_login_result(body) {
-    const doc = new import_xmldom.DOMParser().parseFromString(body);
+    const doc = new import_xmldom.DOMParser().parseFromString(body, "application/xml");
     if (doc) {
       HNAP_AUTH.result = doc.getElementsByTagName(HNAP_LOGIN_METHOD + "Result").item(0).firstChild.nodeValue;
       HNAP_AUTH.challenge = doc.getElementsByTagName("Challenge").item(0).firstChild.nodeValue;
@@ -163,7 +163,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       return results;
     } else {
       if (body && elementName && typeof elementName === "string") {
-        const doc = new import_xmldom.DOMParser().parseFromString(body);
+        const doc = new import_xmldom.DOMParser().parseFromString(body, "application/xml");
         const node = doc.getElementsByTagName(elementName).item(0);
         const result = node && node.firstChild ? node.firstChild.nodeValue : "ERROR";
         if (result === null) {

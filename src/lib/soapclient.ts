@@ -85,7 +85,7 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
 
     //extract tokens from login response into HNAP_AUTH object
     function save_login_result(body : string) : void {
-        const doc = new DOMParser().parseFromString(body);
+        const doc = new DOMParser().parseFromString(body, 'application/xml');
         if (doc) {
             HNAP_AUTH.result = doc.getElementsByTagName(HNAP_LOGIN_METHOD + 'Result')!.item(0)!.firstChild!.nodeValue!;
             HNAP_AUTH.challenge = doc.getElementsByTagName('Challenge')!.item(0)!.firstChild!.nodeValue!;
@@ -269,7 +269,7 @@ export const soapClient = function (opt = { url: '', user: '', password: ''}) : 
             return results;
         } else {
             if (body && elementName && typeof elementName === 'string') {
-                const doc = new DOMParser().parseFromString(body);
+                const doc = new DOMParser().parseFromString(body, 'application/xml');
                 const node = doc.getElementsByTagName(elementName).item(0);
                 // Check that we have children of node.
                 //if (elementName === 'ModuleTypes') {
