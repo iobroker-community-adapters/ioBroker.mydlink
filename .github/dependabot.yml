@@ -1,38 +1,39 @@
+# Dependabot will run on day 24 of each month at 03:55 (Europe/Berlin timezone)
 version: 2
 updates:
-  - package-ecosystem: github-actions
-    directory: "/"
-    schedule:
-      interval: weekly
-      time: "04:00"
-      timezone: Europe/Berlin
-    open-pull-requests-limit: 5
-    assignees:
-      - Garfonso
 
-  - package-ecosystem: npm
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
       time: "04:00"
-      timezone: Europe/Berlin
-    versioning-strategy: increase
-    open-pull-requests-limit: 5
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 15
     assignees:
-      - Garfonso
+      - "Garfonso"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      time: "04:00"
+      timezone: "Europe/Berlin"
+    versioning-strategy: "increase"
+    open-pull-requests-limit: 15
+    assignees:
+      - "Garfonso"
     ignore:
-      # @types/node should always match the minimum major version we support,
-      # so only apply patch and minor updates automatically
       - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
+        update-types:
+          - "version-update:semver-major"
 
-  - package-ecosystem: npm
+  - package-ecosystem: "npm"
     directory: "/src"
     schedule:
-      interval: weekly
+      interval: "weekly"
       time: "04:00"
-      timezone: Europe/Berlin
-    open-pull-requests-limit: 5
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 15
     assignees:
-      - Garfonso
-    versioning-strategy: increase
+      - "Garfonso"
+    versioning-strategy: "increase"
