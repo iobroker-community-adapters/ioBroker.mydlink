@@ -29,7 +29,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^3.2.2",
+    "@iobroker/adapter-core": "^3.3.2",
     "@xmldom/xmldom": "^0.9.8",
     "axios": "^1.7.8",
     "dlink_websocketclient": "^0.5.5",
