@@ -124,17 +124,21 @@ class Mydlink extends utils.Adapter {
                 }
             }
             const device = await createFromObject(this, existingDevice);
-            await device.createDeviceObject(); //store new config.
-            if (existingDevice.native.pinNotEncrypted) {
-                needUpdateConfig = true;
-            }
-            if (found) {
-                await device.start();
-                //keep config and client for later reference.
-                this.devices.push(device);
+            if (device) {
+                await device.createDeviceObject(); //store new config.
+                if (existingDevice.native.pinNotEncrypted) {
+                    needUpdateConfig = true;
+                }
+                if (found) {
+                    await device.start();
+                    //keep config and client for later reference.
+                    this.devices.push(device);
+                } else {
+                    this.log.debug(`Deleting ${device.name}`);
+                    await this.deleteDeviceFull(device);
+                }
             } else {
-                this.log.debug(`Deleting ${device.name}`);
-                await this.deleteDeviceFull(device);
+                this.log.error(`Could not create device for existing device entry: ${existingDevice._id}`);
             }
         }
 
@@ -142,26 +146,31 @@ class Mydlink extends utils.Adapter {
         for (const configDevice of configDevicesToAdd) {
             sanitizeTableDevice(configDevice);
             const device = await createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
-            this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);
-            const oldDevice = this.devices.find(d => d.mac === device.mac);
-            if (oldDevice) {
-                this.log.info(
-                    `Duplicate entry for ${
-                        device.mac
-                    } in config. Trying to rectify. Restart will happen. Affected devices: ${device.name} === ${
-                        configDevice.name
-                    }`,
-                );
-                needUpdateConfig = true;
-            } else {
-                //make sure objects are created:
-                await device.createDeviceObject();
+            if (device) {
+                this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);
 
-                await device.start();
-                //call this here again, to make sure it happens.
-                await device.createDeviceObject(); //store device settings
-                //keep config and client for later reference.
-                this.devices.push(device);
+                const oldDevice = this.devices.find(d => d.mac === device.mac);
+                if (oldDevice) {
+                    this.log.info(
+                        `Duplicate entry for ${
+                            device.mac
+                        } in config. Trying to rectify. Restart will happen. Affected devices: ${device.name} === ${
+                            configDevice.name
+                        }`,
+                    );
+                    needUpdateConfig = true;
+                } else {
+                    //make sure objects are created:
+                    await device.createDeviceObject();
+
+                    await device.start();
+                    //call this here again, to make sure it happens.
+                    await device.createDeviceObject(); //store device settings
+                    //keep config and client for later reference.
+                    this.devices.push(device);
+                }
+            } else {
+                this.log.error(`Could not create device for config entry with IP: ${configDevice.ip}`);
             }
         }
 
@@ -206,7 +215,7 @@ class Mydlink extends utils.Adapter {
 
             this.log.info('cleaned everything up...');
             callback();
-        } catch (e) {
+        } catch (e: any) {
             this.log.error(`Error during unload: ${e}`);
             callback();
         }
@@ -225,7 +234,7 @@ class Mydlink extends utils.Adapter {
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
             //only act if ack = false.
-            if (state.ack === false) {
+            if (!state.ack) {
                 const deviceId = id.split('.')[2]; //0 = adapter, 1 = instance -> 2 = device id.
                 const device = this.devices.find(d => d.id === deviceId);
                 if (device) {
@@ -290,11 +299,18 @@ class Mydlink extends utils.Adapter {
                             },
                             false,
                         );
+                        if (!device) {
+                            this.log.info('could not create device -> error.');
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
+                            }
+                            return;
+                        }
                         try {
                             await device.start();
                             if (device.loggedIn && device.identified) {
                                 //will be false if ip wrong or duplicate mac.
-                                const oldDevice = this.devices.find(d => d.mac === device.mac);
+                                const oldDevice = this.devices.find(d => d.mac === device?.mac);
                                 if (oldDevice) {
                                     device.stop();
                                     device = oldDevice;

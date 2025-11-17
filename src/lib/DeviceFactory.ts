@@ -51,7 +51,10 @@ function sendModelInfoToSentry(adapter: Mydlink, model: string, xml: Record<stri
  * @param configDevice ioBroker device object
  * @returns Promise<Device>
  */
-export async function createFromObject(adapter: Mydlink, configDevice: ioBroker.DeviceObject): Promise<Device> {
+export async function createFromObject(
+    adapter: Mydlink,
+    configDevice: ioBroker.DeviceObject,
+): Promise<Device | undefined> {
     const native = configDevice.native;
     const pinEncrypted = native.mac && !native.pinNotEncrypted;
     if (native.model) {
@@ -102,7 +105,7 @@ export async function createDevice(
         name?: string;
         enabled?: boolean;
     },
-): Promise<Device> {
+): Promise<Device | undefined> {
     const deviceFlags = KnownDevices[params.model];
     let device: SoapDevice | WebSocketDevice;
     if (deviceFlags) {
@@ -116,7 +119,7 @@ export async function createDevice(
             let info: Record<string, string>;
             if (params.isWebsocket) {
                 device = new WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-                const body = await (device as WebSocketDevice).getModelInfoForSentry();
+                const body = await device.getModelInfoForSentry();
                 info = { info: `UNKNOWN WEBSOCKET DEVICE: ${params.model}`, body };
             } else {
                 device = new SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
@@ -125,18 +128,22 @@ export async function createDevice(
             sendModelInfoToSentry(adapter, params.model, info);
         } catch (e: any) {
             adapter.log.error(`Could not send device information to sentry. Please report. Error was: ${e.stack}`);
+            return undefined;
         }
     }
-    device.pollInterval = Number(params.pollInterval || device.pollInterval);
-    device.mac = params.mac || device.mac;
-    device.id = params.id || device.id;
-    if (!device.id) {
-        device.idFromMac();
+
+    if (device !== undefined) {
+        device.pollInterval = Number(params.pollInterval || device.pollInterval);
+        device.mac = params.mac || device.mac;
+        device.id = params.id || device.id;
+        if (!device.id) {
+            device.idFromMac();
+        }
+        device.name = params.name || device.name;
+        device.model = params.model;
+        device.enabled = params.enabled !== undefined ? params.enabled : device.enabled;
+        device.isWebsocket = params.isWebsocket !== undefined ? params.isWebsocket : device.isWebsocket;
     }
-    device.name = params.name || device.name;
-    device.model = params.model;
-    device.enabled = params.enabled !== undefined ? params.enabled : device.enabled;
-    device.isWebsocket = params.isWebsocket !== undefined ? params.isWebsocket : device.isWebsocket;
     return device;
 }
 
@@ -154,7 +161,7 @@ export async function createFromTable(
     tableDevice: TableDevice,
     doDecrypt = false,
     forceWebsocket = false,
-): Promise<Device> {
+): Promise<Device | undefined> {
     const pinEncrypted = doDecrypt && Boolean(tableDevice.mac);
     const mac = tableDevice.mac ? tableDevice.mac.toUpperCase() : '';
 

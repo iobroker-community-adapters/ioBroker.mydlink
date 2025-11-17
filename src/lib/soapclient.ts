@@ -89,10 +89,10 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
     function save_login_result(body: string): void {
         const doc = new DOMParser().parseFromString(body, 'application/xml');
         if (doc) {
-            HNAP_AUTH.result = doc.getElementsByTagName(`${HNAP_LOGIN_METHOD}Result`).item(0).firstChild.nodeValue!;
-            HNAP_AUTH.challenge = doc.getElementsByTagName('Challenge').item(0).firstChild.nodeValue!;
-            HNAP_AUTH.publicKey = doc.getElementsByTagName('PublicKey').item(0).firstChild.nodeValue!;
-            HNAP_AUTH.cookie = doc.getElementsByTagName('Cookie').item(0).firstChild.nodeValue!;
+            HNAP_AUTH.result = doc.getElementsByTagName(`${HNAP_LOGIN_METHOD}Result`).item(0)!.firstChild!.nodeValue!;
+            HNAP_AUTH.challenge = doc.getElementsByTagName('Challenge').item(0)!.firstChild!.nodeValue!;
+            HNAP_AUTH.publicKey = doc.getElementsByTagName('PublicKey').item(0)!.firstChild!.nodeValue!;
+            HNAP_AUTH.cookie = doc.getElementsByTagName('Cookie').item(0)!.firstChild!.nodeValue!;
             HNAP_AUTH.privateKey = hmac(HNAP_AUTH.publicKey + HNAP_AUTH.pwd, HNAP_AUTH.challenge);
         }
     }
@@ -277,7 +277,7 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
     function readResponseValue(
         body: string,
         elementName: string | Array<string>,
-    ): string | number | boolean | Array<string> | Record<string, string> | undefined {
+    ): string | number | boolean | Array<string> | Record<string, string> {
         if (typeof elementName === 'object' && typeof elementName.forEach === 'function') {
             //sloppy isArray check.
             const results = {} as Record<string, string>;
@@ -299,17 +299,20 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
                 //array of values requested like Module Types or SOAP Actions:
                 const results = [] as Array<string>;
                 //console.debug('Have array:', node);
-                Object.keys(node.childNodes).forEach(function (_value: string, key: number) {
-                    const child = node.childNodes[key];
-                    //console.debug('Child:', child);
-                    if (child && child.firstChild) {
-                        results.push(child.firstChild.nodeValue);
-                    }
-                });
+                if (node) {
+                    Object.keys(node.childNodes).forEach(function (_value: string, key: number) {
+                        const child = node.childNodes[key];
+                        //console.debug('Child:', child);
+                        if (child && child.firstChild) {
+                            results.push(child.firstChild.nodeValue!);
+                        }
+                    });
+                }
                 return results;
             }
             return result;
         }
+        return 'ERROR';
     }
 
     async function login(): Promise<boolean> {

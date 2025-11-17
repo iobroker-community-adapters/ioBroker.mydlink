@@ -69,7 +69,7 @@ export class AutoDetector {
             this.logDebug('Maybe detected websocket device');
             console.log(entry);
             //get model:
-            let model: string | undefined = undefined;
+            let model = '';
             if (entry.PTR && entry.PTR.data && typeof entry.PTR.data === 'string') {
                 model = entry.PTR.data.substring(0, 8);
             }
@@ -84,7 +84,7 @@ export class AutoDetector {
                 await newDevice.client.login();
                 newDevice.id = newDevice.client.getDeviceId().toUpperCase();
                 if (newDevice.id) {
-                    newDevice.mac = newDevice.id.match(/.{2}/g).join(':');
+                    newDevice.mac = newDevice.id.match(/.{2}/g)!.join(':');
                     this.logDebug(`Got websocket device ${model} on ${newDevice.ip}`);
                 }
             } catch (e: any) {
