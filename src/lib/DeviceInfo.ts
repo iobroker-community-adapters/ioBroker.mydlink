@@ -1,10 +1,11 @@
 /**
  * Used to encrypt & decrypt pin. Necessary as long as js-controller can't decrypt for us in array structure.
+ *
  * @param key
  * @param value
  * @returns string
  */
-function encryptDecrypt(key : string, value : string) : string {
+function encryptDecrypt(key: string, value: string): string {
     if (!value || !key) {
         return value;
     }
@@ -16,13 +17,14 @@ function encryptDecrypt(key : string, value : string) : string {
 }
 
 export class DeviceInfo {
-    private static secret : string;
+    private static secret: string;
 
     /**
      * Used to set secret from main.ts -> so we can use it here to decrypt stuff if necessary.
+     *
      * @param secret
      */
-    static setSecret (secret : string) : void {
+    static setSecret(secret: string): void {
         DeviceInfo.secret = secret;
     }
 
@@ -41,10 +43,11 @@ export class DeviceInfo {
 
     /**
      * Set Pin, please supply if it is encrypted or decrypted.
+     *
      * @param pin
      * @param encrypted
      */
-    setPin(pin : string, encrypted = false) : void {
+    setPin(pin: string, encrypted = false): void {
         if (!pin) {
             pin = 'INVALID';
         }
@@ -110,20 +113,19 @@ export class DeviceInfo {
     /**
      * create id from mac:
      */
-    idFromMac() : void {
+    idFromMac(): void {
         this.id = this.mac.toUpperCase().replace(/:/g, '');
     }
 
     /**
      * Create DeviceInfo only from Ip and Pin, old createDeviceFromIpAndPin
+     *
      * @param ip
      * @param pin
      * @param pinEncrypted - is the supplied pin encrypted?
-     * @constructor
      */
     constructor(ip: string, pin: string, pinEncrypted: boolean) {
         this.ip = ip;
         this.setPin(pin, pinEncrypted);
     }
-
 }

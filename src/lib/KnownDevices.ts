@@ -1,10 +1,10 @@
 //state will be created if canSwitchOnOff: true or type includes 'detection'
 
-import {WebSocketDevice} from './WebSocketDevice';
-import {SoapMotionDetector, SoapSwitch} from './soapDevice';
-import {SoapSiren} from './SoapSierene';
-import {Mydlink} from './mydlink';
-import {Device} from './Device';
+import { WebSocketDevice } from './WebSocketDevice';
+import { SoapMotionDetector, SoapSwitch } from './soapDevice';
+import { SoapSiren } from './SoapSierene';
+import type { Mydlink } from './mydlink';
+import type { Device } from './Device';
 
 export interface DeviceConstructor<T> {
     new (adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean): T;
@@ -22,7 +22,7 @@ export interface DeviceFlags<Type extends Device> {
     moreSetup?(d: Device): void;
 }
 
-export const KnownDevices : Record<string, DeviceFlags<any>> = {
+export const KnownDevices: Record<string, DeviceFlags<any>> = {
     'DSP-W215': {
         type: 'Smart plug',
         canSwitchOnOff: true,
@@ -30,7 +30,7 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasPower: true,
         hasTotalPower: true,
         hasLastDetected: false,
-        DeviceType: SoapSwitch
+        DeviceType: SoapSwitch,
     },
     'DCH-S150': {
         type: 'Motion detection',
@@ -39,7 +39,7 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasPower: false,
         hasTotalPower: false,
         hasLastDetected: true,
-        DeviceType: SoapMotionDetector
+        DeviceType: SoapMotionDetector,
     },
     'DCH-S220': {
         type: 'Sirene',
@@ -48,7 +48,7 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasPower: false,
         hasTotalPower: false,
         hasLastDetected: false,
-        DeviceType: SoapSiren
+        DeviceType: SoapSiren,
     },
     /*'DCH-S160-UNTESTED': {
         type: 'Water detection', //'sensor.alarm.flood'
@@ -66,7 +66,7 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasPower: false,
         hasTotalPower: false,
         hasLastDetected: false,
-        DeviceType: WebSocketDevice
+        DeviceType: WebSocketDevice,
     },
     'DSP-W118': {
         type: 'Smart plug',
@@ -75,7 +75,7 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasPower: false,
         hasTotalPower: false,
         hasLastDetected: false,
-        DeviceType: WebSocketDevice
+        DeviceType: WebSocketDevice,
     },
     'DSP-W245': {
         type: 'Smart plug',
@@ -86,6 +86,8 @@ export const KnownDevices : Record<string, DeviceFlags<any>> = {
         hasTotalPower: false,
         hasLastDetected: false,
         DeviceType: WebSocketDevice,
-        moreSetup: (device) => { (device as WebSocketDevice).numSockets = 4 }
-    }
+        moreSetup: device => {
+            (device as WebSocketDevice).numSockets = 4;
+        },
+    },
 };

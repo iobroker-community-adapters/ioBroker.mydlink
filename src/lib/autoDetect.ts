@@ -1,6 +1,6 @@
 /// <reference types="./mdns-discovery" />
 
-import { Mydlink } from './mydlink';
+import type { Mydlink } from './mydlink';
 import MulticastDNS from 'mdns-discovery';
 
 import { WebSocketDevice } from './WebSocketDevice';
@@ -14,18 +14,25 @@ export class AutoDetector {
 
     debug = false;
 
-    logDebug(message: string) : void {
+    logDebug(message: string): void {
         if (this.debug) {
             this.adapter.log.debug(message);
         }
     }
 
-    async onDetection(entry : { ip: string, type: string, name: string, mac: string | undefined, PTR: any | undefined, TXT : any | undefined}) : Promise<void> {
+    async onDetection(entry: {
+        ip: string;
+        type: string;
+        name: string;
+        mac: string | undefined;
+        PTR: any | undefined;
+        TXT: any | undefined;
+    }): Promise<void> {
         //format of data: length-byte + text + length-byte + text + length-byte + text ...
-        function extractStringsFromBuffer(buffer : Buffer) : string[] {
+        function extractStringsFromBuffer(buffer: Buffer): string[] {
             let index = 0;
             const strings = [];
-            while(index < buffer.length) {
+            while (index < buffer.length) {
                 const length = buffer.readInt8(index);
                 index += 1;
                 strings.push(buffer.subarray(index, index + length).toString());
@@ -58,11 +65,11 @@ export class AutoDetector {
                 await newDevice.client.login();
                 newDevice.id = newDevice.client.getDeviceId().toUpperCase();
                 if (newDevice.id) {
-                    newDevice.mac = newDevice.id.match(/.{2}/g)!.join(':');
+                    newDevice.mac = newDevice.id.match(/.{2}/g).join(':');
                     this.logDebug(`Got websocket device ${model} on ${newDevice.ip}`);
                 }
             } catch (e: any) {
-                this.logDebug('Could not identify websocket device: ' + e.stack);
+                this.logDebug(`Could not identify websocket device: ${e.stack}`);
             } finally {
                 newDevice.stop();
             }
@@ -74,12 +81,13 @@ export class AutoDetector {
                 if (device.ip === newDevice.ip && device.model !== newDevice.model) {
                     this.logDebug(`Model still differs? ${device.model} != ${newDevice.model}`);
                     if (model && device.isWebsocket) {
-                        this.logDebug('Updated model to ' + model);
+                        this.logDebug(`Updated model to ${model}`);
                         device.model = model;
                         await device.createDeviceObject(); //store new model in config.
                     }
                 }
-            } else { //not known yet, add to detected devices:
+            } else {
+                //not known yet, add to detected devices:
                 this.detectedDevices[entry.ip] = {
                     ip: newDevice.ip,
                     name: entry.name,
@@ -87,7 +95,7 @@ export class AutoDetector {
                     mac: newDevice.mac,
                     mydlink: true,
                     useWebSocket: true,
-                    alreadyPresent: !!device
+                    alreadyPresent: !!device,
                 };
             }
         }
@@ -99,15 +107,15 @@ export class AutoDetector {
             if (!device) {
                 device = {
                     ip: entry.ip,
-                    name: entry.name
+                    name: entry.name,
                 };
             }
 
             //parse buffer:
             const keyValuePairs = extractStringsFromBuffer(entry.TXT.data);
             for (const pair of keyValuePairs) {
-                const [ key, value ] = pair.split('=');
-                switch(key.toLowerCase()) {
+                const [key, value] = pair.split('=');
+                switch (key.toLowerCase()) {
                     //extract mac from buffer:
                     case 'mac': {
                         device.mac = value.toUpperCase();
@@ -143,26 +151,25 @@ export class AutoDetector {
                     }
                     device.alreadyPresent = true;
                 }
-                this.logDebug('Detected Device now is: ' + JSON.stringify(device, null, 2));
+                this.logDebug(`Detected Device now is: ${JSON.stringify(device, null, 2)}`);
             }
         }
     }
 
-    close () : void {
+    close(): void {
         if (this.mdns && typeof this.mdns.close === 'function') {
             this.mdns.close();
         }
     }
 
-    constructor (adapter : Mydlink) {
+    constructor(adapter: Mydlink) {
         this.adapter = adapter;
         this.mdns = new MulticastDNS({
             timeout: 0, //0 == stay active??
-            name: [ '_dhnap._tcp.local', '_dcp._tcp.local' ],
+            name: ['_dhnap._tcp.local', '_dcp._tcp.local'],
             find: '*',
-            broadcast: false
+            broadcast: false,
         });
-
 
         this.logDebug('Auto detection started');
         if (this.mdns !== undefined) {

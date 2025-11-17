@@ -1,7 +1,10 @@
 //Control of Sirens possible because of mtfluds work here: https://github.com/mtflud/DCH-S220-Web-Control
-import {Suffixes} from './suffixes';
-import {SoapDevice} from './soapDevice';
+import { Suffixes } from './suffixes';
+import { SoapDevice } from './soapDevice';
 
+/**
+ *
+ */
 export class SoapSiren extends SoapDevice {
     soundToPlay = 1;
     volume = 100;
@@ -9,10 +12,11 @@ export class SoapSiren extends SoapDevice {
 
     /**
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
+     *
      * @param id
      * @param state
      */
-    async handleStateChange(id : string, state : ioBroker.State) : Promise<void> {
+    async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
         await super.handleStateChange(id, state);
 
         if (id.endsWith(Suffixes.state)) {
@@ -25,7 +29,7 @@ export class SoapSiren extends SoapDevice {
                         newVal = !(await this.client.setAlarmDismissed());
                     }
                     await this.adapter.setStateAsync(id, newVal, true);
-                } catch(e: any) {
+                } catch (e: any) {
                     await this.handleNetworkError(e);
                 }
             } else {
@@ -42,16 +46,22 @@ export class SoapSiren extends SoapDevice {
                 if (typeof state.val === 'number' && state.val >= 1 && state.val <= 100) {
                     this.volume = state.val;
                 } else {
-                    this.adapter.log.warn(`Wrong value ${state.val} for volume. Expected number in range 1-100 for ${id}`);
+                    this.adapter.log.warn(
+                        `Wrong value ${state.val} for volume. Expected number in range 1-100 for ${id}`,
+                    );
                 }
             } else if (id.endsWith(Suffixes.soundDuration)) {
                 if (typeof state.val === 'number' && state.val >= 1 && state.val <= 88888) {
                     this.duration = state.val;
                 } else {
-                    this.adapter.log.warn(`Wrong value ${state.val} for duration. Expected number in range 1-88888 (where 88888 means infinite) for ${id}`);
+                    this.adapter.log.warn(
+                        `Wrong value ${state.val} for duration. Expected number in range 1-88888 (where 88888 means infinite) for ${id}`,
+                    );
                 }
             } else {
-                this.adapter.log.warn(`State ${id} set to ${state.val} and ack=false, but can't control anything with it.`);
+                this.adapter.log.warn(
+                    `State ${id} set to ${state.val} and ack=false, but can't control anything with it.`,
+                );
             }
         }
     }
@@ -59,7 +69,7 @@ export class SoapSiren extends SoapDevice {
     /**
      * Creates objects for the device.
      */
-    async createObjects() : Promise<void> {
+    async createObjects(): Promise<void> {
         await super.createObjects();
 
         //siren uses "state" to switch sirene on/off (or report state)
@@ -70,9 +80,9 @@ export class SoapSiren extends SoapDevice {
                 type: 'boolean',
                 role: 'switch',
                 read: true,
-                write: true
+                write: true,
             },
-            native: {}
+            native: {},
         });
         await this.adapter.subscribeStatesAsync(this.id + Suffixes.state);
 
@@ -88,11 +98,15 @@ export class SoapSiren extends SoapDevice {
                 max: 6,
                 def: 1,
                 states: {
-                    1: 'EMERGENCY', 2: 'FIRE', 3: 'AMBULANCE',
-                    4: 'POLICE', 5: 'DOOR_CHIME', 6: 'BEEP'
-                }
+                    1: 'EMERGENCY',
+                    2: 'FIRE',
+                    3: 'AMBULANCE',
+                    4: 'POLICE',
+                    5: 'DOOR_CHIME',
+                    6: 'BEEP',
+                },
             },
-            native: {}
+            native: {},
         });
         await this.adapter.subscribeStatesAsync(this.id + Suffixes.soundType);
 
@@ -106,9 +120,9 @@ export class SoapSiren extends SoapDevice {
                 write: true,
                 min: 1,
                 max: 100,
-                def: 50
+                def: 50,
             },
-            native: {}
+            native: {},
         });
         await this.adapter.subscribeStatesAsync(this.id + Suffixes.soundVolume);
 
@@ -123,38 +137,39 @@ export class SoapSiren extends SoapDevice {
                 unit: 's',
                 min: 1,
                 max: 88888,
-                def: 60
+                def: 60,
             },
-            native: {}
+            native: {},
         });
         await this.adapter.subscribeStatesAsync(this.id + Suffixes.soundVolume);
 
         //get initial values:
         let state = await this.adapter.getStateAsync(this.id + Suffixes.soundType);
-        if (state && state.val !== null && state.val as number >= 0) {
+        if (state && state.val !== null && (state.val as number) >= 0) {
             this.soundToPlay = state.val as number;
         }
         state = await this.adapter.getStateAsync(this.id + Suffixes.soundVolume);
-        if (state && state.val !== null && state.val as number >= 0) {
+        if (state && state.val !== null && (state.val as number) >= 0) {
             this.volume = state.val as number;
         }
         state = await this.adapter.getStateAsync(this.id + Suffixes.soundDuration);
-        if (state && state.val !== null && state.val as number >= 0) {
+        if (state && state.val !== null && (state.val as number) >= 0) {
             this.duration = state.val as number;
         }
     }
 
     /**
      * Do polling here.
-     * @returns {Promise<void>}
+     *
+     * @returns
      */
-    async onInterval() : Promise<void> {
+    async onInterval(): Promise<void> {
         await super.onInterval();
         // if not ready -> communication did fail, will be retried on next poll.
         if (this.ready) {
             //check switch status:
             try {
-                const val = await this.client.getSoundPlay() as boolean;
+                const val = await this.client.getSoundPlay();
                 await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
             } catch (e: any) {
                 await this.handleNetworkError(e);

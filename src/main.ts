@@ -6,11 +6,12 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 
-import {Device} from './lib/Device';
+import type { Device } from './lib/Device';
 import { DeviceInfo } from './lib/DeviceInfo';
 import { AutoDetector } from './lib/autoDetect';
-import {sanitizeTableDevice, TableDevice} from './lib/TableDevice';
-import {createFromObject, createFromTable} from './lib/DeviceFactory';
+import type { TableDevice } from './lib/TableDevice';
+import { sanitizeTableDevice } from './lib/TableDevice';
+import { createFromObject, createFromTable } from './lib/DeviceFactory';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -18,10 +19,10 @@ import {createFromObject, createFromTable} from './lib/DeviceFactory';
 class Mydlink extends utils.Adapter {
     /**
      * Array of devices.
-     *  Device consists of:
-     *      config: which includes IP, PIN, ... set by the user
-     *      client: soapclient for interaction with device
-     * @type {Array<Device>}
+     * Device consists of:
+     * config: which includes IP, PIN, ... set by the user
+     * client: soapclient for interaction with device
+     *
      */
     devices: Array<Device> = [];
 
@@ -34,8 +35,8 @@ class Mydlink extends utils.Adapter {
 
     /**
      * Auto-detected devices. Store here and aggregate until we are sure it is mydlink and have mac
-     *  -> multiple messages.
-     * @type {{}}
+     * -> multiple messages.
+     *
      */
     autoDetector: AutoDetector | undefined = undefined;
 
@@ -52,9 +53,10 @@ class Mydlink extends utils.Adapter {
 
     /**
      * deletes all objects of a device and the device itself (deleteDeviceAsync does not work somehow...?)
-     * @param {Device} device
+     *
+     * @param device
      */
-    async deleteDeviceFull(device: Device) : Promise<void> {
+    async deleteDeviceFull(device: Device): Promise<void> {
         //stop device:
         device.stop();
 
@@ -70,8 +72,8 @@ class Mydlink extends utils.Adapter {
 
         try {
             const ids = await this.getObjectListAsync({
-                startkey: this.namespace + '.' + device.id,
-                endkey: this.namespace + '.' + device.id + '\u9999'
+                startkey: `${this.namespace}.${device.id}`,
+                endkey: `${this.namespace}.${device.id}\u9999`,
             });
             if (ids) {
                 for (const obj of ids.rows) {
@@ -79,7 +81,7 @@ class Mydlink extends utils.Adapter {
                 }
             }
         } catch (e: any) {
-            this.log.error('Error during deletion of ' + device.id + ': ' + e.stack);
+            this.log.error(`Error during deletion of ${device.id}: ${e.stack}`);
         }
     }
 
@@ -96,7 +98,7 @@ class Mydlink extends utils.Adapter {
         }
 
         // Reset the connection indicator during startup
-        await this.delObjectAsync('info', {recursive: true});
+        await this.delObjectAsync('info', { recursive: true });
 
         //start auto detection:
         this.autoDetector = new AutoDetector(this);
@@ -104,16 +106,18 @@ class Mydlink extends utils.Adapter {
         //start existing devices:
         const existingDevices = await this.getDevicesAsync();
         const configDevicesToAdd = [].concat(this.config.devices) as TableDevice[];
-        this.log.debug('Got existing devices: ' + JSON.stringify(existingDevices, null, 2));
-        this.log.debug('Got config devices: ' + JSON.stringify(configDevicesToAdd, null, 2));
+        this.log.debug(`Got existing devices: ${JSON.stringify(existingDevices, null, 2)}`);
+        this.log.debug(`Got config devices: ${JSON.stringify(configDevicesToAdd, null, 2)}`);
         let needUpdateConfig = false;
         for (const existingDevice of existingDevices) {
             let found = false;
             for (const configDevice of this.config.devices as TableDevice[]) {
                 sanitizeTableDevice(configDevice);
                 needUpdateConfig = !configDevice.mac;
-                if ((configDevice.mac && configDevice.mac === existingDevice.native.mac) ||
-                    (!configDevice.mac && configDevice.ip === existingDevice.native.ip)) {
+                if (
+                    (configDevice.mac && configDevice.mac === existingDevice.native.mac) ||
+                    (!configDevice.mac && configDevice.ip === existingDevice.native.ip)
+                ) {
                     found = true;
 
                     //copy all data from config, because now only config is changed from config dialog.
@@ -136,7 +140,7 @@ class Mydlink extends utils.Adapter {
                 //keep config and client for later reference.
                 this.devices.push(device);
             } else {
-                this.log.debug('Deleting ' + device.name);
+                this.log.debug(`Deleting ${device.name}`);
                 await this.deleteDeviceFull(device);
             }
         }
@@ -145,10 +149,16 @@ class Mydlink extends utils.Adapter {
         for (const configDevice of configDevicesToAdd) {
             sanitizeTableDevice(configDevice);
             const device = await createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
-            this.log.debug('Device ' + device.name + ' in config but not in devices -> create and add.');
+            this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);
             const oldDevice = this.devices.find(d => d.mac === device.mac);
             if (oldDevice) {
-                this.log.info('Duplicate entry for ' + device.mac + ' in config. Trying to rectify. Restart will happen. Affected devices: ' + device.name + ' === ' + configDevice.name);
+                this.log.info(
+                    `Duplicate entry for ${
+                        device.mac
+                    } in config. Trying to rectify. Restart will happen. Affected devices: ${device.name} === ${
+                        configDevice.name
+                    }`,
+                );
                 needUpdateConfig = true;
             } else {
                 //make sure objects are created:
@@ -174,20 +184,22 @@ class Mydlink extends utils.Adapter {
                     enabled: device.enabled,
                     name: device.name,
                     model: device.model,
-                    useWebSocket: device.isWebsocket
+                    useWebSocket: device.isWebsocket,
                 };
                 devices.push(configDevice);
             }
-            await this.extendForeignObjectAsync('system.adapter.' + this.namespace, {
+            await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
                 native: {
-                    devices: devices
-                }
+                    devices: devices,
+                },
             });
         }
     }
 
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
+     *
+     * @param callback
      */
     private onUnload(callback: () => void): void {
         try {
@@ -208,9 +220,13 @@ class Mydlink extends utils.Adapter {
 
     /**
      * Is called if a subscribed state changes
+     *
+     * @param id
+     * @param state
      */
     private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
-        if (state) { //ignore delete state
+        if (state) {
+            //ignore delete state
             // The state was changed
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
@@ -232,9 +248,9 @@ class Mydlink extends utils.Adapter {
     //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
-    private async onMessage(obj: ioBroker.Message) : Promise<void> {
+    private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (typeof obj === 'object' && obj.message) {
-            switch(obj.command) {
+            switch (obj.command) {
                 case 'discovery': {
                     // Send response in callback if required
                     if (obj.callback) {
@@ -252,14 +268,14 @@ class Mydlink extends utils.Adapter {
                 }
                 case 'getDevices': {
                     const tableDevices = [];
-                    for (const device of this.devices)  {
+                    for (const device of this.devices) {
                         const tableDevice = {
                             name: device.name,
                             mac: device.mac,
                             ip: device.ip,
                             pin: device.pinDecrypted,
                             pollInterval: device.pollInterval,
-                            enabled: device.enabled
+                            enabled: device.enabled,
                         };
                         tableDevices.push(tableDevice);
                     }
@@ -269,15 +285,20 @@ class Mydlink extends utils.Adapter {
                     break;
                 }
                 case 'identifyDevice': {
-                    const params = (obj.message) as Record<string, any>;
+                    const params = obj.message as Record<string, any>;
                     if (params && params.ip && params.pin) {
-                        let device = await createFromTable(this, {
-                            ip: params.ip,
-                            pin: params.pin
-                        }, false);
+                        let device = await createFromTable(
+                            this,
+                            {
+                                ip: params.ip,
+                                pin: params.pin,
+                            },
+                            false,
+                        );
                         try {
                             await device.start();
-                            if (device.loggedIn && device.identified) { //will be false if ip wrong or duplicate mac.
+                            if (device.loggedIn && device.identified) {
+                                //will be false if ip wrong or duplicate mac.
                                 const oldDevice = this.devices.find(d => d.mac === device.mac);
                                 if (oldDevice) {
                                     device.stop();
@@ -291,7 +312,7 @@ class Mydlink extends utils.Adapter {
                                     ip: device.ip,
                                     pollInterval: device.pollInterval,
                                     pin: device.pinDecrypted,
-                                    enabled: device.loggedIn && device.identified
+                                    enabled: device.loggedIn && device.identified,
                                 };
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, sendDevice, obj.callback);
@@ -300,8 +321,8 @@ class Mydlink extends utils.Adapter {
                                 this.log.info('could not login -> error.');
                                 this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
                             }
-                        } catch (e : any) {
-                            this.log.info('could not login device: ' + e.stack);
+                        } catch (e: any) {
+                            this.log.info(`could not login device: ${e.stack}`);
                             if (obj.callback) {
                                 this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
                             }
@@ -310,7 +331,7 @@ class Mydlink extends utils.Adapter {
                     break;
                 }
                 default: {
-                    this.log.debug('Unknown command ' + obj.command);
+                    this.log.debug(`Unknown command ${obj.command}`);
                     break;
                 }
             }

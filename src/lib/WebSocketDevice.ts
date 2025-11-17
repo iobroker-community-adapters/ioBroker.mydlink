@@ -1,7 +1,7 @@
-import {Device, processNetworkError, WrongMacError, WrongModelError} from './Device';
-import {Suffixes} from './suffixes';
-import {Mydlink} from './mydlink';
-import {default as axios} from 'axios';
+import { Device, processNetworkError, WrongMacError, WrongModelError } from './Device';
+import { Suffixes } from './suffixes';
+import type { Mydlink } from './mydlink';
+import { default as axios } from 'axios';
 import WebSocketClient from 'dlink_websocketclient';
 
 export class WebSocketDevice extends Device {
@@ -18,29 +18,29 @@ export class WebSocketDevice extends Device {
             pin: this.pinDecrypted,
             keepAlive: 5,
             useTelnetForToken: this.pinDecrypted?.toUpperCase() === 'TELNET',
-            log: console.debug
+            log: console.debug,
         });
     }
 
     /**
      * Creates objects for the device.
      */
-    async createObjects() : Promise<void> {
+    async createObjects(): Promise<void> {
         await super.createObjects();
         if (this.numSockets > 1) {
             //create state for each socket.
             for (let index = 1; index <= this.numSockets; index += 1) {
-                const id = this.id + Suffixes.state + '_' + index;
+                const id = `${this.id + Suffixes.state}_${index}`;
                 await this.adapter.setObjectNotExistsAsync(id, {
                     type: 'state',
                     common: {
-                        name: 'Socket ' + index,
+                        name: `Socket ${index}`,
                         type: 'boolean',
                         role: 'switch',
                         read: true,
-                        write: true
+                        write: true,
                     },
-                    native: { index: index }
+                    native: { index: index },
                 });
                 await this.adapter.subscribeStatesAsync(id);
             }
@@ -53,15 +53,15 @@ export class WebSocketDevice extends Device {
                     type: 'boolean',
                     role: 'switch',
                     read: true,
-                    write: true
+                    write: true,
                 },
-                native: {}
+                native: {},
             });
             await this.adapter.subscribeStatesAsync(this.id + Suffixes.state);
         }
     }
 
-    stop() : void {
+    stop(): void {
         super.stop();
         if (this.client && typeof this.client.removeAllListeners === 'function') {
             this.client.removeAllListeners('switch');
@@ -73,22 +73,23 @@ export class WebSocketDevice extends Device {
 
     /**
      * Do polling here.
-     * @returns {Promise<void>}
+     *
+     * @returns
      */
-    async onInterval() : Promise<void> {
+    async onInterval(): Promise<void> {
         await super.onInterval();
         // if not ready -> communication did fail, will be retried on next poll.
         if (this.ready) {
             try {
                 if (this.numSockets > 1) {
-                    const states = await this.client.state(-1) as Array<boolean>; //get all socket states.
+                    const states = (await this.client.state(-1)) as Array<boolean>; //get all socket states.
                     for (let index = 1; index <= this.numSockets; index += 1) {
-                        const id = this.id + Suffixes.state + '_' + index;
+                        const id = `${this.id + Suffixes.state}_${index}`;
                         const val = states[index - 1];
                         await this.adapter.setStateChangedAsync(id, val, true);
                     }
                 } else {
-                    const val = await this.client.state(0) as boolean;
+                    const val = (await this.client.state(0)) as boolean;
                     await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
                 }
             } catch (e) {
@@ -99,13 +100,16 @@ export class WebSocketDevice extends Device {
 
     /**
      * Error handler for event base client.
+     *
+     * @param code
+     * @param err
      */
-    async onError(code? : number, err? : Error) : Promise<void> {
+    async onError(code?: number, err?: Error): Promise<void> {
         await this.adapter.setStateAsync(this.id + Suffixes.unreachable, true, true);
         if (code || err) {
-            this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${(err ? err.stack : err)}`);
+            this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
         } else {
-            this.adapter.log.debug(this.name + ': Socket closed.');
+            this.adapter.log.debug(`${this.name}: Socket closed.`);
         }
         this.stop();
         this.ready = false;
@@ -120,24 +124,25 @@ export class WebSocketDevice extends Device {
 
     /**
      * starting communication with device from config.
-     * @returns {Promise<boolean>}
+     *
+     * @returns
      */
-    async start() : Promise<void> {
+    async start(): Promise<void> {
         await super.start();
 
         //event listener:
-        this.client.on('switched', async (val : boolean, socket : number) => {
+        this.client.on('switched', async (val: boolean, socket: number) => {
             this.adapter.log.debug(`Event from device ${socket} now ${val}`);
             if (this.numSockets > 1) {
-                await this.adapter.setStateAsync(this.id + Suffixes.state + '_' + (socket + 1), val, true);
+                await this.adapter.setStateAsync(`${this.id + Suffixes.state}_${socket + 1}`, val, true);
             } else {
                 await this.adapter.setStateAsync(this.id + Suffixes.state, val, true);
             }
         });
         //error handling:
-        this.client.on('error', (code : number, error : Error) => this.onError(code, error));
+        this.client.on('error', (code: number, error: Error) => this.onError(code, error));
         this.client.on('close', () => this.onError());
-        this.client.on('message', (message : string) => this.adapter.log.debug(`${this.name} got message: ${message}`));
+        this.client.on('message', (message: string) => this.adapter.log.debug(`${this.name} got message: ${message}`));
         await this.adapter.setStateAsync(this.id + Suffixes.unreachable, false, true);
         this.ready = true;
         this.adapter.log.debug('Setup device event listener.');
@@ -145,10 +150,11 @@ export class WebSocketDevice extends Device {
 
     /**
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
+     *
      * @param id
      * @param state
      */
-    async handleStateChange(id : string, state : ioBroker.State) : Promise<void> {
+    async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
         if (typeof state.val === 'boolean') {
             if (!this.loggedIn) {
                 await this.login();
@@ -162,30 +168,32 @@ export class WebSocketDevice extends Device {
                 const newVal = await this.client.switch(state.val, socket);
                 this.adapter.log.debug(`Switched Socket ${socket} of ${this.name} ${state.val ? 'on' : 'off'}.`);
                 await this.adapter.setStateAsync(id, newVal, true);
-            } catch(e: any) {
+            } catch (e: any) {
                 const code = processNetworkError(e);
                 if (code === 403) {
                     this.loggedIn = false; //login next polling.
                 }
-                this.adapter.log.error('Error while switching device ' + this.name + ': ' + code + ' - ' + e.stack);
+                this.adapter.log.error(`Error while switching device ${this.name}: ${code} - ${e.stack}`);
             }
         } else {
             this.adapter.log.warn('Wrong state type. Only boolean accepted for switch.');
         }
     }
 
-    async getModelInfoForSentry() : Promise<any> {
+    async getModelInfoForSentry(): Promise<any> {
         const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
         const result = await axios.get(url);
         return result.data;
     }
 
-    async identify() : Promise<boolean> {
+    async identify(): Promise<boolean> {
         const id = this.client.getDeviceId();
         const mac = id.match(/.{2}/g)!.join(':').toUpperCase(); //add back the :.
 
         if (this.mac && this.mac !== mac) {
-            throw new WrongMacError(`${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
+            throw new WrongMacError(
+                `${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`,
+            );
         }
         this.mac = mac;
         this.id = id;
@@ -198,13 +206,15 @@ export class WebSocketDevice extends Device {
                 const startPos = result.data.indexOf('SSID: ') + 6;
                 const model = result.data.substring(startPos, startPos + 8);
                 if (!model) {
-                    this.adapter.log.warn(`${this.name} identify responded with unknown result, please report: ${result.data}`);
+                    this.adapter.log.warn(
+                        `${this.name} identify responded with unknown result, please report: ${result.data}`,
+                    );
                 }
-                this.adapter.log.debug('Got model ' + model + ' during identification of ' + this.name);
+                this.adapter.log.debug(`Got model ${model} during identification of ${this.name}`);
                 if (model !== this.model) {
                     const oldModel = this.model;
                     this.model = model;
-                    this.adapter.log.info('Model updated from ' + (oldModel || 'unknown') + ' to ' + model);
+                    this.adapter.log.info(`Model updated from ${oldModel || 'unknown'} to ${model}`);
                     throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
                 }
             } else {
@@ -212,14 +222,14 @@ export class WebSocketDevice extends Device {
             }
         } catch (e) {
             const code = await this.handleNetworkError(e);
-            console.log('Got code: ' + code);
+            console.log(`Got code: ${code}`);
             if (code === 'ECONNREFUSED') {
                 this.adapter.log.debug('Failed to identify -> for now assume W118, because that one is nasty.');
                 const model = 'DSP-W118';
                 if (model !== this.model) {
                     const oldModel = this.model;
                     this.model = model;
-                    this.adapter.log.info('Model updated from ' + (oldModel || 'unknown') + ' to ' + model);
+                    this.adapter.log.info(`Model updated from ${oldModel || 'unknown'} to ${model}`);
                     throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
                 }
             }
@@ -230,12 +240,16 @@ export class WebSocketDevice extends Device {
 
         //get current state:
         if (this.numSockets > 1) {
-            const states = await this.client.state(-1) as Array<boolean>; //get all states.
+            const states = (await this.client.state(-1)) as Array<boolean>; //get all states.
             for (let index = 1; index <= this.numSockets; index += 1) {
-                await this.adapter.setStateChangedAsync(this.id + Suffixes.state + '_' + index, states[index -1], true);
+                await this.adapter.setStateChangedAsync(
+                    `${this.id + Suffixes.state}_${index}`,
+                    states[index - 1],
+                    true,
+                );
             }
         } else {
-            const state = await this.client.state() as boolean;
+            const state = (await this.client.state()) as boolean;
             await this.adapter.setStateChangedAsync(this.id + Suffixes.state, state, true);
         }
 

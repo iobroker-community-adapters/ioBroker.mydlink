@@ -11,5 +11,5 @@ export const Suffixes = {
     reboot: '.reboot',
     soundType: '.sound',
     soundVolume: '.volume',
-    soundDuration: '.duration'
+    soundDuration: '.duration',
 };

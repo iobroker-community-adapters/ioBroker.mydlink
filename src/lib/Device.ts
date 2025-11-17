@@ -1,7 +1,7 @@
-import { Client } from './Clients';
+import type { Client } from './Clients';
 import { DeviceInfo } from './DeviceInfo';
 import { Suffixes } from './suffixes';
-import {Mydlink} from './mydlink';
+import type { Mydlink } from './mydlink';
 
 export class WrongMacError extends Error {
     static errorName = 'WRONGMAC';
@@ -21,10 +21,11 @@ export class WrongModelError extends Error {
 
 /**
  * Get code from network error.
- * @param {Record<string, any>} e
- * @returns {number|string}
+ *
+ * @param e
+ * @returns
  */
-export function processNetworkError(e: Record<string, any>) : number | string {
+export function processNetworkError(e: Record<string, any>): number | string {
     if (e.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
@@ -37,16 +38,15 @@ export function processNetworkError(e: Record<string, any>) : number | string {
         // http.ClientRequest in node.js
         //probably ECONNRESET or Timeout -> e.code should be set.
         return e.code;
-    } else {
-        //something else...?
-        return e.code;
     }
+    //something else...?
+    return e.code;
 }
 
 export abstract class Device extends DeviceInfo {
     readonly adapter: Mydlink;
     abstract client: Client;
-    protected constructor (adapter : Mydlink, ip : string, pin: string, pinEncrypted: boolean) {
+    protected constructor(adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean) {
         super(ip, pin, pinEncrypted);
         this.adapter = adapter;
     }
@@ -54,11 +54,13 @@ export abstract class Device extends DeviceInfo {
     /**
      * Stores device configuration as Device Object in ioBroker Database.
      */
-    async createDeviceObject () : Promise<void> {
+    async createDeviceObject(): Promise<void> {
         //do something here.
         if (!this.id) {
             if (!this.mac) {
-                this.adapter.log.warn('Could not create device ' + this.name + ' without MAC. Please check config or if device is online.');
+                this.adapter.log.warn(
+                    `Could not create device ${this.name} without MAC. Please check config or if device is online.`,
+                );
                 return;
             }
         }
@@ -69,8 +71,8 @@ export abstract class Device extends DeviceInfo {
             common: {
                 name: this.name,
                 statusStates: {
-                    onlineId: `${this.adapter.namespace}.${this.id}${Suffixes.reachable}`
-                }
+                    onlineId: `${this.adapter.namespace}.${this.id}${Suffixes.reachable}`,
+                },
             } as Partial<ioBroker.DeviceCommon>,
             native: {
                 ip: this.ip,
@@ -81,15 +83,15 @@ export abstract class Device extends DeviceInfo {
                 name: this.name,
                 model: this.model,
                 useWebSocket: this.isWebsocket,
-                pinNotEncrypted: false
-            }
+                pinNotEncrypted: false,
+            },
         });
     }
 
     /**
      * Creates state-objects for the device.
      */
-    async createObjects() : Promise<void> {
+    async createObjects(): Promise<void> {
         //enabled indicator:
         await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.enabled, {
             type: 'state',
@@ -98,9 +100,9 @@ export abstract class Device extends DeviceInfo {
                 type: 'boolean',
                 role: 'indicator',
                 read: true,
-                write: false
+                write: false,
             },
-            native: {}
+            native: {},
         });
 
         //have ready indicator:
@@ -111,9 +113,9 @@ export abstract class Device extends DeviceInfo {
                 type: 'boolean',
                 role: 'indicator.maintenance.unreach',
                 read: true,
-                write: false
+                write: false,
             },
-            native: {}
+            native: {},
         });
 
         //have ready indicator:
@@ -124,13 +126,13 @@ export abstract class Device extends DeviceInfo {
                 type: 'boolean',
                 role: 'indicator.reachable',
                 read: true,
-                write: false
+                write: false,
             },
-            native: {}
+            native: {},
         });
     }
 
-    stop() : void {
+    stop(): void {
         if (this.intervalHandle) {
             this.adapter.clearTimeout(this.intervalHandle);
         }
@@ -143,8 +145,8 @@ export abstract class Device extends DeviceInfo {
 
     /**
      * Starts log in for device. Needs to be done before additional commands can work.
-     **/
-    async login() : Promise<boolean> {
+     */
+    async login(): Promise<boolean> {
         try {
             const loginResult = await this.client.login();
             if (loginResult === true) {
@@ -155,20 +157,35 @@ export abstract class Device extends DeviceInfo {
                 if (!this.loginErrorPrinted) {
                     this.loginErrorPrinted = true;
                     this.loggedIn = false;
-                    this.adapter.log.debug('Login error: device returned ' + loginResult + ' - this should not really happen.');
-                    this.adapter.log.error(this.name + ' could not login. Please check credentials and if device is online/connected.');
+                    this.adapter.log.debug(
+                        `Login error: device returned ${loginResult} - this should not really happen.`,
+                    );
+                    this.adapter.log.error(
+                        `${this.name} could not login. Please check credentials and if device is online/connected.`,
+                    );
                 }
             }
-        } catch (e : any) {
-            this.adapter.log.debug('Login error: ' + e.stack);
+        } catch (e: any) {
+            this.adapter.log.debug(`Login error: ${e.stack}`);
 
-            if (!this.loginErrorPrinted && e.code !== 'ETIMEDOUT' && e.code !== 'ECONNABORTED' && e.code !== 'ECONNRESET' && this.model) {
-                this.adapter.log.error(this.name + ' could not login. Please check credentials and if device is online/connected. Error: ' + e.code + ' - ' + e.stack);
+            if (
+                !this.loginErrorPrinted &&
+                e.code !== 'ETIMEDOUT' &&
+                e.code !== 'ECONNABORTED' &&
+                e.code !== 'ECONNRESET' &&
+                this.model
+            ) {
+                this.adapter.log.error(
+                    `${this.name} could not login. Please check credentials and if device is online/connected. Error: ${
+                        e.code
+                    } - ${e.stack}`,
+                );
                 this.loginErrorPrinted = true;
             }
 
             this.loggedIn = false;
-            if (!this.pollInterval && this.model) { //if no polling takes place, need to retry login!
+            if (!this.pollInterval && this.model) {
+                //if no polling takes place, need to retry login!
                 if (this.intervalHandle) {
                     this.adapter.clearTimeout(this.intervalHandle);
                 }
@@ -182,7 +199,7 @@ export abstract class Device extends DeviceInfo {
      * Identification of device needs to happen after successful login.
      * Problem: Maybe needs to create new object of new type. Hm...
      */
-    async identify() : Promise<boolean> {
+    async identify(): Promise<boolean> {
         //for device identification by IP set name to model here:
         if (!this.name) {
             this.name = this.model;
@@ -193,12 +210,12 @@ export abstract class Device extends DeviceInfo {
         return this.identified;
     }
 
-    async handleNetworkError(e: any) : Promise<number|string> {
+    async handleNetworkError(e: any): Promise<number | string> {
         const code = processNetworkError(e);
         if ([403, 424].includes(code as number) || this.ready) {
             this.loggedIn = false; //login next polling.
         }
-        this.adapter.log.debug('Error during communication ' + this.name + ': ' + code + ' - ' + e.stack + ' - ' + e.body);
+        this.adapter.log.debug(`Error during communication ${this.name}: ${code} - ${e.stack} - ${e.body}`);
         this.ready = false;
         if (this.id) {
             await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
@@ -209,9 +226,10 @@ export abstract class Device extends DeviceInfo {
 
     /**
      * Do polling here.
-     * @returns {Promise<void>}
+     *
+     * @returns
      */
-    async onInterval() : Promise<void> {
+    async onInterval(): Promise<void> {
         //this.log.debug('Polling ' + this.name);
         try {
             if (!this.loggedIn) {
@@ -229,17 +247,18 @@ export abstract class Device extends DeviceInfo {
             await this.handleNetworkError(e);
         }
 
-        if (this.pollInterval > 0) { //only start timeout again, if set in settings.
-            this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(),
-                this.pollInterval);
+        if (this.pollInterval > 0) {
+            //only start timeout again, if set in settings.
+            this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
         }
     }
 
     /**
      * starting communication with device from config.
-     * @returns {Promise<boolean>}
+     *
+     * @returns
      */
-    async start() : Promise<void> {
+    async start(): Promise<void> {
         //if device was already started -> stop it.
         //(use case: ip did change or settings did change)
         if (this.ready) {
@@ -258,13 +277,13 @@ export abstract class Device extends DeviceInfo {
                     await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
                     await this.adapter.setStateAsync(this.id + Suffixes.unreachable, !this.ready, true);
                 } catch (e: any) {
-                    this.adapter.log.error(this.name + ' could not identify device: ' + e.stack);
+                    this.adapter.log.error(`${this.name} could not identify device: ${e.stack}`);
                 }
             }
         }
 
         //transfer enabled flag to object:
-        await this.adapter.setStateAsync(this.id + Suffixes.enabled, {val: this.enabled, ack: true});
+        await this.adapter.setStateAsync(this.id + Suffixes.enabled, { val: this.enabled, ack: true });
 
         //start polling if device is enabled (do this after all is set up).
         if (this.enabled) {
@@ -279,27 +298,25 @@ export abstract class Device extends DeviceInfo {
                     interval = 2147483646;
                     this.adapter.log.warn('Poll rate was too high, reduced to prevent issues.');
                 }
-                this.adapter.log.debug('Start polling for ' + this.name + ' with interval ' + interval);
+                this.adapter.log.debug(`Start polling for ${this.name} with interval ${interval}`);
                 this.pollInterval = interval;
-                this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(),
-                    this.pollInterval);
+                this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
             } else {
                 this.pollInterval = 0;
-                this.adapter.log.debug('Polling of ' + this.name + ' disabled, interval was ' + interval + ' (0 means disabled)');
+                this.adapter.log.debug(`Polling of ${this.name} disabled, interval was ${interval} (0 means disabled)`);
             }
         }
     }
 
     /**
      * process a state change.
+     *
      * @param _id
      * @param _state
      */
-    async handleStateChange(_id : string, _state : ioBroker.State) : Promise<void> {
+    async handleStateChange(_id: string, _state: ioBroker.State): Promise<void> {
         if (this.loggedIn) {
             await this.login();
         }
     }
-
 }
-
