@@ -38,11 +38,27 @@ class AutoDetector {
   adapter;
   detectedDevices = {};
   debug = false;
+  /**
+   * Log debug message if debug is enabled.
+   *
+   * @param message The message to log.
+   */
   logDebug(message) {
     if (this.debug) {
       this.adapter.log.debug(message);
     }
   }
+  /**
+   * Handle detection entry from mDNS.
+   *
+   * @param entry The detection entry.
+   * @param entry.ip The IP address of the detected device.
+   * @param entry.type The type of the detected device.
+   * @param entry.name The name of the detected device.
+   * @param entry.mac The MAC address of the detected device, if available.
+   * @param entry.PTR The PTR record of the detected device, if available.
+   * @param entry.TXT The TXT record of the detected device, if available.
+   */
   async onDetection(entry) {
     function extractStringsFromBuffer(buffer) {
       let index = 0;
@@ -61,8 +77,8 @@ class AutoDetector {
     if (entry.name === "_dcp._tcp.local") {
       this.logDebug("Maybe detected websocket device");
       console.log(entry);
-      let model;
-      if (entry.PTR && entry.PTR.data) {
+      let model = void 0;
+      if (entry.PTR && entry.PTR.data && typeof entry.PTR.data === "string") {
         model = entry.PTR.data.substring(0, 8);
       }
       const newDevice = new import_WebSocketDevice.WebSocketDevice(this.adapter, entry.ip, "INVALID", false);
@@ -75,7 +91,7 @@ class AutoDetector {
           this.logDebug(`Got websocket device ${model} on ${newDevice.ip}`);
         }
       } catch (e) {
-        this.logDebug("Could not identify websocket device: " + e.stack);
+        this.logDebug(`Could not identify websocket device: ${e.stack}`);
       } finally {
         newDevice.stop();
       }
@@ -85,7 +101,7 @@ class AutoDetector {
         if (device.ip === newDevice.ip && device.model !== newDevice.model) {
           this.logDebug(`Model still differs? ${device.model} != ${newDevice.model}`);
           if (model && device.isWebsocket) {
-            this.logDebug("Updated model to " + model);
+            this.logDebug(`Updated model to ${model}`);
             device.model = model;
             await device.createDeviceObject();
           }
@@ -114,14 +130,17 @@ class AutoDetector {
       for (const pair of keyValuePairs) {
         const [key, value] = pair.split("=");
         switch (key.toLowerCase()) {
+          //extract mac from buffer:
           case "mac": {
             device.mac = value.toUpperCase();
             break;
           }
+          //extract model number from buffer:
           case "model_number": {
             device.type = value;
             break;
           }
+          //if mydlink=true -> we should look at that device! :)
           case "mydlink": {
             if (value === "true") {
               device.mydlink = true;
@@ -143,15 +162,23 @@ class AutoDetector {
           }
           device.alreadyPresent = true;
         }
-        this.logDebug("Detected Device now is: " + JSON.stringify(device, null, 2));
+        this.logDebug(`Detected Device now is: ${JSON.stringify(device, null, 2)}`);
       }
     }
   }
+  /**
+   * Close the mDNS listener.
+   */
   close() {
     if (this.mdns && typeof this.mdns.close === "function") {
       this.mdns.close();
     }
   }
+  /**
+   * Constructor.
+   *
+   * @param adapter reference to the adapter
+   */
   constructor(adapter) {
     this.adapter = adapter;
     this.mdns = new import_mdns_discovery.default({

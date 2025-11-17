@@ -35,7 +35,8 @@ class DeviceInfo {
   static secret;
   /**
    * Used to set secret from main.ts -> so we can use it here to decrypt stuff if necessary.
-   * @param secret
+   *
+   * @param secret the secret use for encryption / decryption
    */
   static setSecret(secret) {
     DeviceInfo.secret = secret;
@@ -54,8 +55,9 @@ class DeviceInfo {
   pinEncrypted = "";
   /**
    * Set Pin, please supply if it is encrypted or decrypted.
-   * @param pin
-   * @param encrypted
+   *
+   * @param pin the pin to set in device information
+   * @param encrypted is the supplied pin encrypted?
    */
   setPin(pin, encrypted = false) {
     if (!pin) {
@@ -126,10 +128,10 @@ class DeviceInfo {
   }
   /**
    * Create DeviceInfo only from Ip and Pin, old createDeviceFromIpAndPin
-   * @param ip
-   * @param pin
+   *
+   * @param ip ip of the device
+   * @param pin pin of the device
    * @param pinEncrypted - is the supplied pin encrypted?
-   * @constructor
    */
   constructor(ip, pin, pinEncrypted) {
     this.ip = ip;

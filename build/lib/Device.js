@@ -29,6 +29,11 @@ var import_suffixes = require("./suffixes");
 class WrongMacError extends Error {
   static errorName = "WRONGMAC";
   name = "WRONGMAC";
+  /**
+   * Creates an instance of WrongMacError.
+   *
+   * @param message Error message
+   */
   constructor(message) {
     super(message);
   }
@@ -36,6 +41,11 @@ class WrongMacError extends Error {
 class WrongModelError extends Error {
   static errorName = "WRONGMODEL";
   name = "WRONGMODEL";
+  /**
+   * Creates an instance of WrongModelError.
+   *
+   * @param message Error message
+   */
   constructor(message) {
     super(message);
   }
@@ -45,9 +55,8 @@ function processNetworkError(e) {
     return e.response.status;
   } else if (e.request) {
     return e.code;
-  } else {
-    return e.code;
   }
+  return e.code;
 }
 class Device extends import_DeviceInfo.DeviceInfo {
   adapter;
@@ -61,11 +70,13 @@ class Device extends import_DeviceInfo.DeviceInfo {
   async createDeviceObject() {
     if (!this.id) {
       if (!this.mac) {
-        this.adapter.log.warn("Could not create device " + this.name + " without MAC. Please check config or if device is online.");
+        this.adapter.log.warn(
+          `Could not create device ${this.name} without MAC. Please check config or if device is online.`
+        );
         return;
       }
     }
-    await this.adapter.extendObjectAsync(this.id, {
+    await this.adapter.extendObject(this.id, {
       type: "device",
       common: {
         name: this.name,
@@ -124,6 +135,9 @@ class Device extends import_DeviceInfo.DeviceInfo {
       native: {}
     });
   }
+  /**
+   * Stops communication with device.
+   */
   stop() {
     if (this.intervalHandle) {
       this.adapter.clearTimeout(this.intervalHandle);
@@ -136,7 +150,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
   }
   /**
    * Starts log in for device. Needs to be done before additional commands can work.
-   **/
+   */
   async login() {
     try {
       const loginResult = await this.client.login();
@@ -148,14 +162,20 @@ class Device extends import_DeviceInfo.DeviceInfo {
         if (!this.loginErrorPrinted) {
           this.loginErrorPrinted = true;
           this.loggedIn = false;
-          this.adapter.log.debug("Login error: device returned " + loginResult + " - this should not really happen.");
-          this.adapter.log.error(this.name + " could not login. Please check credentials and if device is online/connected.");
+          this.adapter.log.debug(
+            `Login error: device returned ${loginResult} - this should not really happen.`
+          );
+          this.adapter.log.error(
+            `${this.name} could not login. Please check credentials and if device is online/connected.`
+          );
         }
       }
     } catch (e) {
-      this.adapter.log.debug("Login error: " + e.stack);
+      this.adapter.log.debug(`Login error: ${e.stack}`);
       if (!this.loginErrorPrinted && e.code !== "ETIMEDOUT" && e.code !== "ECONNABORTED" && e.code !== "ECONNRESET" && this.model) {
-        this.adapter.log.error(this.name + " could not login. Please check credentials and if device is online/connected. Error: " + e.code + " - " + e.stack);
+        this.adapter.log.error(
+          `${this.name} could not login. Please check credentials and if device is online/connected. Error: ${e.code} - ${e.stack}`
+        );
         this.loginErrorPrinted = true;
       }
       this.loggedIn = false;
@@ -180,12 +200,18 @@ class Device extends import_DeviceInfo.DeviceInfo {
     this.identified = true;
     return this.identified;
   }
+  /**
+   * Handle network error during communication.
+   *
+   * @param e error object
+   * @returns code as number or string
+   */
   async handleNetworkError(e) {
     const code = processNetworkError(e);
     if ([403, 424].includes(code) || this.ready) {
       this.loggedIn = false;
     }
-    this.adapter.log.debug("Error during communication " + this.name + ": " + code + " - " + e.stack + " - " + e.body);
+    this.adapter.log.debug(`Error during communication ${this.name}: ${code} - ${e.stack} - ${e.body}`);
     this.ready = false;
     if (this.id) {
       await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
@@ -195,7 +221,8 @@ class Device extends import_DeviceInfo.DeviceInfo {
   }
   /**
    * Do polling here.
-   * @returns {Promise<void>}
+   *
+   * @returns void
    */
   async onInterval() {
     try {
@@ -208,21 +235,19 @@ class Device extends import_DeviceInfo.DeviceInfo {
       if (this.loggedIn && this.identified) {
         this.ready = await this.client.isDeviceReady();
         await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
-        await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
+        await this.adapter.setState(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
       }
     } catch (e) {
       await this.handleNetworkError(e);
     }
     if (this.pollInterval > 0) {
-      this.intervalHandle = this.adapter.setTimeout(
-        () => this.onInterval(),
-        this.pollInterval
-      );
+      this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
     }
   }
   /**
    * starting communication with device from config.
-   * @returns {Promise<boolean>}
+   *
+   * @returns void
    */
   async start() {
     if (this.ready) {
@@ -234,14 +259,14 @@ class Device extends import_DeviceInfo.DeviceInfo {
         try {
           await this.identify();
           this.ready = await this.client.isDeviceReady();
-          await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
-          await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
+          await this.adapter.setState(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
+          await this.adapter.setState(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
         } catch (e) {
-          this.adapter.log.error(this.name + " could not identify device: " + e.stack);
+          this.adapter.log.error(`${this.name} could not identify device: ${e.stack}`);
         }
       }
     }
-    await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.enabled, { val: this.enabled, ack: true });
+    await this.adapter.setState(this.id + import_suffixes.Suffixes.enabled, { val: this.enabled, ack: true });
     if (this.enabled) {
       let interval = this.pollInterval;
       if (interval !== void 0 && !Number.isNaN(interval) && interval > 0) {
@@ -253,22 +278,20 @@ class Device extends import_DeviceInfo.DeviceInfo {
           interval = 2147483646;
           this.adapter.log.warn("Poll rate was too high, reduced to prevent issues.");
         }
-        this.adapter.log.debug("Start polling for " + this.name + " with interval " + interval);
+        this.adapter.log.debug(`Start polling for ${this.name} with interval ${interval}`);
         this.pollInterval = interval;
-        this.intervalHandle = this.adapter.setTimeout(
-          () => this.onInterval(),
-          this.pollInterval
-        );
+        this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
       } else {
         this.pollInterval = 0;
-        this.adapter.log.debug("Polling of " + this.name + " disabled, interval was " + interval + " (0 means disabled)");
+        this.adapter.log.debug(`Polling of ${this.name} disabled, interval was ${interval} (0 means disabled)`);
       }
     }
   }
   /**
    * process a state change.
-   * @param _id
-   * @param _state
+   *
+   * @param _id of state
+   * @param _state new state
    */
   async handleStateChange(_id, _state) {
     if (this.loggedIn) {

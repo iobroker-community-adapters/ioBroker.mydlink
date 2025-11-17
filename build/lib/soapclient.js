@@ -35,7 +35,7 @@ module.exports = __toCommonJS(soapclient_exports);
 var crypto = __toESM(require("crypto"));
 var import_axios = __toESM(require("axios"));
 var import_xmldom = require("@xmldom/xmldom");
-var import_http = __toESM(require("http"));
+var import_node_http = require("node:http");
 const HNAP1_XMLNS = "http://purenetworks.com/HNAP1/";
 const HNAP_LOGIN_METHOD = "Login";
 class HNAP_ERROR extends Error {
@@ -63,7 +63,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     cookie: "",
     privateKey: ""
   };
-  const agent = new import_http.default.Agent({
+  const agent = new import_node_http.Agent({
     keepAlive: true,
     //maxSockets: 1,
     keepAliveMsecs: 6e4,
@@ -72,7 +72,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
   function save_login_result(body) {
     const doc = new import_xmldom.DOMParser().parseFromString(body, "application/xml");
     if (doc) {
-      HNAP_AUTH.result = doc.getElementsByTagName(HNAP_LOGIN_METHOD + "Result").item(0).firstChild.nodeValue;
+      HNAP_AUTH.result = doc.getElementsByTagName(`${HNAP_LOGIN_METHOD}Result`).item(0).firstChild.nodeValue;
       HNAP_AUTH.challenge = doc.getElementsByTagName("Challenge").item(0).firstChild.nodeValue;
       HNAP_AUTH.publicKey = doc.getElementsByTagName("PublicKey").item(0).firstChild.nodeValue;
       HNAP_AUTH.cookie = doc.getElementsByTagName("Cookie").item(0).firstChild.nodeValue;
@@ -80,59 +80,51 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     }
   }
   function loginRequest() {
-    return "<Action>request</Action><Username>" + HNAP_AUTH.user + "</Username><LoginPassword></LoginPassword><Captcha></Captcha>";
+    return `<Action>request</Action><Username>${HNAP_AUTH.user}</Username><LoginPassword></LoginPassword><Captcha></Captcha>`;
   }
   function loginParameters() {
     const login_pwd = hmac(HNAP_AUTH.privateKey, HNAP_AUTH.challenge);
-    return "<Action>login</Action><Username>" + HNAP_AUTH.user + "</Username><LoginPassword>" + login_pwd + "</LoginPassword><Captcha></Captcha>";
+    return `<Action>login</Action><Username>${HNAP_AUTH.user}</Username><LoginPassword>${login_pwd}</LoginPassword><Captcha></Captcha>`;
   }
   function requestBody(method, parameters) {
-    return '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><' + method + ' xmlns="' + HNAP1_XMLNS + '">' + parameters + "</" + method + "></soap:Body></soap:Envelope>";
+    return `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><${method} xmlns="${HNAP1_XMLNS}">${parameters}</${method}></soap:Body></soap:Envelope>`;
   }
-  function soapAction(method, responseElement, body, fullBody = false) {
-    return import_axios.default.post(
-      HNAP_AUTH.url,
-      body,
-      {
-        headers: {
-          "Content-Type": "text/xml; charset=utf-8",
-          "SOAPAction": '"' + HNAP1_XMLNS + method + '"',
-          "HNAP_AUTH": getHnapAuth('"' + HNAP1_XMLNS + method + '"', HNAP_AUTH.privateKey),
-          "cookie": "uid=" + HNAP_AUTH.cookie
-        },
-        timeout: 1e4,
-        //timeout in ms
-        httpAgent: agent
-      }
-    ).then(function(response) {
-      const incomingBody = response.data;
-      if (response.status === 403) {
-        throw new HNAP_ERROR("Unauthorized, need to login.", 403, incomingBody);
-      }
-      console.debug("StatusCode: " + response.status + " Body: " + incomingBody);
-      if (fullBody) {
-        return incomingBody;
-      }
-      const result = readResponseValue(incomingBody, method + "Result");
-      if (typeof result === "string" && result.toUpperCase() === "ERROR") {
-        throw new HNAP_ERROR(
-          "Request not successful. Probably need to login again. Status: " + response.status,
-          response.status,
-          incomingBody,
-          response.status < 300 ? 403 : response.status
-        );
-      }
-      return readResponseValue(incomingBody, responseElement);
-    }).catch(function(err) {
-      console.log("error during soapaction:", err);
-      throw err;
+  async function soapAction(method, responseElement, body, fullBody = false) {
+    const response = await import_axios.default.post(HNAP_AUTH.url, body, {
+      headers: {
+        "Content-Type": "text/xml; charset=utf-8",
+        SOAPAction: `"${HNAP1_XMLNS}${method}"`,
+        HNAP_AUTH: getHnapAuth(`"${HNAP1_XMLNS}${method}"`, HNAP_AUTH.privateKey),
+        cookie: `uid=${HNAP_AUTH.cookie}`
+      },
+      timeout: 1e4,
+      //timeout in ms
+      httpAgent: agent
     });
+    const incomingBody = response.data;
+    if (response.status === 403) {
+      throw new HNAP_ERROR("Unauthorized, need to login.", 403, incomingBody);
+    }
+    console.debug(`StatusCode: ${response.status} Body: ${incomingBody}`);
+    if (fullBody) {
+      return incomingBody;
+    }
+    const result = readResponseValue(incomingBody, `${method}Result`);
+    if (typeof result === "string" && result.toUpperCase() === "ERROR") {
+      throw new HNAP_ERROR(
+        `Request not successful. Probably need to login again. Status: ${response.status}`,
+        response.status,
+        incomingBody,
+        response.status < 300 ? 403 : response.status
+      );
+    }
+    return readResponseValue(incomingBody, responseElement);
   }
   function moduleParameters(module2) {
-    return "<ModuleID>" + module2 + "</ModuleID>";
+    return `<ModuleID>${module2}</ModuleID>`;
   }
   function controlParameters(module2, status) {
-    return moduleParameters(module2) + "<NickName>Socket 1</NickName><Description>Socket 1</Description><OPStatus>" + status + "</OPStatus><Controller>1</Controller>";
+    return `${moduleParameters(module2)}<NickName>Socket 1</NickName><Description>Socket 1</Description><OPStatus>${status}</OPStatus><Controller>1</Controller>`;
   }
   function soundParameters(soundnum, volume, duration) {
     let params = `<ModuleID>1</ModuleID>
@@ -152,7 +144,7 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     const current_time = /* @__PURE__ */ new Date();
     const time_stamp = Math.round(current_time.getTime() / 1e3);
     const auth = hmac(privateKey, time_stamp + SoapAction);
-    return auth + " " + time_stamp;
+    return `${auth} ${time_stamp}`;
   }
   function readResponseValue(body, elementName) {
     if (typeof elementName === "object" && typeof elementName.forEach === "function") {
@@ -161,53 +153,42 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
         results[elemName] = readResponseValue(body, elemName);
       });
       return results;
-    } else {
-      if (body && elementName && typeof elementName === "string") {
-        const doc = new import_xmldom.DOMParser().parseFromString(body, "application/xml");
-        const node = doc.getElementsByTagName(elementName).item(0);
-        const result = node && node.firstChild ? node.firstChild.nodeValue : "ERROR";
-        if (result === null) {
-          const results = [];
-          Object.keys(node.childNodes).forEach(function(value, key) {
-            const child = node.childNodes[key];
-            if (child && child.firstChild) {
-              results.push(child.firstChild.nodeValue);
-            }
-          });
-          return results;
-        } else {
-          return result;
-        }
+    }
+    if (body && elementName && typeof elementName === "string") {
+      const doc = new import_xmldom.DOMParser().parseFromString(body, "application/xml");
+      const node = doc.getElementsByTagName(elementName).item(0);
+      const result = node && node.firstChild ? node.firstChild.nodeValue : "ERROR";
+      if (result === null) {
+        const results = [];
+        Object.keys(node.childNodes).forEach(function(_value, key) {
+          const child = node.childNodes[key];
+          if (child && child.firstChild) {
+            results.push(child.firstChild.nodeValue);
+          }
+        });
+        return results;
       }
+      return result;
     }
   }
-  function login() {
-    return import_axios.default.post(
-      HNAP_AUTH.url,
-      requestBody(HNAP_LOGIN_METHOD, loginRequest()),
-      {
-        //first request challenge and stuff
-        headers: {
-          "Content-Type": "text/xml; charset=utf-8",
-          "SOAPAction": '"' + HNAP1_XMLNS + HNAP_LOGIN_METHOD + '"',
-          "connection": "keep-alive"
-        },
-        timeout: 1e4,
-        httpAgent: agent
-      }
-    ).then(function(response) {
-      save_login_result(response.data);
-      return soapAction(
-        HNAP_LOGIN_METHOD,
-        "LoginResult",
-        requestBody(HNAP_LOGIN_METHOD, loginParameters())
-      );
-    }).then((result) => {
-      return result === "success";
-    }).catch(function(err) {
-      console.log("error during HNAP login:", err);
-      throw err;
+  async function login() {
+    const response = await import_axios.default.post(HNAP_AUTH.url, requestBody(HNAP_LOGIN_METHOD, loginRequest()), {
+      //first request challenge and stuff
+      headers: {
+        "Content-Type": "text/xml; charset=utf-8",
+        SOAPAction: `"${HNAP1_XMLNS}${HNAP_LOGIN_METHOD}"`,
+        connection: "keep-alive"
+      },
+      timeout: 1e4,
+      httpAgent: agent
     });
+    save_login_result(response.data);
+    const actionResult = await soapAction(
+      HNAP_LOGIN_METHOD,
+      "LoginResult",
+      requestBody(HNAP_LOGIN_METHOD, loginParameters())
+    );
+    return actionResult === "success";
   }
   async function getDeviceDescriptionXML() {
     return {
@@ -232,35 +213,60 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     },
     /**
      * Switches Plug
-     * @param {boolean} on target status
-     * @returns {Promise<*>}
+     *
+     * @param on target status
+     * @returns Promise resolving to true if worked.
      */
     switch: function(on) {
-      return soapAction("SetSocketSettings", "SetSocketSettingsResult", requestBody("SetSocketSettings", controlParameters(1, on)));
+      return soapAction(
+        "SetSocketSettings",
+        "SetSocketSettingsResult",
+        requestBody("SetSocketSettings", controlParameters(1, on))
+      );
     },
     //polls current state
     state: async function() {
-      const val = await soapAction("GetSocketSettings", "OPStatus", requestBody("GetSocketSettings", moduleParameters(1)));
+      const val = await soapAction(
+        "GetSocketSettings",
+        "OPStatus",
+        requestBody("GetSocketSettings", moduleParameters(1))
+      );
       return val === "true";
     },
     //polls last detection
     lastDetection: async function() {
-      const result = await soapAction("GetLatestDetection", "LatestDetectTime", requestBody("GetLatestDetection", moduleParameters(1)));
+      const result = await soapAction(
+        "GetLatestDetection",
+        "LatestDetectTime",
+        requestBody("GetLatestDetection", moduleParameters(1))
+      );
       return result * 1e3;
     },
     //polls power consumption
     consumption: async function() {
-      const result = await soapAction("GetCurrentPowerConsumption", "CurrentConsumption", requestBody("GetCurrentPowerConsumption", moduleParameters(2)));
+      const result = await soapAction(
+        "GetCurrentPowerConsumption",
+        "CurrentConsumption",
+        requestBody("GetCurrentPowerConsumption", moduleParameters(2))
+      );
       return Number(result);
     },
     //polls total power consumption
     totalConsumption: async function() {
-      const result = await soapAction("GetPMWarningThreshold", "TotalConsumption", requestBody("GetPMWarningThreshold", moduleParameters(2)));
+      const result = await soapAction(
+        "GetPMWarningThreshold",
+        "TotalConsumption",
+        requestBody("GetPMWarningThreshold", moduleParameters(2))
+      );
       return Number(result);
     },
     //polls current temperature
     temperature: async function() {
-      const result = await soapAction("GetCurrentTemperature", "CurrentTemperature", requestBody("GetCurrentTemperature", moduleParameters(3)));
+      const result = await soapAction(
+        "GetCurrentTemperature",
+        "CurrentTemperature",
+        requestBody("GetCurrentTemperature", moduleParameters(3))
+      );
       return Number(result);
     },
     //returns model name and firmware version. Could be very interesting for supporting additional devices.
@@ -288,20 +294,33 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     },
     /**
      * Returns true if device is ready.
-     * @returns {Promise<boolean>}
+     *
+     * @returns Promise resolving to true if device is ready.
      */
     isDeviceReady: async function() {
       const result = await soapAction("IsDeviceReady", "IsDeviceReadyResult", requestBody("IsDeviceReady", ""));
       return result === "OK";
     },
     setSoundPlay: function(sound, volume, duration) {
-      return soapAction("SetSoundPlay", "SetSoundPlayResult", requestBody("SetSoundPlay", soundParameters(sound, volume, duration)));
+      return soapAction(
+        "SetSoundPlay",
+        "SetSoundPlayResult",
+        requestBody("SetSoundPlay", soundParameters(sound, volume, duration))
+      );
     },
     setAlarmDismissed: function() {
-      return soapAction("SetAlarmDismissed", "SetAlarmDismissedResult", requestBody("SetAlarmDismissed", soundParameters()));
+      return soapAction(
+        "SetAlarmDismissed",
+        "SetAlarmDismissedResult",
+        requestBody("SetAlarmDismissed", soundParameters())
+      );
     },
     getSoundPlay: async function() {
-      const result = await soapAction("GetSirenAlarmSettings", "IsSounding", requestBody("GetSirenAlarmSettings", soundParameters()));
+      const result = await soapAction(
+        "GetSirenAlarmSettings",
+        "IsSounding",
+        requestBody("GetSirenAlarmSettings", soundParameters())
+      );
       return result === "true";
     },
     getDeviceDescriptionXML

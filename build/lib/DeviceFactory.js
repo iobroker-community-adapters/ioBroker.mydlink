@@ -37,9 +37,15 @@ function deviceObjetToTableDevice(configDevice) {
     enabled: configDevice.native.enabled
   };
 }
-async function sendModelInfoToSentry(adapter, model, xml) {
+function sendModelInfoToSentry(adapter, model, xml) {
   if (!import_KnownDevices.KnownDevices[model]) {
-    adapter.log.info("Found new device, please report the following (full log from file, please) to developer: " + JSON.stringify(xml, null, 2));
+    adapter.log.info(
+      `Found new device, please report the following (full log from file, please) to developer: ${JSON.stringify(
+        xml,
+        null,
+        2
+      )}`
+    );
     if (adapter.supportsFeature && adapter.supportsFeature("PLUGINS")) {
       const sentryInstance = adapter.getPluginInstance("sentry");
       if (sentryInstance) {
@@ -50,7 +56,7 @@ async function sendModelInfoToSentry(adapter, model, xml) {
             for (const key of Object.keys(xml)) {
               scope.setExtra(key, xml[key]);
             }
-            Sentry.captureMessage("Unknown-Device " + model, "info");
+            Sentry.captureMessage(`Unknown-Device ${model}`, "info");
           });
         }
       }
@@ -73,14 +79,13 @@ async function createFromObject(adapter, configDevice) {
       enabled: native.enabled,
       isWebsocket: native.useWebsocket
     });
-  } else {
-    adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
-    return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebsocket);
   }
+  adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
+  return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebsocket);
 }
 async function createDevice(adapter, params) {
-  let device;
   const deviceFlags = import_KnownDevices.KnownDevices[params.model];
+  let device;
   if (deviceFlags) {
     device = new deviceFlags.DeviceType(adapter, params.ip, params.pin, params.pinEncrypted);
     if (typeof deviceFlags.moreSetup === "function") {
@@ -93,14 +98,14 @@ async function createDevice(adapter, params) {
       if (params.isWebsocket) {
         device = new import_WebSocketDevice.WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
         const body = await device.getModelInfoForSentry();
-        info = { info: "UNKNOWN WEBSOCKET DEVICE: " + params.model, body };
+        info = { info: `UNKNOWN WEBSOCKET DEVICE: ${params.model}`, body };
       } else {
         device = new import_soapDevice.SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
         info = await device.client.getDeviceDescriptionXML();
       }
-      await sendModelInfoToSentry(adapter, params.model, info);
+      sendModelInfoToSentry(adapter, params.model, info);
     } catch (e) {
-      adapter.log.error("Could not send device information to sentry. Please report. Error was: " + e.stack);
+      adapter.log.error(`Could not send device information to sentry. Please report. Error was: ${e.stack}`);
     }
   }
   device.pollInterval = Number(params.pollInterval || device.pollInterval);
@@ -139,9 +144,8 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
       if (!forceWebsocket) {
         adapter.log.debug(`${device.name} could not login with SOAP, try websocket.`);
         return createFromTable(adapter, tableDevice, doDecrypt, true);
-      } else {
-        throw new Error("Device not logged in... why?");
       }
+      throw new Error("Device not logged in... why?");
     }
   } catch (e) {
     device.stop();
@@ -165,7 +169,9 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
       });
     }
     if (e.name === import_Device.WrongMacError.errorName) {
-      adapter.log.info(`Device with unexpected MAC ${device.mac} reacted on ${device.ip}. Trying to create new device object for it.`);
+      adapter.log.info(
+        `Device with unexpected MAC ${device.mac} reacted on ${device.ip}. Trying to create new device object for it.`
+      );
       if (device.model) {
         return createDevice(adapter, {
           model: device.model,
@@ -179,20 +185,21 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
           isWebsocket: device.isWebsocket,
           enabled: device.enabled
         });
-      } else {
-        return createFromTable(adapter, {
-          mac: device.mac,
-          ip: device.ip,
-          pin: device.pinDecrypted,
-          name: device.name,
-          pollInterval: device.pollInterval,
-          enabled: device.enabled
-        });
       }
+      return createFromTable(adapter, {
+        mac: device.mac,
+        ip: device.ip,
+        pin: device.pinDecrypted,
+        name: device.name,
+        pollInterval: device.pollInterval,
+        enabled: device.enabled
+      });
     }
-    adapter.log.debug("Login error: " + e.stack);
+    adapter.log.debug(`Login error: ${e.stack}`);
     if (!device.loginErrorPrinted && e.code !== "ETIMEDOUT" && e.code !== "ECONNABORTED" && e.code !== "ECONNRESET") {
-      adapter.log.error(tableDevice.name + " could not login. Please check credentials and if device is online/connected. Error: " + e.code + " - " + e.stack);
+      adapter.log.error(
+        `${tableDevice.name} could not login. Please check credentials and if device is online/connected. Error: ${e.code} - ${e.stack}`
+      );
       device.loginErrorPrinted = true;
     }
     device.loggedIn = false;

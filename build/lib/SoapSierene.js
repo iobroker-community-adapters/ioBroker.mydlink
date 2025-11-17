@@ -29,8 +29,9 @@ class SoapSiren extends import_soapDevice.SoapDevice {
   duration = 10;
   /**
    * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
-   * @param id
-   * @param state
+   *
+   * @param id of state
+   * @param state new state
    */
   async handleStateChange(id, state) {
     await super.handleStateChange(id, state);
@@ -43,7 +44,7 @@ class SoapSiren extends import_soapDevice.SoapDevice {
           } else {
             newVal = !await this.client.setAlarmDismissed();
           }
-          await this.adapter.setStateAsync(id, newVal, true);
+          await this.adapter.setState(id, newVal, true);
         } catch (e) {
           await this.handleNetworkError(e);
         }
@@ -61,16 +62,22 @@ class SoapSiren extends import_soapDevice.SoapDevice {
         if (typeof state.val === "number" && state.val >= 1 && state.val <= 100) {
           this.volume = state.val;
         } else {
-          this.adapter.log.warn(`Wrong value ${state.val} for volume. Expected number in range 1-100 for ${id}`);
+          this.adapter.log.warn(
+            `Wrong value ${state.val} for volume. Expected number in range 1-100 for ${id}`
+          );
         }
       } else if (id.endsWith(import_suffixes.Suffixes.soundDuration)) {
         if (typeof state.val === "number" && state.val >= 1 && state.val <= 88888) {
           this.duration = state.val;
         } else {
-          this.adapter.log.warn(`Wrong value ${state.val} for duration. Expected number in range 1-88888 (where 88888 means infinite) for ${id}`);
+          this.adapter.log.warn(
+            `Wrong value ${state.val} for duration. Expected number in range 1-88888 (where 88888 means infinite) for ${id}`
+          );
         }
       } else {
-        this.adapter.log.warn(`State ${id} set to ${state.val} and ack=false, but can't control anything with it.`);
+        this.adapter.log.warn(
+          `State ${id} set to ${state.val} and ack=false, but can't control anything with it.`
+        );
       }
     }
   }
@@ -160,7 +167,8 @@ class SoapSiren extends import_soapDevice.SoapDevice {
   }
   /**
    * Do polling here.
-   * @returns {Promise<void>}
+   *
+   * @returns void
    */
   async onInterval() {
     await super.onInterval();

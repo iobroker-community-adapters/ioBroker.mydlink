@@ -38,12 +38,20 @@ var import_suffixes = require("./suffixes");
 var import_soapclient = __toESM(require("./soapclient"));
 class SoapDevice extends import_Device.Device {
   client;
+  /**
+   * Creates a new Soap Device.
+   *
+   * @param adapter reference to adapter
+   * @param ip ip of device
+   * @param pin pin of device
+   * @param pinEncrypted is pin encrypted
+   */
   constructor(adapter, ip, pin, pinEncrypted) {
     super(adapter, ip, pin, pinEncrypted);
     this.client = (0, import_soapclient.default)({
       user: "Admin",
       password: this.pinDecrypted,
-      url: "http://" + this.ip + "/HNAP1"
+      url: `http://${this.ip}/HNAP1`
     });
   }
   /**
@@ -66,8 +74,9 @@ class SoapDevice extends import_Device.Device {
   }
   /**
    * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
-   * @param id
-   * @param _state
+   *
+   * @param id if of state
+   * @param _state new state
    */
   async handleStateChange(id, _state) {
     if (this.loggedIn) {
@@ -82,12 +91,19 @@ class SoapDevice extends import_Device.Device {
       }
     }
   }
+  /**
+   * Identify the device, i.e. check mac and model.
+   *
+   * @returns true if identification successful
+   */
   async identify() {
     const settings = await this.client.getDeviceSettings();
     let dirty = false;
-    this.adapter.log.debug(this.name + " returned following device settings: " + JSON.stringify(settings, null, 2));
+    this.adapter.log.debug(`${this.name} returned following device settings: ${JSON.stringify(settings, null, 2)}`);
     if (this.mac && this.mac !== settings.DeviceMacId) {
-      throw new import_Device.WrongMacError(`${this.name} reported mac ${settings.DeviceMacId}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`);
+      throw new import_Device.WrongMacError(
+        `${this.name} reported mac ${settings.DeviceMacId}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`
+      );
     }
     if (this.mac !== settings.DeviceMacId) {
       this.mac = settings.DeviceMacId.toUpperCase();
@@ -167,7 +183,8 @@ class SoapSwitch extends SoapDevice {
   }
   /**
    * Do polling here.
-   * @returns {Promise<void>}
+   *
+   * @returns void
    */
   async onInterval() {
     await super.onInterval();
@@ -194,8 +211,9 @@ class SoapSwitch extends SoapDevice {
   }
   /**
    * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
-   * @param id
-   * @param state
+   *
+   * @param id if of state
+   * @param state new state
    */
   async handleStateChange(id, state) {
     await super.handleStateChange(id, state);
@@ -204,7 +222,7 @@ class SoapSwitch extends SoapDevice {
         try {
           await this.client.switch(state.val);
           const newVal = await this.client.state();
-          await this.adapter.setStateAsync(id, newVal, true);
+          await this.adapter.setState(id, newVal, true);
         } catch (e) {
           await this.handleNetworkError(e);
         }
@@ -217,16 +235,24 @@ class SoapSwitch extends SoapDevice {
 class SoapMotionDetector extends SoapDevice {
   /**
    * Do polling here.
-   * @returns {Promise<void>}
+   *
+   * @returns void
    */
   async onInterval() {
     await super.onInterval();
     if (this.ready) {
       try {
         const lastDetection = await this.client.lastDetection();
-        const notChanged = await new Promise((resolve, reject) => this.adapter.setStateChanged(this.id + import_suffixes.Suffixes.lastDetected, lastDetection, true, (err, _id, notChanged2) => err ? reject(err) : resolve(notChanged2 || false)));
+        const notChanged = await new Promise(
+          (resolve, reject) => this.adapter.setStateChanged(
+            this.id + import_suffixes.Suffixes.lastDetected,
+            lastDetection,
+            true,
+            (err, _id, notChanged2) => err ? reject(err) : resolve(notChanged2 || false)
+          )
+        );
         if (!notChanged) {
-          await this.adapter.setStateAsync(this.id + import_suffixes.Suffixes.state, true, true);
+          await this.adapter.setState(this.id + import_suffixes.Suffixes.state, true, true);
         } else {
           await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, false, true);
         }
