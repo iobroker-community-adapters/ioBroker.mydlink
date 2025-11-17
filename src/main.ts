@@ -27,13 +27,6 @@ class Mydlink extends utils.Adapter {
     devices: Array<Device> = [];
 
     /**
-     * Store devices here, that we only have information from, but can not yet talk to.
-     * Especially if model is missing, and we currently can not retrieve it (because device not online)
-     * This will happen.
-     */
-    unidentifiedDevices: Array<DeviceInfo> = [];
-
-    /**
      * Auto-detected devices. Store here and aggregate until we are sure it is mydlink and have mac
      * -> multiple messages.
      *
@@ -54,7 +47,7 @@ class Mydlink extends utils.Adapter {
     /**
      * deletes all objects of a device and the device itself (deleteDeviceAsync does not work somehow...?)
      *
-     * @param device
+     * @param device device to delete
      */
     async deleteDeviceFull(device: Device): Promise<void> {
         //stop device:
@@ -199,7 +192,7 @@ class Mydlink extends utils.Adapter {
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      *
-     * @param callback
+     * @param callback function to call when cleanup is done
      */
     private onUnload(callback: () => void): void {
         try {
@@ -214,6 +207,7 @@ class Mydlink extends utils.Adapter {
             this.log.info('cleaned everything up...');
             callback();
         } catch (e) {
+            this.log.error(`Error during unload: ${e}`);
             callback();
         }
     }
@@ -221,8 +215,8 @@ class Mydlink extends utils.Adapter {
     /**
      * Is called if a subscribed state changes
      *
-     * @param id
-     * @param state
+     * @param id id of changed state object
+     * @param state changed state
      */
     private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (state) {
@@ -243,11 +237,12 @@ class Mydlink extends utils.Adapter {
         }
     }
 
-    // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
-    // /**
-    //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-    //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
-    //  */
+    /**
+     * Some message was sent to this instance over message box.
+     * Using this method requires "common.messagebox" property to be set to true in io-package.json
+     *
+     * @param obj the message object
+     */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (typeof obj === 'object' && obj.message) {
             switch (obj.command) {

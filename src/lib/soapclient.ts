@@ -53,8 +53,8 @@ class HNAP_ERROR extends Error {
 /**
  * Encrypt stuff like we need it with HNAP. No clue, what I am doing here. Ignore name of parameters. ;-)
  *
- * @param key
- * @param challenge
+ * @param key hmac key
+ * @param challenge hmac challenge
  */
 function hmac(key: string, challenge: string): string {
     return crypto.createHmac('md5', key).update(challenge).digest('hex').toUpperCase();
@@ -131,55 +131,49 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
 
     /**
      *
-     * @param method
-     * @param responseElement
-     * @param body
+     * @param method soap method to call
+     * @param responseElement expected response element name(s) to extract value from.
+     * @param body soap body to send
      * @param [fullBody] if true will return fullBody xml instead of only result value.
-     * @returns
+     * @returns Promise resolving to value of response element.
      */
-    function soapAction(
+    async function soapAction(
         method: string,
         responseElement: string | Array<string>,
         body: string,
         fullBody = false,
     ): Promise<string | number | boolean | Array<string> | Record<string, string>> {
         //console.log('Sending Body ' + body);
-        return axios
-            .post(HNAP_AUTH.url, body, {
-                headers: {
-                    'Content-Type': 'text/xml; charset=utf-8',
-                    SOAPAction: `"${HNAP1_XMLNS}${method}"`,
-                    HNAP_AUTH: getHnapAuth(`"${HNAP1_XMLNS}${method}"`, HNAP_AUTH.privateKey),
-                    cookie: `uid=${HNAP_AUTH.cookie}`,
-                },
-                timeout: 10000, //timeout in ms
-                httpAgent: agent,
-            })
-            .then(function (response) {
-                const incomingBody = response.data;
-                if (response.status === 403) {
-                    throw new HNAP_ERROR('Unauthorized, need to login.', 403, incomingBody);
-                }
-                console.debug(`StatusCode: ${response.status} Body: ${incomingBody}`);
-                if (fullBody) {
-                    //return full body if requested.
-                    return incomingBody;
-                }
-                const result = readResponseValue(incomingBody, `${method}Result`);
-                if (typeof result === 'string' && result.toUpperCase() === 'ERROR') {
-                    throw new HNAP_ERROR(
-                        `Request not successful. Probably need to login again. Status: ${response.status}`,
-                        response.status,
-                        incomingBody,
-                        response.status < 300 ? 403 : response.status,
-                    );
-                }
-                return readResponseValue(incomingBody, responseElement);
-            })
-            .catch(function (err) {
-                console.log('error during soapaction:', err);
-                throw err;
-            });
+        // caller handles errors.
+        const response = await axios.post(HNAP_AUTH.url, body, {
+            headers: {
+                'Content-Type': 'text/xml; charset=utf-8',
+                SOAPAction: `"${HNAP1_XMLNS}${method}"`,
+                HNAP_AUTH: getHnapAuth(`"${HNAP1_XMLNS}${method}"`, HNAP_AUTH.privateKey),
+                cookie: `uid=${HNAP_AUTH.cookie}`,
+            },
+            timeout: 10000, //timeout in ms
+            httpAgent: agent,
+        });
+        const incomingBody = response.data;
+        if (response.status === 403) {
+            throw new HNAP_ERROR('Unauthorized, need to login.', 403, incomingBody);
+        }
+        console.debug(`StatusCode: ${response.status} Body: ${incomingBody}`);
+        if (fullBody) {
+            //return full body if requested.
+            return incomingBody;
+        }
+        const result = readResponseValue(incomingBody, `${method}Result`);
+        if (typeof result === 'string' && result.toUpperCase() === 'ERROR') {
+            throw new HNAP_ERROR(
+                `Request not successful. Probably need to login again. Status: ${response.status}`,
+                response.status,
+                incomingBody,
+                response.status < 300 ? 403 : response.status,
+            );
+        }
+        return readResponseValue(incomingBody, responseElement);
     }
 
     function moduleParameters(module: string | number): string {
@@ -199,7 +193,7 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
      * @param [soundnum] should be one of the string from getSounds 1-6
      * @param [volume] 1-100
      * @param [duration] 1-88888 (with 88888 = infinite)
-     * @returns
+     * @returns XML string of parameters
      */
     function soundParameters(soundnum?: number, volume?: number, duration?: number): string {
         let params = `<ModuleID>1</ModuleID>
@@ -305,7 +299,7 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
                 //array of values requested like Module Types or SOAP Actions:
                 const results = [] as Array<string>;
                 //console.debug('Have array:', node);
-                Object.keys(node.childNodes).forEach(function (value: string, key: number) {
+                Object.keys(node.childNodes).forEach(function (_value: string, key: number) {
                     const child = node.childNodes[key];
                     //console.debug('Child:', child);
                     if (child && child.firstChild) {
@@ -318,43 +312,37 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
         }
     }
 
-    function login(): Promise<boolean> {
+    async function login(): Promise<boolean> {
         //console.log('Sending Body ' + loginRequest());
-        return axios
-            .post(HNAP_AUTH.url, requestBody(HNAP_LOGIN_METHOD, loginRequest()), {
-                //first request challenge and stuff
-                headers: {
-                    'Content-Type': 'text/xml; charset=utf-8',
-                    SOAPAction: `"${HNAP1_XMLNS}${HNAP_LOGIN_METHOD}"`,
-                    connection: 'keep-alive',
-                },
-                timeout: 10000,
-                httpAgent: agent,
-            })
-            .then(function (response) {
-                //then log in with the information gathered in first request
-                //save keys.
-                //console.log('Login request came back: ', response);
-                //console.log('Body: ', response.data);
-                save_login_result(response.data);
-                //console.log('Got results: ', HNAP_AUTH);
-                //will return 'success' if worked.
-                return soapAction(HNAP_LOGIN_METHOD, 'LoginResult', requestBody(HNAP_LOGIN_METHOD, loginParameters()));
-            })
-            .then(result => {
-                return result === 'success';
-            })
-            .catch(function (err) {
-                //throw error here, so we can react to it outside (?)
-                console.log('error during HNAP login:', err);
-                throw err;
-            });
+        const response = await axios.post(HNAP_AUTH.url, requestBody(HNAP_LOGIN_METHOD, loginRequest()), {
+            //first request challenge and stuff
+            headers: {
+                'Content-Type': 'text/xml; charset=utf-8',
+                SOAPAction: `"${HNAP1_XMLNS}${HNAP_LOGIN_METHOD}"`,
+                connection: 'keep-alive',
+            },
+            timeout: 10000,
+            httpAgent: agent,
+        });
+        //then log in with the information gathered in first request
+        //save keys.
+        //console.log('Login request came back: ', response);
+        //console.log('Body: ', response.data);
+        save_login_result(response.data);
+        //console.log('Got results: ', HNAP_AUTH);
+        //will return 'success' if worked.
+        const actionResult = await soapAction(
+            HNAP_LOGIN_METHOD,
+            'LoginResult',
+            requestBody(HNAP_LOGIN_METHOD, loginParameters()),
+        );
+        return actionResult === 'success';
     }
 
     /**
      * Get full device description XMLs -> used to support new devices.
      *
-     * @returns
+     * @returns Promise resolving to object with deviceSettingsXML and modulesSoapActions
      */
     async function getDeviceDescriptionXML(): Promise<{ deviceSettingsXML: string; modulesSoapActions: string }> {
         return {
@@ -385,7 +373,7 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
          * Switches Plug
          *
          * @param on target status
-         * @returns
+         * @returns Promise resolving to true if worked.
          */
         switch: function (on: boolean): Promise<boolean> {
             return soapAction(
@@ -472,7 +460,7 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
         /**
          * Returns true if device is ready.
          *
-         * @returns
+         * @returns Promise resolving to true if device is ready.
          */
         isDeviceReady: async function () {
             const result = await soapAction('IsDeviceReady', 'IsDeviceReadyResult', requestBody('IsDeviceReady', ''));

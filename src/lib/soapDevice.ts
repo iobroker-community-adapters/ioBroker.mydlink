@@ -4,9 +4,20 @@ import type { SoapClientInterface } from './Clients';
 import createSoapClient from './soapclient';
 import type { Mydlink } from './mydlink';
 
+/**
+ * Representation of a Soap Device.
+ */
 export class SoapDevice extends Device {
     client: SoapClientInterface;
 
+    /**
+     * Creates a new Soap Device.
+     *
+     * @param adapter reference to adapter
+     * @param ip ip of device
+     * @param pin pin of device
+     * @param pinEncrypted is pin encrypted
+     */
     constructor(adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean) {
         super(adapter, ip, pin, pinEncrypted);
 
@@ -41,8 +52,8 @@ export class SoapDevice extends Device {
     /**
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      *
-     * @param id
-     * @param _state
+     * @param id if of state
+     * @param _state new state
      */
     async handleStateChange(id: string, _state: ioBroker.State): Promise<void> {
         if (this.loggedIn) {
@@ -59,6 +70,11 @@ export class SoapDevice extends Device {
         }
     }
 
+    /**
+     * Identify the device, i.e. check mac and model.
+     *
+     * @returns true if identification successful
+     */
     async identify(): Promise<boolean> {
         const settings = await this.client.getDeviceSettings();
         let dirty = false;
@@ -92,6 +108,9 @@ export class SoapDevice extends Device {
     }
 }
 
+/**
+ * Representation of a Soap Switch Device.
+ */
 export class SoapSwitch extends SoapDevice {
     //currently only know DSP-W215 as soap switch which has all those.
     hasTemp = true;
@@ -162,7 +181,7 @@ export class SoapSwitch extends SoapDevice {
     /**
      * Do polling here.
      *
-     * @returns
+     * @returns void
      */
     async onInterval(): Promise<void> {
         await super.onInterval();
@@ -194,8 +213,8 @@ export class SoapSwitch extends SoapDevice {
     /**
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      *
-     * @param id
-     * @param state
+     * @param id if of state
+     * @param state new state
      */
     async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
         await super.handleStateChange(id, state);
@@ -205,7 +224,7 @@ export class SoapSwitch extends SoapDevice {
                 try {
                     await this.client.switch(state.val);
                     const newVal = (await this.client.state()) as boolean;
-                    await this.adapter.setStateAsync(id, newVal, true);
+                    await this.adapter.setState(id, newVal, true);
                 } catch (e: any) {
                     await this.handleNetworkError(e);
                 }
@@ -216,11 +235,14 @@ export class SoapSwitch extends SoapDevice {
     }
 }
 
+/**
+ * Representation of a Soap Motion Detector Device.
+ */
 export class SoapMotionDetector extends SoapDevice {
     /**
      * Do polling here.
      *
-     * @returns
+     * @returns void
      */
     async onInterval(): Promise<void> {
         await super.onInterval();
@@ -239,7 +261,7 @@ export class SoapMotionDetector extends SoapDevice {
                 );
                 if (!notChanged) {
                     //timestamp did change -> we had a new detection!
-                    await this.adapter.setStateAsync(this.id + Suffixes.state, true, true);
+                    await this.adapter.setState(this.id + Suffixes.state, true, true);
                 } else {
                     await this.adapter.setStateChangedAsync(this.id + Suffixes.state, false, true);
                 }

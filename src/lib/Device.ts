@@ -3,17 +3,35 @@ import { DeviceInfo } from './DeviceInfo';
 import { Suffixes } from './suffixes';
 import type { Mydlink } from './mydlink';
 
+/**
+ * Error indicating wrong MAC address.
+ */
 export class WrongMacError extends Error {
     static errorName = 'WRONGMAC';
     name = 'WRONGMAC';
+
+    /**
+     * Creates an instance of WrongMacError.
+     *
+     * @param message Error message
+     */
     constructor(message: string) {
         super(message);
     }
 }
 
+/**
+ * Error indicating wrong model.
+ */
 export class WrongModelError extends Error {
     static errorName = 'WRONGMODEL';
     name = 'WRONGMODEL';
+
+    /**
+     * Creates an instance of WrongModelError.
+     *
+     * @param message Error message
+     */
     constructor(message: string) {
         super(message);
     }
@@ -22,8 +40,8 @@ export class WrongModelError extends Error {
 /**
  * Get code from network error.
  *
- * @param e
- * @returns
+ * @param e error object
+ * @returns code as number or string
  */
 export function processNetworkError(e: Record<string, any>): number | string {
     if (e.response) {
@@ -43,6 +61,9 @@ export function processNetworkError(e: Record<string, any>): number | string {
     return e.code;
 }
 
+/**
+ * Abstract device class. All devices inherit from this.
+ */
 export abstract class Device extends DeviceInfo {
     readonly adapter: Mydlink;
     abstract client: Client;
@@ -66,7 +87,7 @@ export abstract class Device extends DeviceInfo {
         }
 
         //also set the native part of the device:
-        await this.adapter.extendObjectAsync(this.id, {
+        await this.adapter.extendObject(this.id, {
             type: 'device',
             common: {
                 name: this.name,
@@ -132,6 +153,9 @@ export abstract class Device extends DeviceInfo {
         });
     }
 
+    /**
+     * Stops communication with device.
+     */
     stop(): void {
         if (this.intervalHandle) {
             this.adapter.clearTimeout(this.intervalHandle);
@@ -210,6 +234,12 @@ export abstract class Device extends DeviceInfo {
         return this.identified;
     }
 
+    /**
+     * Handle network error during communication.
+     *
+     * @param e error object
+     * @returns code as number or string
+     */
     async handleNetworkError(e: any): Promise<number | string> {
         const code = processNetworkError(e);
         if ([403, 424].includes(code as number) || this.ready) {
@@ -227,7 +257,7 @@ export abstract class Device extends DeviceInfo {
     /**
      * Do polling here.
      *
-     * @returns
+     * @returns void
      */
     async onInterval(): Promise<void> {
         //this.log.debug('Polling ' + this.name);
@@ -241,7 +271,7 @@ export abstract class Device extends DeviceInfo {
             if (this.loggedIn && this.identified) {
                 this.ready = await this.client.isDeviceReady();
                 await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, !this.ready, true);
-                await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
+                await this.adapter.setState(this.id + Suffixes.reachable, this.ready, true);
             }
         } catch (e: any) {
             await this.handleNetworkError(e);
@@ -256,7 +286,7 @@ export abstract class Device extends DeviceInfo {
     /**
      * starting communication with device from config.
      *
-     * @returns
+     * @returns void
      */
     async start(): Promise<void> {
         //if device was already started -> stop it.
@@ -274,8 +304,8 @@ export abstract class Device extends DeviceInfo {
                 try {
                     await this.identify();
                     this.ready = await this.client.isDeviceReady();
-                    await this.adapter.setStateAsync(this.id + Suffixes.reachable, this.ready, true);
-                    await this.adapter.setStateAsync(this.id + Suffixes.unreachable, !this.ready, true);
+                    await this.adapter.setState(this.id + Suffixes.reachable, this.ready, true);
+                    await this.adapter.setState(this.id + Suffixes.unreachable, !this.ready, true);
                 } catch (e: any) {
                     this.adapter.log.error(`${this.name} could not identify device: ${e.stack}`);
                 }
@@ -283,7 +313,7 @@ export abstract class Device extends DeviceInfo {
         }
 
         //transfer enabled flag to object:
-        await this.adapter.setStateAsync(this.id + Suffixes.enabled, { val: this.enabled, ack: true });
+        await this.adapter.setState(this.id + Suffixes.enabled, { val: this.enabled, ack: true });
 
         //start polling if device is enabled (do this after all is set up).
         if (this.enabled) {
@@ -311,8 +341,8 @@ export abstract class Device extends DeviceInfo {
     /**
      * process a state change.
      *
-     * @param _id
-     * @param _state
+     * @param _id of state
+     * @param _state new state
      */
     async handleStateChange(_id: string, _state: ioBroker.State): Promise<void> {
         if (this.loggedIn) {

@@ -4,11 +4,22 @@ import type { Mydlink } from './mydlink';
 import { default as axios } from 'axios';
 import WebSocketClient from 'dlink_websocketclient';
 
+/**
+ * Class for WebSocket based devices, i.e. newer ones.
+ */
 export class WebSocketDevice extends Device {
     client: WebSocketClient;
 
     numSockets = 1;
 
+    /**
+     * Creates an instance of WebSocketDevice.
+     *
+     * @param adapter reference to adapter
+     * @param ip ip of device
+     * @param pin pin of device
+     * @param pinEncrypted is pin encrypted
+     */
     constructor(adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean) {
         super(adapter, ip, pin, pinEncrypted);
         this.isWebsocket = true;
@@ -61,6 +72,9 @@ export class WebSocketDevice extends Device {
         }
     }
 
+    /**
+     * Stop communication and clean up.
+     */
     stop(): void {
         super.stop();
         if (this.client && typeof this.client.removeAllListeners === 'function') {
@@ -74,7 +88,7 @@ export class WebSocketDevice extends Device {
     /**
      * Do polling here.
      *
-     * @returns
+     * @returns void
      */
     async onInterval(): Promise<void> {
         await super.onInterval();
@@ -101,11 +115,11 @@ export class WebSocketDevice extends Device {
     /**
      * Error handler for event base client.
      *
-     * @param code
-     * @param err
+     * @param code error code recieved
+     * @param err error object
      */
     async onError(code?: number, err?: Error): Promise<void> {
-        await this.adapter.setStateAsync(this.id + Suffixes.unreachable, true, true);
+        await this.adapter.setState(this.id + Suffixes.unreachable, true, true);
         if (code || err) {
             this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
         } else {
@@ -117,15 +131,15 @@ export class WebSocketDevice extends Device {
         if (this.intervalHandle) {
             this.adapter.clearTimeout(this.intervalHandle);
         }
-        this.intervalHandle = this.adapter.setTimeout(() => {
-            this.start();
+        this.intervalHandle = this.adapter.setTimeout(async () => {
+            await this.start();
         }, 10000);
     }
 
     /**
      * starting communication with device from config.
      *
-     * @returns
+     * @returns void
      */
     async start(): Promise<void> {
         await super.start();
@@ -134,16 +148,16 @@ export class WebSocketDevice extends Device {
         this.client.on('switched', async (val: boolean, socket: number) => {
             this.adapter.log.debug(`Event from device ${socket} now ${val}`);
             if (this.numSockets > 1) {
-                await this.adapter.setStateAsync(`${this.id + Suffixes.state}_${socket + 1}`, val, true);
+                await this.adapter.setState(`${this.id + Suffixes.state}_${socket + 1}`, val, true);
             } else {
-                await this.adapter.setStateAsync(this.id + Suffixes.state, val, true);
+                await this.adapter.setState(this.id + Suffixes.state, val, true);
             }
         });
         //error handling:
         this.client.on('error', (code: number, error: Error) => this.onError(code, error));
         this.client.on('close', () => this.onError());
         this.client.on('message', (message: string) => this.adapter.log.debug(`${this.name} got message: ${message}`));
-        await this.adapter.setStateAsync(this.id + Suffixes.unreachable, false, true);
+        await this.adapter.setState(this.id + Suffixes.unreachable, false, true);
         this.ready = true;
         this.adapter.log.debug('Setup device event listener.');
     }
@@ -151,8 +165,8 @@ export class WebSocketDevice extends Device {
     /**
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      *
-     * @param id
-     * @param state
+     * @param id of state that changed
+     * @param state new state
      */
     async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
         if (typeof state.val === 'boolean') {
@@ -167,7 +181,7 @@ export class WebSocketDevice extends Device {
             try {
                 const newVal = await this.client.switch(state.val, socket);
                 this.adapter.log.debug(`Switched Socket ${socket} of ${this.name} ${state.val ? 'on' : 'off'}.`);
-                await this.adapter.setStateAsync(id, newVal, true);
+                await this.adapter.setState(id, newVal, true);
             } catch (e: any) {
                 const code = processNetworkError(e);
                 if (code === 403) {
@@ -180,12 +194,18 @@ export class WebSocketDevice extends Device {
         }
     }
 
+    /**
+     * Get model info of unknown devices for Sentry logging.
+     */
     async getModelInfoForSentry(): Promise<any> {
         const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
         const result = await axios.get(url);
         return result.data;
     }
 
+    /**
+     * Identify device, i.e. check mac and get model.
+     */
     async identify(): Promise<boolean> {
         const id = this.client.getDeviceId();
         const mac = id.match(/.{2}/g)!.join(':').toUpperCase(); //add back the :.
@@ -200,6 +220,7 @@ export class WebSocketDevice extends Device {
 
         //get model from webserver / wifi-ssid:
         const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+        let recievedModel = '';
         try {
             const result = await axios.get(url);
             if (result.status === 200) {
@@ -211,12 +232,7 @@ export class WebSocketDevice extends Device {
                     );
                 }
                 this.adapter.log.debug(`Got model ${model} during identification of ${this.name}`);
-                if (model !== this.model) {
-                    const oldModel = this.model;
-                    this.model = model;
-                    this.adapter.log.info(`Model updated from ${oldModel || 'unknown'} to ${model}`);
-                    throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
-                }
+                recievedModel = model;
             } else {
                 this.adapter.log.warn(`${this.name} could not be identified: ${result.data}`);
             }
@@ -225,14 +241,15 @@ export class WebSocketDevice extends Device {
             console.log(`Got code: ${code}`);
             if (code === 'ECONNREFUSED') {
                 this.adapter.log.debug('Failed to identify -> for now assume W118, because that one is nasty.');
-                const model = 'DSP-W118';
-                if (model !== this.model) {
-                    const oldModel = this.model;
-                    this.model = model;
-                    this.adapter.log.info(`Model updated from ${oldModel || 'unknown'} to ${model}`);
-                    throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${model}`);
-                }
+                recievedModel = 'DSP-W118';
             }
+        }
+
+        if (recievedModel && recievedModel !== this.model) {
+            const oldModel = this.model;
+            this.model = recievedModel;
+            this.adapter.log.info(`Model updated from ${oldModel || 'unknown'} to ${recievedModel}`);
+            throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${recievedModel}`);
         }
 
         //make sure objects are created.

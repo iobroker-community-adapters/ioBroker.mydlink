@@ -3,7 +3,7 @@ import { Suffixes } from './suffixes';
 import { SoapDevice } from './soapDevice';
 
 /**
- *
+ * Representation of a Soap Siren Device.
  */
 export class SoapSiren extends SoapDevice {
     soundToPlay = 1;
@@ -13,8 +13,8 @@ export class SoapSiren extends SoapDevice {
     /**
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      *
-     * @param id
-     * @param state
+     * @param id of state
+     * @param state new state
      */
     async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
         await super.handleStateChange(id, state);
@@ -22,13 +22,13 @@ export class SoapSiren extends SoapDevice {
         if (id.endsWith(Suffixes.state)) {
             if (typeof state.val === 'boolean') {
                 try {
-                    let newVal;
+                    let newVal: boolean;
                     if (state.val) {
                         newVal = await this.client.setSoundPlay(this.soundToPlay, this.volume, this.duration);
                     } else {
                         newVal = !(await this.client.setAlarmDismissed());
                     }
-                    await this.adapter.setStateAsync(id, newVal, true);
+                    await this.adapter.setState(id, newVal, true);
                 } catch (e: any) {
                     await this.handleNetworkError(e);
                 }
@@ -161,7 +161,7 @@ export class SoapSiren extends SoapDevice {
     /**
      * Do polling here.
      *
-     * @returns
+     * @returns void
      */
     async onInterval(): Promise<void> {
         await super.onInterval();

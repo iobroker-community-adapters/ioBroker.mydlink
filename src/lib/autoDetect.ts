@@ -5,6 +5,9 @@ import MulticastDNS from 'mdns-discovery';
 
 import { WebSocketDevice } from './WebSocketDevice';
 
+/**
+ * Auto-detection of devices via mDNS.
+ */
 export class AutoDetector {
     mdns: MulticastDNS;
 
@@ -14,19 +17,35 @@ export class AutoDetector {
 
     debug = false;
 
+    /**
+     * Log debug message if debug is enabled.
+     *
+     * @param message The message to log.
+     */
     logDebug(message: string): void {
         if (this.debug) {
             this.adapter.log.debug(message);
         }
     }
 
+    /**
+     * Handle detection entry from mDNS.
+     *
+     * @param entry The detection entry.
+     * @param entry.ip The IP address of the detected device.
+     * @param entry.type The type of the detected device.
+     * @param entry.name The name of the detected device.
+     * @param entry.mac The MAC address of the detected device, if available.
+     * @param entry.PTR The PTR record of the detected device, if available.
+     * @param entry.TXT The TXT record of the detected device, if available.
+     */
     async onDetection(entry: {
         ip: string;
         type: string;
         name: string;
         mac: string | undefined;
-        PTR: any | undefined;
-        TXT: any | undefined;
+        PTR: Record<string, string | object> | undefined;
+        TXT: Record<string, string | object> | undefined;
     }): Promise<void> {
         //format of data: length-byte + text + length-byte + text + length-byte + text ...
         function extractStringsFromBuffer(buffer: Buffer): string[] {
@@ -50,8 +69,8 @@ export class AutoDetector {
             this.logDebug('Maybe detected websocket device');
             console.log(entry);
             //get model:
-            let model;
-            if (entry.PTR && entry.PTR.data) {
+            let model: string | undefined = undefined;
+            if (entry.PTR && entry.PTR.data && typeof entry.PTR.data === 'string') {
                 model = entry.PTR.data.substring(0, 8);
             }
 
@@ -112,7 +131,7 @@ export class AutoDetector {
             }
 
             //parse buffer:
-            const keyValuePairs = extractStringsFromBuffer(entry.TXT.data);
+            const keyValuePairs = extractStringsFromBuffer(entry.TXT.data as Buffer);
             for (const pair of keyValuePairs) {
                 const [key, value] = pair.split('=');
                 switch (key.toLowerCase()) {
@@ -156,12 +175,20 @@ export class AutoDetector {
         }
     }
 
+    /**
+     * Close the mDNS listener.
+     */
     close(): void {
         if (this.mdns && typeof this.mdns.close === 'function') {
             this.mdns.close();
         }
     }
 
+    /**
+     * Constructor.
+     *
+     * @param adapter reference to the adapter
+     */
     constructor(adapter: Mydlink) {
         this.adapter = adapter;
         this.mdns = new MulticastDNS({

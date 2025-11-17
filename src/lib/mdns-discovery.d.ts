@@ -1,4 +1,7 @@
 declare module 'mdns-discovery' {
+    /**
+     * MulticastDNS class for mDNS service discovery
+     */
     export class MulticastDNS {
         constructor(opts: any);
         close(): void;

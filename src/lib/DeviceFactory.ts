@@ -16,7 +16,7 @@ function deviceObjetToTableDevice(configDevice: ioBroker.DeviceObject): TableDev
         enabled: configDevice.native.enabled,
     };
 }
-async function sendModelInfoToSentry(adapter: Mydlink, model: string, xml: Record<string, string>): Promise<void> {
+function sendModelInfoToSentry(adapter: Mydlink, model: string, xml: Record<string, string>): void {
     if (!KnownDevices[model]) {
         //unknown device -> report to sentry.
         adapter.log.info(
@@ -75,18 +75,18 @@ export async function createFromObject(adapter: Mydlink, configDevice: ioBroker.
 /**
  * Create a device with model known.
  *
- * @param adapter
- * @param params
- * @param params.ip
- * @param params.pin
- * @param params.pinEncrypted
- * @param params.model
- * @param params.pollInterval
- * @param params.mac
- * @param params.id
- * @param params.isWebsocket
- * @param params.name
- * @param params.enabled
+ * @param adapter reference to the running adapter
+ * @param params parameters for device creation
+ * @param params.ip ip of device
+ * @param params.pin pin of device
+ * @param params.pinEncrypted is the supplied pin encrypted?
+ * @param params.model model of device
+ * @param params.pollInterval polling interval
+ * @param params.mac mac address
+ * @param params.id id of device
+ * @param params.isWebsocket use websocket device?
+ * @param params.name name of device
+ * @param params.enabled is device enabled?
  */
 export async function createDevice(
     adapter: Mydlink,
@@ -103,8 +103,8 @@ export async function createDevice(
         enabled?: boolean;
     },
 ): Promise<Device> {
-    let device;
     const deviceFlags = KnownDevices[params.model];
+    let device: SoapDevice | WebSocketDevice;
     if (deviceFlags) {
         device = new deviceFlags.DeviceType(adapter, params.ip, params.pin, params.pinEncrypted);
         if (typeof deviceFlags.moreSetup === 'function') {
@@ -113,16 +113,16 @@ export async function createDevice(
     } else {
         adapter.log.info(`Unknown device type ${params.model} for ${params.name}.`);
         try {
-            let info;
+            let info: Record<string, string>;
             if (params.isWebsocket) {
                 device = new WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
-                const body = await device.getModelInfoForSentry();
+                const body = await (device as WebSocketDevice).getModelInfoForSentry();
                 info = { info: `UNKNOWN WEBSOCKET DEVICE: ${params.model}`, body };
             } else {
                 device = new SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
                 info = await device.client.getDeviceDescriptionXML();
             }
-            await sendModelInfoToSentry(adapter, params.model, info);
+            sendModelInfoToSentry(adapter, params.model, info);
         } catch (e: any) {
             adapter.log.error(`Could not send device information to sentry. Please report. Error was: ${e.stack}`);
         }
@@ -144,7 +144,7 @@ export async function createDevice(
  * Creates DeviceInfo from configuration-Table object (model unknown).
  *
  * @param adapter ioBroker Adapter
- * @param tableDevice
+ * @param tableDevice device information from configuration table
  * @param [doDecrypt] do we need to decrypt the PIN?
  * @param [forceWebsocket] force usage of websocket device. Set to true, if soap already failed.
  * @returns @returns Promise<Device>
@@ -158,7 +158,7 @@ export async function createFromTable(
     const pinEncrypted = doDecrypt && Boolean(tableDevice.mac);
     const mac = tableDevice.mac ? tableDevice.mac.toUpperCase() : '';
 
-    let device;
+    let device: SoapDevice | WebSocketDevice;
     //first try soap:
     if (!forceWebsocket) {
         device = new SoapDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
