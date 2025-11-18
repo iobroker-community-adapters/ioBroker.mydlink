@@ -77,7 +77,7 @@ class AutoDetector {
     if (entry.name === "_dcp._tcp.local") {
       this.logDebug("Maybe detected websocket device");
       console.log(entry);
-      let model = void 0;
+      let model = "";
       if (entry.PTR && entry.PTR.data && typeof entry.PTR.data === "string") {
         model = entry.PTR.data.substring(0, 8);
       }

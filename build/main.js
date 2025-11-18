@@ -111,33 +111,41 @@ class Mydlink extends utils.Adapter {
         }
       }
       const device = await (0, import_DeviceFactory.createFromObject)(this, existingDevice);
-      await device.createDeviceObject();
-      if (existingDevice.native.pinNotEncrypted) {
-        needUpdateConfig = true;
-      }
-      if (found) {
-        await device.start();
-        this.devices.push(device);
+      if (device) {
+        await device.createDeviceObject();
+        if (existingDevice.native.pinNotEncrypted) {
+          needUpdateConfig = true;
+        }
+        if (found) {
+          await device.start();
+          this.devices.push(device);
+        } else {
+          this.log.debug(`Deleting ${device.name}`);
+          await this.deleteDeviceFull(device);
+        }
       } else {
-        this.log.debug(`Deleting ${device.name}`);
-        await this.deleteDeviceFull(device);
+        this.log.error(`Could not create device for existing device entry: ${existingDevice._id}`);
       }
     }
     for (const configDevice of configDevicesToAdd) {
       (0, import_TableDevice.sanitizeTableDevice)(configDevice);
       const device = await (0, import_DeviceFactory.createFromTable)(this, configDevice, !configDevice.pinNotEncrypted);
-      this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);
-      const oldDevice = this.devices.find((d) => d.mac === device.mac);
-      if (oldDevice) {
-        this.log.info(
-          `Duplicate entry for ${device.mac} in config. Trying to rectify. Restart will happen. Affected devices: ${device.name} === ${configDevice.name}`
-        );
-        needUpdateConfig = true;
+      if (device) {
+        this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);
+        const oldDevice = this.devices.find((d) => d.mac === device.mac);
+        if (oldDevice) {
+          this.log.info(
+            `Duplicate entry for ${device.mac} in config. Trying to rectify. Restart will happen. Affected devices: ${device.name} === ${configDevice.name}`
+          );
+          needUpdateConfig = true;
+        } else {
+          await device.createDeviceObject();
+          await device.start();
+          await device.createDeviceObject();
+          this.devices.push(device);
+        }
       } else {
-        await device.createDeviceObject();
-        await device.start();
-        await device.createDeviceObject();
-        this.devices.push(device);
+        this.log.error(`Could not create device for config entry with IP: ${configDevice.ip}`);
       }
     }
     if (needUpdateConfig) {
@@ -192,7 +200,7 @@ class Mydlink extends utils.Adapter {
   async onStateChange(id, state) {
     if (state) {
       this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-      if (state.ack === false) {
+      if (!state.ack) {
         const deviceId = id.split(".")[2];
         const device = this.devices.find((d) => d.id === deviceId);
         if (device) {
@@ -255,10 +263,17 @@ class Mydlink extends utils.Adapter {
               },
               false
             );
+            if (!device) {
+              this.log.info("could not create device -> error.");
+              if (obj.callback) {
+                this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
+              }
+              return;
+            }
             try {
               await device.start();
               if (device.loggedIn && device.identified) {
-                const oldDevice = this.devices.find((d) => d.mac === device.mac);
+                const oldDevice = this.devices.find((d) => d.mac === (device == null ? void 0 : device.mac));
                 if (oldDevice) {
                   device.stop();
                   device = oldDevice;

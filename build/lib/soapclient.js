@@ -160,16 +160,19 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
       const result = node && node.firstChild ? node.firstChild.nodeValue : "ERROR";
       if (result === null) {
         const results = [];
-        Object.keys(node.childNodes).forEach(function(_value, key) {
-          const child = node.childNodes[key];
-          if (child && child.firstChild) {
-            results.push(child.firstChild.nodeValue);
-          }
-        });
+        if (node) {
+          Object.keys(node.childNodes).forEach(function(_value, key) {
+            const child = node.childNodes[key];
+            if (child && child.firstChild) {
+              results.push(child.firstChild.nodeValue);
+            }
+          });
+        }
         return results;
       }
       return result;
     }
+    return "ERROR";
   }
   async function login() {
     const response = await import_axios.default.post(HNAP_AUTH.url, requestBody(HNAP_LOGIN_METHOD, loginRequest()), {

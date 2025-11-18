@@ -106,18 +106,21 @@ async function createDevice(adapter, params) {
       sendModelInfoToSentry(adapter, params.model, info);
     } catch (e) {
       adapter.log.error(`Could not send device information to sentry. Please report. Error was: ${e.stack}`);
+      return void 0;
     }
   }
-  device.pollInterval = Number(params.pollInterval || device.pollInterval);
-  device.mac = params.mac || device.mac;
-  device.id = params.id || device.id;
-  if (!device.id) {
-    device.idFromMac();
+  if (device !== void 0) {
+    device.pollInterval = Number(params.pollInterval || device.pollInterval);
+    device.mac = params.mac || device.mac;
+    device.id = params.id || device.id;
+    if (!device.id) {
+      device.idFromMac();
+    }
+    device.name = params.name || device.name;
+    device.model = params.model;
+    device.enabled = params.enabled !== void 0 ? params.enabled : device.enabled;
+    device.isWebsocket = params.isWebsocket !== void 0 ? params.isWebsocket : device.isWebsocket;
   }
-  device.name = params.name || device.name;
-  device.model = params.model;
-  device.enabled = params.enabled !== void 0 ? params.enabled : device.enabled;
-  device.isWebsocket = params.isWebsocket !== void 0 ? params.isWebsocket : device.isWebsocket;
   return device;
 }
 async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWebsocket = false) {
