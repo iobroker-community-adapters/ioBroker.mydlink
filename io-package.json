@@ -109,7 +109,8 @@
       "zh-cn": "连接 Mydlink 插件和传感器到 ioBroker"
     },
     "authors": [
-      "Garfonso <garfonso@mobo.info>"
+      "Garfonso <garfonso@mobo.info>",
+      "iobroker-community-adapters <iobroker-community-adapters@gmx.de>"
     ],
     "keywords": [
       "mydlink",
@@ -143,12 +144,12 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=5.0.19"
+        "js-controller": ">=6.0.11"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=5.0.0"
+        "admin": ">=7.6.17"
       }
     ],
     "plugins": {
