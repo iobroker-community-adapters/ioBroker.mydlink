@@ -27,7 +27,7 @@
   "dependencies": {
     "@iobroker/adapter-core": "^3.2.3",
     "@xmldom/xmldom": "^0.9.8",
-    "axios": "^1.13.3",
+    "axios": "^1.13.4",
     "dlink_websocketclient": "^0.5.5",
     "mdns-discovery": "^0.2.6"
   },
