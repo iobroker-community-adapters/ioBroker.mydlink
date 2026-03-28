@@ -14,7 +14,7 @@ import { sanitizeTableDevice } from './lib/TableDevice';
 import { createFromObject, createFromTable } from './lib/DeviceFactory';
 
 // Load your modules here, e.g.:
-// import * as fs from "fs";
+// import * as fs from "node:fs";
 
 class Mydlink extends utils.Adapter {
     /**
