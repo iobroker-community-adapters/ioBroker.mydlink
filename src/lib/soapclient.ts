@@ -27,7 +27,7 @@
     SOFTWARE.
 */
 
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import axios from 'axios';
 import { DOMParser } from '@xmldom/xmldom';
 import { Agent } from 'node:http';
