@@ -1,39 +1,46 @@
-# Dependabot will run on day 24 of each month at 03:55 (Europe/Berlin timezone)
+# Dependabot configuration
+# Cooldown delays updating normal npm dependencies by 7 days but allows security updates to be processed immediately.
+# Note: Cooldown is not supported for the github-actions ecosystem.
+# Reference: https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
 version: 2
 updates:
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      time: "04:00"
-      timezone: "Europe/Berlin"
+      interval: 'weekly'
+      time: '04:00'
+      timezone: 'Europe/Berlin'
     open-pull-requests-limit: 15
     assignees:
-      - "Garfonso"
+      - 'Garfonso'
 
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      time: "04:00"
-      timezone: "Europe/Berlin"
-    versioning-strategy: "increase"
+      interval: 'weekly'
+      time: '04:00'
+      timezone: 'Europe/Berlin'
+    versioning-strategy: 'increase'
     open-pull-requests-limit: 15
     assignees:
-      - "Garfonso"
+      - 'Garfonso'
     ignore:
-      - dependency-name: "@types/node"
+      - dependency-name: '@types/node'
         update-types:
-          - "version-update:semver-major"
+          - 'version-update:semver-major'
+    cooldown:
+      default-days: 7
 
-  - package-ecosystem: "npm"
-    directory: "/src"
+  - package-ecosystem: 'npm'
+    directory: '/src'
     schedule:
-      interval: "weekly"
-      time: "04:00"
-      timezone: "Europe/Berlin"
+      interval: 'weekly'
+      time: '04:00'
+      timezone: 'Europe/Berlin'
     open-pull-requests-limit: 15
     assignees:
-      - "Garfonso"
-    versioning-strategy: "increase"
+      - 'Garfonso'
+    versioning-strategy: 'increase'
+    cooldown:
+      default-days: 7
