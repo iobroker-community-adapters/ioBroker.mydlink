@@ -22,7 +22,7 @@
     "url": "git@github.com:iobroker-community-adapters/ioBroker.mydlink.git"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.2.3",
