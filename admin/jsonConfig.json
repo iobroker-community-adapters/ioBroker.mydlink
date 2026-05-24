@@ -1,0 +1,63 @@
+{
+  "i18n": true,
+  "type": "panel",
+  "items": {
+    "devices": {
+      "type": "table",
+      "label": "ConfiguredDevices",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 12,
+      "lg": 12,
+      "xl": 12,
+      "encryptedAttributes": [
+        "pin"
+      ],
+      "items": [
+        {
+          "type": "text",
+          "attr": "name",
+          "title": "name",
+          "width": "18%",
+          "sort": true
+        },
+        {
+          "type": "text",
+          "attr": "mac",
+          "title": "mac",
+          "width": "18%",
+          "sort": true
+        },
+        {
+          "type": "text",
+          "attr": "ip",
+          "title": "ipaddress",
+          "width": "18%",
+          "sort": true
+        },
+        {
+          "type": "password",
+          "attr": "pin",
+          "title": "pin",
+          "width": "14%"
+        },
+        {
+          "type": "number",
+          "attr": "pollInterval",
+          "title": "pollInterval",
+          "width": "18%",
+          "min": 0,
+          "step": 1000,
+          "sort": true
+        },
+        {
+          "type": "checkbox",
+          "attr": "enabled",
+          "title": "enabled",
+          "width": "14%"
+        }
+      ]
+    }
+  }
+}
