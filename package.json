@@ -25,7 +25,7 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^3.2.3",
+    "@iobroker/adapter-core": "^3.4.3",
     "@xmldom/xmldom": "^0.9.10",
     "axios": "^1.13.6",
     "dlink_websocketclient": "^0.5.5",
