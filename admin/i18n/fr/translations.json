@@ -1,6 +1,6 @@
 {
     "Add": "Ajouter",
-    "Close": "proche",
+    "Close": "Fermer",
     "ConfiguredDevices": "Appareils configurés",
     "Error": "Erreur",
     "active": "Active",
@@ -11,7 +11,7 @@
     "addresses": "addresses to monitoring",
     "autoDetectDescription": "Les appareils suivants ont été détectés. Ils doivent être configurés pour être utilisés par ioBroker. Cliquez sur le bouton Ajouter pour transférer des valeurs dans le tableau. Ajoutez ensuite le nom et l'épingle et enregistrez.",
     "detectedDevices": "Appareils détectés",
-    "enabled": "activée",
+    "enabled": "activé",
     "errorDeviceDuplicate": "Erreur, deux appareils ont le même MAC. Veuillez supprimer les doublons.",
     "errorDeviceWithoutPin": "Au moins un appareil n'a pas de code PIN configuré. Sans code PIN, aucun contrôle n'est possible. Veuillez saisir le code PIN ou supprimer l'appareil incomplet.",
     "errorIdentify": "Impossible de contacter le périphérique. Réessayez plus tard ou ajoutez un appareil manuellement avec un autre bouton.",

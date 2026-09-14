@@ -11,7 +11,7 @@
     "addresses": "addresses to monitoring",
     "autoDetectDescription": "Os seguintes dispositivos foram detectados. Eles precisam ser configurados para serem usados pelo ioBroker. Clique no botão Adicionar para transferir valores para a tabela. Em seguida, adicione nome e pino e salve.",
     "detectedDevices": "Dispositivos detectados",
-    "enabled": "ativado",
+    "enabled": "habilitado",
     "errorDeviceDuplicate": "Erro, dois dispositivos têm o mesmo MAC. Por favor, remova as duplicatas.",
     "errorDeviceWithoutPin": "Pelo menos um dispositivo não possui um PIN configurado. Sem PIN, nenhum controle é possível. Digite o PIN ou exclua o dispositivo incompleto.",
     "errorIdentify": "Não foi possível entrar em contato com o dispositivo. Tente novamente mais tarde ou adicione o dispositivo manualmente com outro botão.",
