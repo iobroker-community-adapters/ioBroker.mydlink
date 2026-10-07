@@ -94,7 +94,7 @@ export abstract class Device extends DeviceInfo {
                 statusStates: {
                     onlineId: `${this.adapter.namespace}.${this.id}${Suffixes.reachable}`,
                 },
-            } as Partial<ioBroker.DeviceCommon>,
+            },
             native: {
                 ip: this.ip,
                 mac: this.mac,
