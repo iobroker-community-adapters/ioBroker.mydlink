@@ -2,7 +2,7 @@
 {
     // To update the compilation target, install a different version of @tsconfig/node... and reference it here
     // https://github.com/tsconfig/bases
-    "extends": "@tsconfig/node20/tsconfig.json",
+    "extends": "@tsconfig/node22/tsconfig.json",
     "compilerOptions": {
         // do not compile anything, this file is just to configure type checking
         // the compilation is configured in tsconfig.build.json
@@ -18,6 +18,9 @@
 
         // This is necessary for the automatic typing of the adapter config
         "resolveJsonModule": true,
+
+        // @tsconfig/node22 restricts "types" to node, so mocha globals must be added explicitly
+        "types": ["node", "mocha"],
 
         // If you want to disable the stricter type checks (not recommended), uncomment the following line
         // "strict": false,
