@@ -32,7 +32,7 @@ __export(soapclient_exports, {
   soapClient: () => soapClient
 });
 module.exports = __toCommonJS(soapclient_exports);
-var crypto = __toESM(require("crypto"));
+var crypto = __toESM(require("node:crypto"));
 var import_axios = __toESM(require("axios"));
 var import_xmldom = require("@xmldom/xmldom");
 var import_node_http = require("node:http");
