@@ -154,7 +154,7 @@ export async function createDevice(
  * @param tableDevice device information from configuration table
  * @param [doDecrypt] do we need to decrypt the PIN?
  * @param [forceWebsocket] force usage of websocket device. Set to true, if soap already failed.
- * @returns @returns Promise<Device>
+ * @returns Promise<Device>
  */
 export async function createFromTable(
     adapter: Mydlink,
