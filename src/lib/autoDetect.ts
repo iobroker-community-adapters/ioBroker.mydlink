@@ -1,9 +1,40 @@
-/// <reference types="./mdns-discovery" />
-
 import type { Mydlink } from './mydlink';
-import MulticastDNS from 'mdns-discovery';
+import makeMdns from 'multicast-dns';
+import type { MulticastDNS } from 'multicast-dns';
+import type { Answer, StringAnswer, TxtAnswer, TxtData } from 'dns-packet';
+import type { RemoteInfo } from 'node:dgram';
 
 import { WebSocketDevice } from './WebSocketDevice';
+
+const SOAP_SERVICE = '_dhnap._tcp.local';
+const WEBSOCKET_SERVICE = '_dcp._tcp.local';
+
+/**
+ * Minimum time between two mDNS queries triggered by the admin dialog.
+ */
+const MIN_QUERY_INTERVAL = 30000;
+
+/**
+ * Information about a detected device, sent to the admin dialog.
+ */
+export interface DetectedDevice {
+    /** IP address of the device. */
+    ip: string;
+    /** mDNS service name the device was detected with. */
+    name: string;
+    /** Model of the device. */
+    type?: string;
+    /** MAC address of the device. */
+    mac?: string;
+    /** Device announced itself as mydlink device. */
+    mydlink?: boolean;
+    /** Device needs to be controlled via websocket. */
+    useWebSocket?: boolean;
+    /** Device is already configured. */
+    alreadyPresent?: boolean;
+    /** Admin dialog must not change this entry. */
+    readOnly?: boolean;
+}
 
 /**
  * Auto-detection of devices via mDNS.
@@ -13,65 +44,78 @@ export class AutoDetector {
 
     adapter: Mydlink;
 
-    detectedDevices: Record<string, any> = {};
+    detectedDevices: Record<string, DetectedDevice> = {};
 
-    debug = false;
+    lastQuery = 0;
 
     /**
-     * Log debug message if debug is enabled.
-     *
-     * @param message The message to log.
+     * Send mDNS query for all D-Link services.
      */
-    logDebug(message: string): void {
-        if (this.debug) {
-            this.adapter.log.debug(message);
+    query(): void {
+        this.lastQuery = Date.now();
+        this.mdns.query({
+            questions: [
+                { name: SOAP_SERVICE, type: 'PTR' },
+                { name: WEBSOCKET_SERVICE, type: 'PTR' },
+            ],
+        });
+    }
+
+    /**
+     * Query again, if last query is some time ago. Used while admin dialog is open.
+     */
+    refresh(): void {
+        if (Date.now() - this.lastQuery > MIN_QUERY_INTERVAL) {
+            this.query();
         }
     }
 
     /**
-     * Handle detection entry from mDNS.
+     * Handle mDNS response packet. All records of one packet are evaluated together.
+     *
+     * @param packet the mDNS response
+     * @param packet.answers answer records
+     * @param packet.additionals additional records
+     * @param rinfo information about the sender
+     */
+    async onResponse(
+        packet: { answers?: Answer[]; additionals?: Answer[] },
+        rinfo: Pick<RemoteInfo, 'address'>,
+    ): Promise<void> {
+        const records = [...(packet.answers || []), ...(packet.additionals || [])];
+        const ptr = records.find(
+            (r): r is StringAnswer => r.type === 'PTR' && (r.name === SOAP_SERVICE || r.name === WEBSOCKET_SERVICE),
+        );
+        if (!ptr) {
+            return; //not a D-Link device.
+        }
+        const txt = records.find((r): r is TxtAnswer => r.type === 'TXT');
+        await this.onDetection({
+            ip: rinfo.address,
+            name: ptr.name,
+            ptrData: ptr.data,
+            txt: txt ? txtToStrings(txt.data) : undefined,
+        });
+    }
+
+    /**
+     * Handle detection of a D-Link device.
      *
      * @param entry The detection entry.
      * @param entry.ip The IP address of the detected device.
-     * @param entry.type The type of the detected device.
-     * @param entry.name The name of the detected device.
-     * @param entry.mac The MAC address of the detected device, if available.
-     * @param entry.PTR The PTR record of the detected device, if available.
-     * @param entry.TXT The TXT record of the detected device, if available.
+     * @param entry.name The mDNS service name of the detected device.
+     * @param entry.ptrData The service instance name from the PTR record.
+     * @param entry.txt The key=value strings of the TXT record, if available.
      */
-    async onDetection(entry: {
-        ip: string;
-        type: string;
-        name: string;
-        mac: string | undefined;
-        PTR: Record<string, string | object> | undefined;
-        TXT: Record<string, string | object> | undefined;
-    }): Promise<void> {
-        //format of data: length-byte + text + length-byte + text + length-byte + text ...
-        function extractStringsFromBuffer(buffer: Buffer): string[] {
-            let index = 0;
-            const strings = [];
-            while (index < buffer.length) {
-                const length = buffer.readInt8(index);
-                index += 1;
-                strings.push(buffer.subarray(index, index + length).toString());
-                index += length;
+    async onDetection(entry: { ip: string; name: string; ptrData: string; txt: string[] | undefined }): Promise<void> {
+        if (entry.name === WEBSOCKET_SERVICE) {
+            const alreadyDetected = this.detectedDevices[entry.ip];
+            if (alreadyDetected && alreadyDetected.mac) {
+                return; //already identified, no need to log in again.
             }
-            return strings;
-        }
-
-        //somehow starts to detect fritzbox later on??
-        if (entry.name !== '_dhnap._tcp.local' && entry.name !== '_dcp._tcp.local') {
-            //this.log.debug('Ignoring false detection? -> ' + entry.ip + ' - ' + entry.name);
-            return;
-        }
-        if (entry.name === '_dcp._tcp.local') {
-            this.logDebug('Maybe detected websocket device');
+            this.adapter.log.debug(`Maybe detected websocket device on ${entry.ip}`);
             //get model:
-            let model = '';
-            if (entry.PTR && entry.PTR.data && typeof entry.PTR.data === 'string') {
-                model = entry.PTR.data.substring(0, 8);
-            }
+            const model = entry.ptrData ? entry.ptrData.substring(0, 8) : '';
 
             //somehow I get records for devices from wrong IP. or they report devices, they detect under their IP?? not sure...
             //let's connect here and get the MAC -> so we can securely identify the device.
@@ -84,10 +128,10 @@ export class AutoDetector {
                 newDevice.id = newDevice.client.getDeviceId().toUpperCase();
                 if (newDevice.id) {
                     newDevice.mac = newDevice.id.match(/.{2}/g)!.join(':');
-                    this.logDebug(`Got websocket device ${model} on ${newDevice.ip}`);
+                    this.adapter.log.debug(`Got websocket device ${model} on ${newDevice.ip}`);
                 }
             } catch (e: any) {
-                this.logDebug(`Could not identify websocket device: ${e.stack}`);
+                this.adapter.log.debug(`Could not identify websocket device: ${e.stack}`);
             } finally {
                 newDevice.stop();
             }
@@ -95,11 +139,11 @@ export class AutoDetector {
             //now use mac to check if we already now that device:
             const device = newDevice.mac ? this.adapter.devices.find(d => d.mac === newDevice.mac) : undefined;
             if (device) {
-                this.logDebug(`Device was already present as ${device.model} on ${device.ip}`);
+                this.adapter.log.debug(`Device was already present as ${device.model} on ${device.ip}`);
                 if (device.ip === newDevice.ip && device.model !== newDevice.model) {
-                    this.logDebug(`Model still differs? ${device.model} != ${newDevice.model}`);
+                    this.adapter.log.debug(`Model still differs? ${device.model} != ${newDevice.model}`);
                     if (model && device.isWebsocket) {
-                        this.logDebug(`Updated model to ${model}`);
+                        this.adapter.log.debug(`Updated model to ${model}`);
                         device.model = model;
                         await device.createDeviceObject(); //store new model in config.
                     }
@@ -118,28 +162,22 @@ export class AutoDetector {
             }
         }
 
-        //this.log.debug('Got discovery: ' + JSON.stringify(entry, null, 2));
-        if (entry.TXT && entry.TXT.data) {
+        if (entry.txt) {
             //build detected device and fill it:
-            let device = this.detectedDevices[entry.ip];
-            if (!device) {
-                device = {
-                    ip: entry.ip,
-                    name: entry.name,
-                };
-            }
+            const device: DetectedDevice = this.detectedDevices[entry.ip] || {
+                ip: entry.ip,
+                name: entry.name,
+            };
 
-            //parse buffer:
-            const keyValuePairs = extractStringsFromBuffer(entry.TXT.data as Buffer);
-            for (const pair of keyValuePairs) {
+            for (const pair of entry.txt) {
                 const [key, value] = pair.split('=');
                 switch (key.toLowerCase()) {
-                    //extract mac from buffer:
+                    //extract mac:
                     case 'mac': {
                         device.mac = value.toUpperCase();
                         break;
                     }
-                    //extract model number from buffer:
+                    //extract model number:
                     case 'model_number': {
                         device.type = value;
                         break;
@@ -158,18 +196,19 @@ export class AutoDetector {
                 const oldDevice = this.adapter.devices.find(d => d.mac === device.mac);
                 if (oldDevice) {
                     //update model, if differs.
-                    if (oldDevice.model !== device.type) {
+                    if (device.type && oldDevice.model !== device.type) {
                         oldDevice.model = device.type;
                     }
                     //found device we already know. Let's check ip.
                     if (device.ip !== oldDevice.ip) {
+                        this.adapter.log.info(`${oldDevice.name} changed ip from ${oldDevice.ip} to ${device.ip}`);
                         oldDevice.ip = device.ip;
                         await oldDevice.createDeviceObject(); //store IP in config.
                         await oldDevice.start();
                     }
                     device.alreadyPresent = true;
                 }
-                this.logDebug(`Detected Device now is: ${JSON.stringify(device, null, 2)}`);
+                this.adapter.log.debug(`Detected Device now is: ${JSON.stringify(device)}`);
             }
         }
     }
@@ -178,9 +217,7 @@ export class AutoDetector {
      * Close the mDNS listener.
      */
     close(): void {
-        if (this.mdns && typeof this.mdns.close === 'function') {
-            this.mdns.close();
-        }
+        this.mdns.destroy();
     }
 
     /**
@@ -190,17 +227,29 @@ export class AutoDetector {
      */
     constructor(adapter: Mydlink) {
         this.adapter = adapter;
-        this.mdns = new MulticastDNS({
-            timeout: 0, //0 == stay active??
-            name: ['_dhnap._tcp.local', '_dcp._tcp.local'],
-            find: '*',
-            broadcast: false,
+        //binds to 0.0.0.0:5353 and joins the multicast group on all interfaces.
+        this.mdns = makeMdns();
+        this.mdns.on('response', (packet, rinfo) => {
+            this.onResponse(packet, rinfo).catch(e =>
+                this.adapter.log.debug(`Error during processing of mDNS response: ${e.stack}`),
+            );
         });
-
-        this.logDebug('Auto detection started');
-        if (this.mdns !== undefined) {
-            this.mdns.on('entry', this.onDetection.bind(this));
-            this.mdns.run(() => adapter.log.info('Discovery done'));
-        }
+        this.mdns.on('error', e => this.adapter.log.warn(`Auto detection error: ${e.message}`));
+        this.mdns.on('warning', e => this.adapter.log.debug(`Auto detection warning: ${e.message}`));
+        this.mdns.on('ready', () => {
+            this.adapter.log.debug('Auto detection started');
+            this.query();
+        });
     }
+}
+
+/**
+ * Convert TXT record data (string, Buffer or array of those) to strings.
+ *
+ * @param data TXT record data
+ * @returns array of key=value strings
+ */
+function txtToStrings(data: TxtData): string[] {
+    const items = Array.isArray(data) ? data : [data];
+    return items.map(item => (Buffer.isBuffer(item) ? item.toString() : String(item)));
 }

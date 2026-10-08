@@ -266,10 +266,15 @@ class Mydlink extends utils.Adapter {
                     if (obj.callback) {
                         const devices = [];
                         if (this.autoDetector) {
+                            //admin dialog polls this -> query network again from time to time.
+                            this.autoDetector.refresh();
                             for (const key of Object.keys(this.autoDetector.detectedDevices)) {
                                 const device = this.autoDetector.detectedDevices[key];
-                                device.readOnly = true;
-                                devices.push(device);
+                                //admin dialog needs mac to show device.
+                                if (device.mac) {
+                                    device.readOnly = true;
+                                    devices.push(device);
+                                }
                             }
                         }
                         this.sendTo(obj.from, obj.command, devices, obj.callback);
