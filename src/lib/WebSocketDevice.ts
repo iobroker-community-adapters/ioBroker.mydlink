@@ -119,7 +119,9 @@ export class WebSocketDevice extends Device {
      * @param err error object
      */
     async onError(code?: number, err?: Error): Promise<void> {
-        await this.adapter.setState(this.id + Suffixes.unreachable, true, true);
+        if (this.id) {
+            await this.adapter.setState(this.id + Suffixes.unreachable, true, true);
+        }
         if (code || err) {
             this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
         } else {
@@ -157,7 +159,9 @@ export class WebSocketDevice extends Device {
         this.client.on('error', (code: number, error: Error) => this.onError(code, error));
         this.client.on('close', () => this.onError());
         this.client.on('message', (message: string) => this.adapter.log.debug(`${this.name} got message: ${message}`));
-        await this.adapter.setState(this.id + Suffixes.unreachable, false, true);
+        if (this.id) {
+            await this.adapter.setState(this.id + Suffixes.unreachable, false, true);
+        }
         this.ready = true;
         this.adapter.log.debug('Setup device event listener.');
     }
