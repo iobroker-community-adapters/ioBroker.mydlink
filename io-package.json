@@ -138,6 +138,7 @@
       "config": "materialize"
     },
     "tier": 2,
+    "messagebox": true,
     "docs": {
       "de": "docs/de/README.md",
       "en": "docs/en/README.md"
