@@ -202,7 +202,7 @@ export class SoapSwitch extends SoapDevice {
                 }
                 if (this.hasTotalPower) {
                     const totalPower = await this.client.totalConsumption();
-                    await this.adapter.setStateChangedAsync(this.id + Suffixes.power, totalPower, true);
+                    await this.adapter.setStateChangedAsync(this.id + Suffixes.totalPower, totalPower, true);
                 }
             } catch (e: any) {
                 await this.handleNetworkError(e);
