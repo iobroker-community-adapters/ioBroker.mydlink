@@ -67,7 +67,6 @@ export class AutoDetector {
         }
         if (entry.name === '_dcp._tcp.local') {
             this.logDebug('Maybe detected websocket device');
-            console.log(entry);
             //get model:
             let model = '';
             if (entry.PTR && entry.PTR.data && typeof entry.PTR.data === 'string') {
@@ -94,7 +93,7 @@ export class AutoDetector {
             }
 
             //now use mac to check if we already now that device:
-            const device = this.adapter.devices.find(device => device.mac === entry.mac);
+            const device = newDevice.mac ? this.adapter.devices.find(d => d.mac === newDevice.mac) : undefined;
             if (device) {
                 this.logDebug(`Device was already present as ${device.model} on ${device.ip}`);
                 if (device.ip === newDevice.ip && device.model !== newDevice.model) {
@@ -114,7 +113,7 @@ export class AutoDetector {
                     mac: newDevice.mac,
                     mydlink: true,
                     useWebSocket: true,
-                    alreadyPresent: !!device,
+                    alreadyPresent: false,
                 };
             }
         }
