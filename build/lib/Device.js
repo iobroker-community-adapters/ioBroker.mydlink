@@ -296,7 +296,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
    * @param _state new state
    */
   async handleStateChange(_id, _state) {
-    if (this.loggedIn) {
+    if (!this.loggedIn) {
       await this.login();
     }
   }

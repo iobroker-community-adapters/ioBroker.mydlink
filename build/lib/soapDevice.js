@@ -73,18 +73,38 @@ class SoapDevice extends import_Device.Device {
     await this.adapter.subscribeStatesAsync(this.id + import_suffixes.Suffixes.reboot);
   }
   /**
+   * Run an action on the device. The device closes the session after a few minutes without requests
+   * (i.e. if polling is slow or disabled), so log in again once and retry if it was rejected with 403.
+   *
+   * @param action the action to execute
+   * @returns result of the action
+   */
+  async withRelogin(action) {
+    try {
+      return await action();
+    } catch (e) {
+      if ((0, import_Device.processNetworkError)(e) !== 403) {
+        throw e;
+      }
+      this.adapter.log.debug(`${this.name} session expired, logging in again.`);
+      this.loggedIn = false;
+      await this.login();
+      return action();
+    }
+  }
+  /**
    * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
    *
    * @param id if of state
    * @param state new state
    */
   async handleStateChange(id, state) {
-    if (this.loggedIn) {
+    if (!this.loggedIn) {
       await this.login();
     }
     if (id.endsWith(import_suffixes.Suffixes.reboot) && state.val) {
       try {
-        await this.client.reboot();
+        await this.withRelogin(() => this.client.reboot());
         this.adapter.log.debug(`Send reboot request to ${this.name}`);
       } catch (e) {
         await this.handleNetworkError(e);
@@ -222,7 +242,8 @@ class SoapSwitch extends SoapDevice {
     if (id.endsWith(import_suffixes.Suffixes.state)) {
       if (typeof state.val === "boolean") {
         try {
-          await this.client.switch(state.val);
+          const val = state.val;
+          await this.withRelogin(() => this.client.switch(val));
           const newVal = await this.client.state();
           await this.adapter.setState(id, newVal, true);
         } catch (e) {

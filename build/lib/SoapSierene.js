@@ -40,9 +40,11 @@ class SoapSiren extends import_soapDevice.SoapDevice {
         try {
           let newVal;
           if (state.val) {
-            newVal = await this.client.setSoundPlay(this.soundToPlay, this.volume, this.duration);
+            newVal = await this.withRelogin(
+              () => this.client.setSoundPlay(this.soundToPlay, this.volume, this.duration)
+            );
           } else {
-            newVal = !await this.client.setAlarmDismissed();
+            newVal = !await this.withRelogin(() => this.client.setAlarmDismissed());
           }
           await this.adapter.setState(id, newVal, true);
         } catch (e) {
