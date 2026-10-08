@@ -312,8 +312,10 @@ export abstract class Device extends DeviceInfo {
             }
         }
 
-        //transfer enabled flag to object:
-        await this.adapter.setState(this.id + Suffixes.enabled, { val: this.enabled, ack: true });
+        //transfer enabled flag to object (only possible once the device is identified and has an id):
+        if (this.id) {
+            await this.adapter.setState(this.id + Suffixes.enabled, { val: this.enabled, ack: true });
+        }
 
         //start polling if device is enabled (do this after all is set up).
         if (this.enabled) {

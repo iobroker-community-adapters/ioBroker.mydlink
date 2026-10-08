@@ -329,10 +329,15 @@ class Mydlink extends utils.Adapter {
                                     this.sendTo(obj.from, obj.command, sendDevice, obj.callback);
                                 }
                             } else {
+                                //stop polling, otherwise the unidentified device keeps running in the background.
+                                device.stop();
                                 this.log.info('could not login -> error.');
-                                this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
+                                }
                             }
                         } catch (e: any) {
+                            device.stop();
                             this.log.info(`could not login device: ${e.stack}`);
                             if (obj.callback) {
                                 this.sendTo(obj.from, obj.command, 'ERROR', obj.callback);
