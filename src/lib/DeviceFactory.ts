@@ -133,7 +133,7 @@ export async function createDevice(
     }
 
     if (device !== undefined) {
-        device.pollInterval = Number(params.pollInterval || device.pollInterval);
+        device.pollInterval = Number.isFinite(params.pollInterval) ? Number(params.pollInterval) : device.pollInterval;
         device.mac = params.mac || device.mac;
         device.id = params.id || device.id;
         if (!device.id) {
