@@ -53,14 +53,15 @@ export class SoapDevice extends Device {
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      *
      * @param id if of state
-     * @param _state new state
+     * @param state new state
      */
-    async handleStateChange(id: string, _state: ioBroker.State): Promise<void> {
+    async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
         if (this.loggedIn) {
             await this.login();
         }
 
-        if (id.endsWith(Suffixes.reboot)) {
+        //button: only react on true, ignore resets to false.
+        if (id.endsWith(Suffixes.reboot) && state.val) {
             try {
                 await this.client.reboot();
                 this.adapter.log.debug(`Send reboot request to ${this.name}`);
@@ -219,8 +220,8 @@ export class SoapSwitch extends SoapDevice {
     async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
         await super.handleStateChange(id, state);
 
-        if (typeof state.val === 'boolean') {
-            if (id.endsWith(Suffixes.state)) {
+        if (id.endsWith(Suffixes.state)) {
+            if (typeof state.val === 'boolean') {
                 try {
                     await this.client.switch(state.val);
                     const newVal = (await this.client.state()) as boolean;
@@ -228,9 +229,9 @@ export class SoapSwitch extends SoapDevice {
                 } catch (e: any) {
                     await this.handleNetworkError(e);
                 }
+            } else {
+                this.adapter.log.warn('Wrong state type. Only boolean accepted for switch.');
             }
-        } else {
-            this.adapter.log.warn('Wrong state type. Only boolean accepted for switch.');
         }
     }
 }
