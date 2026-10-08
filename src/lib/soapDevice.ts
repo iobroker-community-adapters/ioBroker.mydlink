@@ -51,7 +51,7 @@ export class SoapDevice extends Device {
 
     /**
      * Run an action on the device. The device closes the session after a few minutes without requests
-     * (i.e. if polling is slow or disabled), so log in again once and retry if it was rejected with 403.
+     * (i.e. if polling is slower than that or disabled), so log in again once and retry if it was rejected with 403.
      *
      * @param action the action to execute
      * @returns result of the action
@@ -213,7 +213,8 @@ export class SoapSwitch extends SoapDevice {
         if (this.ready) {
             //check switch status:
             try {
-                const val = (await this.client.state()) as boolean;
+                //first authenticated request of this poll -> log in again, if session expired.
+                const val = (await this.withRelogin(() => this.client.state())) as boolean;
                 await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
 
                 if (this.hasTemp) {
@@ -274,7 +275,7 @@ export class SoapMotionDetector extends SoapDevice {
         // if not ready -> communication did fail, will be retried on next poll.
         if (this.ready) {
             try {
-                const lastDetection = await this.client.lastDetection();
+                const lastDetection = await this.withRelogin(() => this.client.lastDetection());
                 //const notChanged = await new Promise<boolean>((resolve, reject) => this.adapter.setStateChanged(this.id + Suffixes.lastDetected, lastDetection, true, (err: any, _id: string, notChanged: boolean) => err ? reject(err) : resolve(notChanged)));
                 const notChanged = await new Promise<boolean>((resolve, reject) =>
                     this.adapter.setStateChanged(

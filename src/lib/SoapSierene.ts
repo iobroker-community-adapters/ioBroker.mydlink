@@ -171,7 +171,7 @@ export class SoapSiren extends SoapDevice {
         if (this.ready) {
             //check switch status:
             try {
-                const val = await this.client.getSoundPlay();
+                const val = await this.withRelogin(() => this.client.getSoundPlay());
                 await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
             } catch (e: any) {
                 await this.handleNetworkError(e);
