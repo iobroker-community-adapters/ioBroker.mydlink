@@ -237,7 +237,7 @@ class Mydlink extends utils.Adapter {
         if (state) {
             //ignore delete state
             // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
             //only act if ack = false.
             if (!state.ack) {

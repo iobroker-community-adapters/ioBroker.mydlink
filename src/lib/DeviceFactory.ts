@@ -260,7 +260,7 @@ export async function createFromTable(
         ) {
             adapter.log.error(
                 `${
-                    tableDevice.name
+                    tableDevice.name || tableDevice.ip
                 } could not login. Please check credentials and if device is online/connected. Error: ${e.code} - ${
                     e.stack
                 }`,

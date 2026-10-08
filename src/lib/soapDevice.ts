@@ -94,7 +94,9 @@ export class SoapDevice extends Device {
         if (this.model !== settings.ModelName) {
             const oldModel = this.model;
             this.model = settings.ModelName;
-            this.adapter.log.warn(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
+            if (oldModel) {
+                this.adapter.log.warn(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
+            }
             throw new WrongModelError(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
         }
 
