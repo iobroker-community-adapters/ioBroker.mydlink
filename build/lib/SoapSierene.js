@@ -176,7 +176,7 @@ class SoapSiren extends import_soapDevice.SoapDevice {
     await super.onInterval();
     if (this.ready) {
       try {
-        const val = await this.client.getSoundPlay();
+        const val = await this.withRelogin(() => this.client.getSoundPlay());
         await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
       } catch (e) {
         await this.handleNetworkError(e);

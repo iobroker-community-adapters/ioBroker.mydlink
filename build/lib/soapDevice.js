@@ -74,7 +74,7 @@ class SoapDevice extends import_Device.Device {
   }
   /**
    * Run an action on the device. The device closes the session after a few minutes without requests
-   * (i.e. if polling is slow or disabled), so log in again once and retry if it was rejected with 403.
+   * (i.e. if polling is slower than that or disabled), so log in again once and retry if it was rejected with 403.
    *
    * @param action the action to execute
    * @returns result of the action
@@ -212,7 +212,7 @@ class SoapSwitch extends SoapDevice {
     await super.onInterval();
     if (this.ready) {
       try {
-        const val = await this.client.state();
+        const val = await this.withRelogin(() => this.client.state());
         await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
         if (this.hasTemp) {
           const temp = await this.client.temperature();
@@ -265,7 +265,7 @@ class SoapMotionDetector extends SoapDevice {
     await super.onInterval();
     if (this.ready) {
       try {
-        const lastDetection = await this.client.lastDetection();
+        const lastDetection = await this.withRelogin(() => this.client.lastDetection());
         const notChanged = await new Promise(
           (resolve, reject) => this.adapter.setStateChanged(
             this.id + import_suffixes.Suffixes.lastDetected,
