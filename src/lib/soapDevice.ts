@@ -1,4 +1,4 @@
-import { Device, WrongMacError, WrongModelError } from './Device';
+import { Device, processNetworkError, WrongMacError, WrongModelError } from './Device';
 import { Suffixes } from './suffixes';
 import type { SoapClientInterface } from './Clients';
 import createSoapClient from './soapclient';
@@ -50,20 +50,41 @@ export class SoapDevice extends Device {
     }
 
     /**
+     * Run an action on the device. The device closes the session after a few minutes without requests
+     * (i.e. if polling is slow or disabled), so log in again once and retry if it was rejected with 403.
+     *
+     * @param action the action to execute
+     * @returns result of the action
+     */
+    protected async withRelogin<T>(action: () => Promise<T>): Promise<T> {
+        try {
+            return await action();
+        } catch (e: any) {
+            if (processNetworkError(e) !== 403) {
+                throw e;
+            }
+            this.adapter.log.debug(`${this.name} session expired, logging in again.`);
+            this.loggedIn = false;
+            await this.login();
+            return action();
+        }
+    }
+
+    /**
      * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
      *
      * @param id if of state
      * @param state new state
      */
     async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
-        if (this.loggedIn) {
+        if (!this.loggedIn) {
             await this.login();
         }
 
         //button: only react on true, ignore resets to false.
         if (id.endsWith(Suffixes.reboot) && state.val) {
             try {
-                await this.client.reboot();
+                await this.withRelogin(() => this.client.reboot());
                 this.adapter.log.debug(`Send reboot request to ${this.name}`);
             } catch (e: any) {
                 await this.handleNetworkError(e);
@@ -225,7 +246,8 @@ export class SoapSwitch extends SoapDevice {
         if (id.endsWith(Suffixes.state)) {
             if (typeof state.val === 'boolean') {
                 try {
-                    await this.client.switch(state.val);
+                    const val = state.val;
+                    await this.withRelogin(() => this.client.switch(val));
                     const newVal = (await this.client.state()) as boolean;
                     await this.adapter.setState(id, newVal, true);
                 } catch (e: any) {

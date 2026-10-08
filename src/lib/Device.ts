@@ -347,7 +347,7 @@ export abstract class Device extends DeviceInfo {
      * @param _state new state
      */
     async handleStateChange(_id: string, _state: ioBroker.State): Promise<void> {
-        if (this.loggedIn) {
+        if (!this.loggedIn) {
             await this.login();
         }
     }
