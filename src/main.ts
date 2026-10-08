@@ -106,7 +106,9 @@ class Mydlink extends utils.Adapter {
             let found = false;
             for (const configDevice of this.config.devices as TableDevice[]) {
                 sanitizeTableDevice(configDevice);
-                needUpdateConfig = !configDevice.mac;
+                if (!configDevice.mac) {
+                    needUpdateConfig = true;
+                }
                 if (
                     (configDevice.mac && configDevice.mac === existingDevice.native.mac) ||
                     (!configDevice.mac && configDevice.ip === existingDevice.native.ip)
@@ -168,6 +170,10 @@ class Mydlink extends utils.Adapter {
                     await device.createDeviceObject(); //store device settings
                     //keep config and client for later reference.
                     this.devices.push(device);
+                    if (!configDevice.mac && device.mac) {
+                        //store identified MAC (and encrypted PIN) in config.
+                        needUpdateConfig = true;
+                    }
                 }
             } else {
                 this.log.error(`Could not create device for config entry with IP: ${configDevice.ip}`);
