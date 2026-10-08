@@ -68,11 +68,11 @@ export async function createFromObject(
             id: configDevice._id.split('.')[2],
             name: native.name,
             enabled: native.enabled,
-            isWebsocket: native.useWebsocket,
+            isWebsocket: native.useWebSocket,
         });
     }
     adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
-    return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebsocket);
+    return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebSocket);
 }
 
 /**
