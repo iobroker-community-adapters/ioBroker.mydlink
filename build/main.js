@@ -99,7 +99,9 @@ class Mydlink extends utils.Adapter {
       let found = false;
       for (const configDevice of this.config.devices) {
         (0, import_TableDevice.sanitizeTableDevice)(configDevice);
-        needUpdateConfig = !configDevice.mac;
+        if (!configDevice.mac) {
+          needUpdateConfig = true;
+        }
         if (configDevice.mac && configDevice.mac === existingDevice.native.mac || !configDevice.mac && configDevice.ip === existingDevice.native.ip) {
           found = true;
           for (const key of Object.keys(configDevice)) {
@@ -143,6 +145,9 @@ class Mydlink extends utils.Adapter {
           await device.start();
           await device.createDeviceObject();
           this.devices.push(device);
+          if (!configDevice.mac && device.mac) {
+            needUpdateConfig = true;
+          }
         }
       } else {
         this.log.error(`Could not create device for config entry with IP: ${configDevice.ip}`);
@@ -199,7 +204,7 @@ class Mydlink extends utils.Adapter {
    */
   async onStateChange(id, state) {
     if (state) {
-      this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+      this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
       if (!state.ack) {
         const deviceId = id.split(".")[2];
         const device = this.devices.find((d) => d.id === deviceId);
@@ -224,10 +229,13 @@ class Mydlink extends utils.Adapter {
           if (obj.callback) {
             const devices = [];
             if (this.autoDetector) {
+              this.autoDetector.refresh();
               for (const key of Object.keys(this.autoDetector.detectedDevices)) {
                 const device = this.autoDetector.detectedDevices[key];
-                device.readOnly = true;
-                devices.push(device);
+                if (device.mac) {
+                  device.readOnly = true;
+                  devices.push(device);
+                }
               }
             }
             this.sendTo(obj.from, obj.command, devices, obj.callback);
@@ -292,10 +300,14 @@ class Mydlink extends utils.Adapter {
                   this.sendTo(obj.from, obj.command, sendDevice, obj.callback);
                 }
               } else {
+                device.stop();
                 this.log.info("could not login -> error.");
-                this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
+                }
               }
             } catch (e) {
+              device.stop();
               this.log.info(`could not login device: ${e.stack}`);
               if (obj.callback) {
                 this.sendTo(obj.from, obj.command, "ERROR", obj.callback);

@@ -138,7 +138,9 @@ class WebSocketDevice extends import_Device.Device {
    * @param err error object
    */
   async onError(code, err) {
-    await this.adapter.setState(this.id + import_suffixes.Suffixes.unreachable, true, true);
+    if (this.id) {
+      await this.adapter.setState(this.id + import_suffixes.Suffixes.unreachable, true, true);
+    }
     if (code || err) {
       this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
     } else {
@@ -171,7 +173,9 @@ class WebSocketDevice extends import_Device.Device {
     this.client.on("error", (code, error) => this.onError(code, error));
     this.client.on("close", () => this.onError());
     this.client.on("message", (message) => this.adapter.log.debug(`${this.name} got message: ${message}`));
-    await this.adapter.setState(this.id + import_suffixes.Suffixes.unreachable, false, true);
+    if (this.id) {
+      await this.adapter.setState(this.id + import_suffixes.Suffixes.unreachable, false, true);
+    }
     this.ready = true;
     this.adapter.log.debug("Setup device event listener.");
   }

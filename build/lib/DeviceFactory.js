@@ -77,11 +77,11 @@ async function createFromObject(adapter, configDevice) {
       id: configDevice._id.split(".")[2],
       name: native.name,
       enabled: native.enabled,
-      isWebsocket: native.useWebsocket
+      isWebsocket: native.useWebSocket
     });
   }
   adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
-  return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebsocket);
+  return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebSocket);
 }
 async function createDevice(adapter, params) {
   const deviceFlags = import_KnownDevices.KnownDevices[params.model];
@@ -201,7 +201,7 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
     adapter.log.debug(`Login error: ${e.stack}`);
     if (!device.loginErrorPrinted && e.code !== "ETIMEDOUT" && e.code !== "ECONNABORTED" && e.code !== "ECONNRESET") {
       adapter.log.error(
-        `${tableDevice.name} could not login. Please check credentials and if device is online/connected. Error: ${e.code} - ${e.stack}`
+        `${tableDevice.name || tableDevice.ip} could not login. Please check credentials and if device is online/connected. Error: ${e.code} - ${e.stack}`
       );
       device.loginErrorPrinted = true;
     }

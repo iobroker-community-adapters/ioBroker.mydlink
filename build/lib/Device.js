@@ -266,7 +266,9 @@ class Device extends import_DeviceInfo.DeviceInfo {
         }
       }
     }
-    await this.adapter.setState(this.id + import_suffixes.Suffixes.enabled, { val: this.enabled, ack: true });
+    if (this.id) {
+      await this.adapter.setState(this.id + import_suffixes.Suffixes.enabled, { val: this.enabled, ack: true });
+    }
     if (this.enabled) {
       let interval = this.pollInterval;
       if (interval !== void 0 && !Number.isNaN(interval) && interval > 0) {

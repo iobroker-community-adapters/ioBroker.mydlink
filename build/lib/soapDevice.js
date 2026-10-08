@@ -76,13 +76,13 @@ class SoapDevice extends import_Device.Device {
    * process a state change. Device will just try to switch plug. Children will have to overwrite this behaviour.
    *
    * @param id if of state
-   * @param _state new state
+   * @param state new state
    */
-  async handleStateChange(id, _state) {
+  async handleStateChange(id, state) {
     if (this.loggedIn) {
       await this.login();
     }
-    if (id.endsWith(import_suffixes.Suffixes.reboot)) {
+    if (id.endsWith(import_suffixes.Suffixes.reboot) && state.val) {
       try {
         await this.client.reboot();
         this.adapter.log.debug(`Send reboot request to ${this.name}`);
@@ -113,7 +113,9 @@ class SoapDevice extends import_Device.Device {
     if (this.model !== settings.ModelName) {
       const oldModel = this.model;
       this.model = settings.ModelName;
-      this.adapter.log.warn(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
+      if (oldModel) {
+        this.adapter.log.warn(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
+      }
       throw new import_Device.WrongModelError(`${this.name} model changed from ${oldModel} to ${settings.ModelName}`);
     }
     if (dirty) {
@@ -202,7 +204,7 @@ class SoapSwitch extends SoapDevice {
         }
         if (this.hasTotalPower) {
           const totalPower = await this.client.totalConsumption();
-          await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.power, totalPower, true);
+          await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.totalPower, totalPower, true);
         }
       } catch (e) {
         await this.handleNetworkError(e);
@@ -217,8 +219,8 @@ class SoapSwitch extends SoapDevice {
    */
   async handleStateChange(id, state) {
     await super.handleStateChange(id, state);
-    if (typeof state.val === "boolean") {
-      if (id.endsWith(import_suffixes.Suffixes.state)) {
+    if (id.endsWith(import_suffixes.Suffixes.state)) {
+      if (typeof state.val === "boolean") {
         try {
           await this.client.switch(state.val);
           const newVal = await this.client.state();
@@ -226,9 +228,9 @@ class SoapSwitch extends SoapDevice {
         } catch (e) {
           await this.handleNetworkError(e);
         }
+      } else {
+        this.adapter.log.warn("Wrong state type. Only boolean accepted for switch.");
       }
-    } else {
-      this.adapter.log.warn("Wrong state type. Only boolean accepted for switch.");
     }
   }
 }

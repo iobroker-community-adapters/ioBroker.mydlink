@@ -31,56 +31,77 @@ __export(autoDetect_exports, {
   AutoDetector: () => AutoDetector
 });
 module.exports = __toCommonJS(autoDetect_exports);
-var import_mdns_discovery = __toESM(require("mdns-discovery"));
+var import_multicast_dns = __toESM(require("multicast-dns"));
 var import_WebSocketDevice = require("./WebSocketDevice");
+const SOAP_SERVICE = "_dhnap._tcp.local";
+const WEBSOCKET_SERVICE = "_dcp._tcp.local";
+const MIN_QUERY_INTERVAL = 3e4;
 class AutoDetector {
   mdns;
   adapter;
   detectedDevices = {};
-  debug = false;
+  lastQuery = 0;
   /**
-   * Log debug message if debug is enabled.
-   *
-   * @param message The message to log.
+   * Send mDNS query for all D-Link services.
    */
-  logDebug(message) {
-    if (this.debug) {
-      this.adapter.log.debug(message);
+  query() {
+    this.lastQuery = Date.now();
+    this.mdns.query({
+      questions: [
+        { name: SOAP_SERVICE, type: "PTR" },
+        { name: WEBSOCKET_SERVICE, type: "PTR" }
+      ]
+    });
+  }
+  /**
+   * Query again, if last query is some time ago. Used while admin dialog is open.
+   */
+  refresh() {
+    if (Date.now() - this.lastQuery > MIN_QUERY_INTERVAL) {
+      this.query();
     }
   }
   /**
-   * Handle detection entry from mDNS.
+   * Handle mDNS response packet. All records of one packet are evaluated together.
+   *
+   * @param packet the mDNS response
+   * @param packet.answers answer records
+   * @param packet.additionals additional records
+   * @param rinfo information about the sender
+   */
+  async onResponse(packet, rinfo) {
+    const records = [...packet.answers || [], ...packet.additionals || []];
+    const ptr = records.find(
+      (r) => r.type === "PTR" && (r.name === SOAP_SERVICE || r.name === WEBSOCKET_SERVICE)
+    );
+    if (!ptr) {
+      return;
+    }
+    const txt = records.find((r) => r.type === "TXT");
+    await this.onDetection({
+      ip: rinfo.address,
+      name: ptr.name,
+      ptrData: ptr.data,
+      txt: txt ? txtToStrings(txt.data) : void 0
+    });
+  }
+  /**
+   * Handle detection of a D-Link device.
    *
    * @param entry The detection entry.
    * @param entry.ip The IP address of the detected device.
-   * @param entry.type The type of the detected device.
-   * @param entry.name The name of the detected device.
-   * @param entry.mac The MAC address of the detected device, if available.
-   * @param entry.PTR The PTR record of the detected device, if available.
-   * @param entry.TXT The TXT record of the detected device, if available.
+   * @param entry.name The mDNS service name of the detected device.
+   * @param entry.ptrData The service instance name from the PTR record.
+   * @param entry.txt The key=value strings of the TXT record, if available.
    */
   async onDetection(entry) {
-    function extractStringsFromBuffer(buffer) {
-      let index = 0;
-      const strings = [];
-      while (index < buffer.length) {
-        const length = buffer.readInt8(index);
-        index += 1;
-        strings.push(buffer.subarray(index, index + length).toString());
-        index += length;
+    if (entry.name === WEBSOCKET_SERVICE) {
+      const alreadyDetected = this.detectedDevices[entry.ip];
+      if (alreadyDetected && alreadyDetected.mac) {
+        return;
       }
-      return strings;
-    }
-    if (entry.name !== "_dhnap._tcp.local" && entry.name !== "_dcp._tcp.local") {
-      return;
-    }
-    if (entry.name === "_dcp._tcp.local") {
-      this.logDebug("Maybe detected websocket device");
-      console.log(entry);
-      let model = "";
-      if (entry.PTR && entry.PTR.data && typeof entry.PTR.data === "string") {
-        model = entry.PTR.data.substring(0, 8);
-      }
+      this.adapter.log.debug(`Maybe detected websocket device on ${entry.ip}`);
+      const model = entry.ptrData ? entry.ptrData.substring(0, 8) : "";
       const newDevice = new import_WebSocketDevice.WebSocketDevice(this.adapter, entry.ip, "INVALID", false);
       newDevice.model = model;
       try {
@@ -88,20 +109,20 @@ class AutoDetector {
         newDevice.id = newDevice.client.getDeviceId().toUpperCase();
         if (newDevice.id) {
           newDevice.mac = newDevice.id.match(/.{2}/g).join(":");
-          this.logDebug(`Got websocket device ${model} on ${newDevice.ip}`);
+          this.adapter.log.debug(`Got websocket device ${model} on ${newDevice.ip}`);
         }
       } catch (e) {
-        this.logDebug(`Could not identify websocket device: ${e.stack}`);
+        this.adapter.log.debug(`Could not identify websocket device: ${e.stack}`);
       } finally {
         newDevice.stop();
       }
-      const device = this.adapter.devices.find((device2) => device2.mac === entry.mac);
+      const device = newDevice.mac ? this.adapter.devices.find((d) => d.mac === newDevice.mac) : void 0;
       if (device) {
-        this.logDebug(`Device was already present as ${device.model} on ${device.ip}`);
+        this.adapter.log.debug(`Device was already present as ${device.model} on ${device.ip}`);
         if (device.ip === newDevice.ip && device.model !== newDevice.model) {
-          this.logDebug(`Model still differs? ${device.model} != ${newDevice.model}`);
+          this.adapter.log.debug(`Model still differs? ${device.model} != ${newDevice.model}`);
           if (model && device.isWebsocket) {
-            this.logDebug(`Updated model to ${model}`);
+            this.adapter.log.debug(`Updated model to ${model}`);
             device.model = model;
             await device.createDeviceObject();
           }
@@ -114,28 +135,24 @@ class AutoDetector {
           mac: newDevice.mac,
           mydlink: true,
           useWebSocket: true,
-          alreadyPresent: !!device
+          alreadyPresent: false
         };
       }
     }
-    if (entry.TXT && entry.TXT.data) {
-      let device = this.detectedDevices[entry.ip];
-      if (!device) {
-        device = {
-          ip: entry.ip,
-          name: entry.name
-        };
-      }
-      const keyValuePairs = extractStringsFromBuffer(entry.TXT.data);
-      for (const pair of keyValuePairs) {
+    if (entry.txt) {
+      const device = this.detectedDevices[entry.ip] || {
+        ip: entry.ip,
+        name: entry.name
+      };
+      for (const pair of entry.txt) {
         const [key, value] = pair.split("=");
         switch (key.toLowerCase()) {
-          //extract mac from buffer:
+          //extract mac:
           case "mac": {
             device.mac = value.toUpperCase();
             break;
           }
-          //extract model number from buffer:
+          //extract model number:
           case "model_number": {
             device.type = value;
             break;
@@ -152,17 +169,18 @@ class AutoDetector {
         this.detectedDevices[device.ip] = device;
         const oldDevice = this.adapter.devices.find((d) => d.mac === device.mac);
         if (oldDevice) {
-          if (oldDevice.model !== device.type) {
+          if (device.type && oldDevice.model !== device.type) {
             oldDevice.model = device.type;
           }
           if (device.ip !== oldDevice.ip) {
+            this.adapter.log.info(`${oldDevice.name} changed ip from ${oldDevice.ip} to ${device.ip}`);
             oldDevice.ip = device.ip;
             await oldDevice.createDeviceObject();
             await oldDevice.start();
           }
           device.alreadyPresent = true;
         }
-        this.logDebug(`Detected Device now is: ${JSON.stringify(device, null, 2)}`);
+        this.adapter.log.debug(`Detected Device now is: ${JSON.stringify(device)}`);
       }
     }
   }
@@ -170,9 +188,7 @@ class AutoDetector {
    * Close the mDNS listener.
    */
   close() {
-    if (this.mdns && typeof this.mdns.close === "function") {
-      this.mdns.close();
-    }
+    this.mdns.destroy();
   }
   /**
    * Constructor.
@@ -181,19 +197,23 @@ class AutoDetector {
    */
   constructor(adapter) {
     this.adapter = adapter;
-    this.mdns = new import_mdns_discovery.default({
-      timeout: 0,
-      //0 == stay active??
-      name: ["_dhnap._tcp.local", "_dcp._tcp.local"],
-      find: "*",
-      broadcast: false
+    this.mdns = (0, import_multicast_dns.default)();
+    this.mdns.on("response", (packet, rinfo) => {
+      this.onResponse(packet, rinfo).catch(
+        (e) => this.adapter.log.debug(`Error during processing of mDNS response: ${e.stack}`)
+      );
     });
-    this.logDebug("Auto detection started");
-    if (this.mdns !== void 0) {
-      this.mdns.on("entry", this.onDetection.bind(this));
-      this.mdns.run(() => adapter.log.info("Discovery done"));
-    }
+    this.mdns.on("error", (e) => this.adapter.log.warn(`Auto detection error: ${e.message}`));
+    this.mdns.on("warning", (e) => this.adapter.log.debug(`Auto detection warning: ${e.message}`));
+    this.mdns.on("ready", () => {
+      this.adapter.log.debug("Auto detection started");
+      this.query();
+    });
   }
+}
+function txtToStrings(data) {
+  const items = Array.isArray(data) ? data : [data];
+  return items.map((item) => Buffer.isBuffer(item) ? item.toString() : String(item));
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

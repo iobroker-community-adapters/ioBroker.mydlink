@@ -105,7 +105,6 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     if (response.status === 403) {
       throw new HNAP_ERROR("Unauthorized, need to login.", 403, incomingBody);
     }
-    console.debug(`StatusCode: ${response.status} Body: ${incomingBody}`);
     if (fullBody) {
       return incomingBody;
     }
