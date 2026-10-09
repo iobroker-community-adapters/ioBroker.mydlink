@@ -4,6 +4,8 @@ import type { MulticastDNS } from 'multicast-dns';
 import type { Answer, StringAnswer, TxtAnswer, TxtData } from 'dns-packet';
 import type { RemoteInfo } from 'node:dgram';
 
+import type { Device } from './Device';
+import { SoapDevice } from './soapDevice';
 import { WebSocketDevice } from './WebSocketDevice';
 import { normalizeMac } from './TableDevice';
 
@@ -48,6 +50,9 @@ export class AutoDetector {
     detectedDevices: Record<string, DetectedDevice> = {};
 
     lastQuery = 0;
+
+    /** MACs of devices whose new IP is currently being verified. */
+    ipChecksInProgress = new Set<string>();
 
     /**
      * Send mDNS query for all D-Link services.
@@ -109,11 +114,9 @@ export class AutoDetector {
      * @param entry.txt The key=value strings of the TXT record, if available.
      */
     async onDetection(entry: { ip: string; name: string; ptrData: string; txt: string[] | undefined }): Promise<void> {
-        if (entry.name === WEBSOCKET_SERVICE) {
-            const alreadyDetected = this.detectedDevices[entry.ip];
-            if (alreadyDetected && alreadyDetected.mac) {
-                return; //already identified, no need to log in again.
-            }
+        const alreadyDetected = this.detectedDevices[entry.ip];
+        //already identified websocket devices need no new login, only the IP check below.
+        if (entry.name === WEBSOCKET_SERVICE && !alreadyDetected?.mac) {
             this.adapter.log.debug(`Maybe detected websocket device on ${entry.ip}`);
             //get model:
             const model = entry.ptrData ? entry.ptrData.substring(0, 8) : '';
@@ -169,6 +172,11 @@ export class AutoDetector {
                 ip: entry.ip,
                 name: entry.name,
             };
+            if (entry.name === WEBSOCKET_SERVICE) {
+                //websocket devices do not announce mydlink=true.
+                device.mydlink = true;
+                device.useWebSocket = true;
+            }
 
             for (const pair of entry.txt) {
                 const [key, value] = pair.split('=');
@@ -203,15 +211,68 @@ export class AutoDetector {
                     }
                     //found device we already know. Let's check ip.
                     if (device.ip !== oldDevice.ip) {
-                        this.adapter.log.info(`${oldDevice.name} changed ip from ${oldDevice.ip} to ${device.ip}`);
-                        oldDevice.ip = device.ip;
-                        await oldDevice.createDeviceObject(); //store IP in config.
-                        await oldDevice.start();
+                        await this.checkIpChange(oldDevice, device.ip);
                     }
                     device.alreadyPresent = true;
                 }
                 this.adapter.log.debug(`Detected Device now is: ${JSON.stringify(device)}`);
             }
+        }
+    }
+
+    /**
+     * A known device was detected on another IP. Verify that and store new IP in config.
+     * Only done if the device is not reachable on its configured IP, because some devices seem to answer for others.
+     *
+     * @param oldDevice the configured device
+     * @param ip the IP the device was detected on
+     */
+    async checkIpChange(oldDevice: Device, ip: string): Promise<void> {
+        if (oldDevice.ready || this.ipChecksInProgress.has(oldDevice.mac)) {
+            return;
+        }
+        this.ipChecksInProgress.add(oldDevice.mac);
+        try {
+            if (await this.verifyMac(oldDevice, ip)) {
+                this.adapter.log.info(
+                    `${oldDevice.name} changed ip from ${oldDevice.ip} to ${ip}. Updating config, adapter will restart.`,
+                );
+                await this.adapter.updateDeviceIp(oldDevice.mac, ip);
+            } else {
+                this.adapter.log.debug(`${oldDevice.name} announced on ${ip}, but could not verify MAC there.`);
+            }
+        } finally {
+            this.ipChecksInProgress.delete(oldDevice.mac);
+        }
+    }
+
+    /**
+     * Log in on IP with credentials of a configured device and check if the MAC matches.
+     *
+     * @param oldDevice the configured device
+     * @param ip the IP to check
+     * @returns true if the device on ip has the MAC of oldDevice
+     */
+    async verifyMac(oldDevice: Device, ip: string): Promise<boolean> {
+        try {
+            if (oldDevice.isWebsocket) {
+                const device = new WebSocketDevice(this.adapter, ip, oldDevice.pinDecrypted, false);
+                try {
+                    await device.client.login();
+                    return normalizeMac(device.client.getDeviceId()) === oldDevice.mac;
+                } finally {
+                    device.stop();
+                }
+            }
+            const device = new SoapDevice(this.adapter, ip, oldDevice.pinDecrypted, false);
+            if (!(await device.client.login())) {
+                return false;
+            }
+            const settings = await device.client.getDeviceSettings();
+            return normalizeMac(settings.DeviceMacId) === oldDevice.mac;
+        } catch (e: any) {
+            this.adapter.log.debug(`Could not verify MAC of ${oldDevice.name} on ${ip}: ${e.message}`);
+            return false;
         }
     }
 

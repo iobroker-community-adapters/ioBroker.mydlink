@@ -3,4 +3,5 @@ import type { Device } from './Device';
 
 declare class Mydlink extends utils.Adapter {
     devices: Array<Device>;
+    updateDeviceIp(mac: string, ip: string): Promise<void>;
 }

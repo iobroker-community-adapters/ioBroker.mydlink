@@ -79,6 +79,26 @@ class Mydlink extends utils.Adapter {
     }
 
     /**
+     * Store new IP of a device in config. Changing the config restarts the adapter.
+     *
+     * @param mac MAC of the device
+     * @param ip new IP
+     */
+    async updateDeviceIp(mac: string, ip: string): Promise<void> {
+        const instanceObject = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+        if (!instanceObject) {
+            return;
+        }
+        const configDevice = (instanceObject.native.devices as TableDevice[]).find(
+            d => d.mac && normalizeMac(d.mac) === mac,
+        );
+        if (configDevice && configDevice.ip !== ip) {
+            configDevice.ip = ip;
+            await this.setForeignObjectAsync(instanceObject._id, instanceObject);
+        }
+    }
+
+    /**
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
@@ -186,6 +206,9 @@ class Mydlink extends utils.Adapter {
             }
         }
 
+        //devices answering the first query were not started yet -> query again to detect changed IPs.
+        this.autoDetector.query();
+
         //try to update config:
         if (needUpdateConfig) {
             const devices = [];
@@ -278,6 +301,8 @@ class Mydlink extends utils.Adapter {
                                 const device = this.autoDetector.detectedDevices[key];
                                 //admin dialog needs mac to show device.
                                 if (device.mac) {
+                                    //devices might not have been started during first detection, so check again here.
+                                    device.alreadyPresent = this.devices.some(d => d.mac === device.mac);
                                     device.readOnly = true;
                                     devices.push(device);
                                 }
