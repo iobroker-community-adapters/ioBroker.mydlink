@@ -83,6 +83,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 - (Garfonso) fix: websocket devices were reported reachable while offline
 - (Garfonso) fix: websocket devices reconnect after they were offline (dlink_websocketclient 0.6.0)
 - (Garfonso) fix: no new timers during unload
+- (Garfonso) fix: pause login of websocket devices for 10 minutes if they refuse it or the PIN is wrong (device locks itself after 10 invalid tokens)
 - (Garfonso) chore: reduced log noise
 
 ### 1.3.6 (2024-05-24)
