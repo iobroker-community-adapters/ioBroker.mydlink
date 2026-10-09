@@ -120,7 +120,8 @@ export class WebSocketDevice extends Device {
      */
     async onError(code?: number, err?: Error): Promise<void> {
         if (this.id) {
-            await this.adapter.setState(this.id + Suffixes.unreachable, true, true);
+            await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
+            await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, false, true);
         }
         if (code || err) {
             this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
@@ -159,10 +160,11 @@ export class WebSocketDevice extends Device {
         this.client.on('error', (code: number, error: Error) => this.onError(code, error));
         this.client.on('close', () => this.onError());
         this.client.on('message', (message: string) => this.adapter.log.debug(`${this.name} got message: ${message}`));
+        //ready is set by super.start() only if login worked, i.e. the socket is connected.
         if (this.id) {
-            await this.adapter.setState(this.id + Suffixes.unreachable, false, true);
+            await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, !this.ready, true);
+            await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, this.ready, true);
         }
-        this.ready = true;
         this.adapter.log.debug('Setup device event listener.');
     }
 
