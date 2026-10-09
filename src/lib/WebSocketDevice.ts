@@ -132,13 +132,8 @@ export class WebSocketDevice extends Device {
         }
         this.stop();
         this.ready = false;
-        //abuse unused intervalHandle here.
-        if (this.intervalHandle) {
-            this.adapter.clearTimeout(this.intervalHandle);
-        }
-        this.intervalHandle = this.adapter.setTimeout(async () => {
-            await this.start();
-        }, 10000);
+        //reconnect, uses same timer as polling.
+        this.schedule(() => this.start(), 10000);
     }
 
     /**

@@ -154,6 +154,23 @@ export abstract class Device extends DeviceInfo {
     }
 
     /**
+     * (Re-)schedules the next poll or reconnect. Does nothing while the adapter is unloading, so requests that were
+     * still running during unload don't start new timers.
+     *
+     * @param callback function to call
+     * @param timeout time in ms
+     */
+    protected schedule(callback: () => void | Promise<void>, timeout: number): void {
+        if (this.intervalHandle) {
+            this.adapter.clearTimeout(this.intervalHandle);
+            this.intervalHandle = undefined;
+        }
+        if (!this.adapter.unloading) {
+            this.intervalHandle = this.adapter.setTimeout(callback, timeout);
+        }
+    }
+
+    /**
      * Stops communication with device.
      */
     stop(): void {
@@ -210,10 +227,7 @@ export abstract class Device extends DeviceInfo {
             this.loggedIn = false;
             if (!this.pollInterval && this.model) {
                 //if no polling takes place, need to retry login!
-                if (this.intervalHandle) {
-                    this.adapter.clearTimeout(this.intervalHandle);
-                }
-                this.intervalHandle = this.adapter.setTimeout(() => this.start(), 10000); //retry here if no polling.
+                this.schedule(() => this.start(), 10000); //retry here if no polling.
             }
         }
         return this.loggedIn;
@@ -279,7 +293,7 @@ export abstract class Device extends DeviceInfo {
 
         if (this.pollInterval > 0) {
             //only start timeout again, if set in settings.
-            this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
+            this.schedule(() => this.onInterval(), this.pollInterval);
         }
     }
 
@@ -332,7 +346,7 @@ export abstract class Device extends DeviceInfo {
                 }
                 this.adapter.log.debug(`Start polling for ${this.name} with interval ${interval}`);
                 this.pollInterval = interval;
-                this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
+                this.schedule(() => this.onInterval(), this.pollInterval);
             } else {
                 this.pollInterval = 0;
                 this.adapter.log.debug(`Polling of ${this.name} disabled, interval was ${interval} (0 means disabled)`);

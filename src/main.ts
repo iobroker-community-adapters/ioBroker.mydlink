@@ -33,6 +33,11 @@ class Mydlink extends utils.Adapter {
      */
     autoDetector: AutoDetector | undefined = undefined;
 
+    /**
+     * Set during unload, prevents devices from starting new timers.
+     */
+    unloading = false;
+
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -239,6 +244,7 @@ class Mydlink extends utils.Adapter {
      * @param callback function to call when cleanup is done
      */
     private onUnload(callback: () => void): void {
+        this.unloading = true;
         try {
             this.log.debug('Stop polling');
             for (const device of this.devices) {
