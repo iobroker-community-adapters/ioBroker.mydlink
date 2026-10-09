@@ -36,9 +36,14 @@ var import_suffixes = require("./suffixes");
 var import_axios = __toESM(require("axios"));
 var import_dlink_websocketclient = __toESM(require("dlink_websocketclient"));
 var import_node_util = require("node:util");
+const MAX_INVALID_TOKENS = 3;
 class WebSocketDevice extends import_Device.Device {
   client;
   numSockets = 1;
+  /**
+   * Requests rejected because of an invalid device token in a row.
+   */
+  invalidTokens = 0;
   /**
    * Creates an instance of WebSocketDevice.
    *
@@ -128,10 +133,38 @@ class WebSocketDevice extends import_Device.Device {
           const val = await this.client.state(0);
           await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.state, val, true);
         }
+        this.invalidTokens = 0;
       } catch (e) {
         await this.handleNetworkError(e);
       }
     }
+  }
+  /**
+   * Counts invalid device tokens. The device locks itself after 10 invalid tokens within 10 minutes, so stop before
+   * that happens, if the PIN is probably wrong. A token that got invalid, because the device rebooted, is only
+   * rejected once (client uses the new salt sent with the rejection).
+   */
+  onInvalidToken() {
+    this.invalidTokens += 1;
+    if (this.invalidTokens >= MAX_INVALID_TOKENS) {
+      this.invalidTokens = 0;
+      this.blockLogin(
+        `${this.name} rejected the device token ${MAX_INVALID_TOKENS} times in a row, probably the PIN is wrong. Will try again in 10 minutes, so the device does not lock itself.`
+      );
+    }
+  }
+  /**
+   * Handle network error during communication.
+   *
+   * @param e error object
+   * @returns code as number or string
+   */
+  async handleNetworkError(e) {
+    const code = await super.handleNetworkError(e);
+    if (code === 403) {
+      this.onInvalidToken();
+    }
+    return code;
   }
   /**
    * Error and close handler for event based client. Client emits 'error' with the error and 'close' with code and
@@ -197,12 +230,14 @@ class WebSocketDevice extends import_Device.Device {
       }
       try {
         const newVal = await this.client.switch(state.val, socket);
+        this.invalidTokens = 0;
         this.adapter.log.debug(`Switched Socket ${socket} of ${this.name} ${state.val ? "on" : "off"}.`);
         await this.adapter.setState(id, newVal, true);
       } catch (e) {
         const code = (0, import_Device.processNetworkError)(e);
         if (code === 403) {
           this.loggedIn = false;
+          this.onInvalidToken();
         }
         this.adapter.log.error(`Error while switching device ${this.name}: ${code} - ${e.stack}`);
       }

@@ -100,6 +100,10 @@ class DeviceInfo {
    */
   loginErrorPrinted = false;
   /**
+   * No login before this time (ms since epoch), e.g. because the device refuses logins.
+   */
+  loginBlockedUntil = 0;
+  /**
    * Should we poll? If so, how often?
    */
   pollInterval = 3e4;
