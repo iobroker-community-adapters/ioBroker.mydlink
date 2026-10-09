@@ -104,8 +104,12 @@ export class SoapDevice extends Device {
         this.adapter.log.debug(`${this.name} returned following device settings: ${JSON.stringify(settings, null, 2)}`);
         const mac = normalizeMac(settings.DeviceMacId);
         if (this.mac && this.mac !== mac) {
+            const expectedMac = this.mac;
+            //store reported mac, so a device object for the device that actually answered can be created.
+            this.mac = mac;
+            this.idFromMac();
             throw new WrongMacError(
-                `${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`,
+                `${this.name} reported mac ${mac}, expected ${expectedMac}, probably ip ${this.ip} wrong and talking to wrong device?`,
             );
         }
         if (this.mac !== mac) {

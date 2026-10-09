@@ -176,8 +176,8 @@ class Mydlink extends utils.Adapter {
                     await device.createDeviceObject(); //store device settings
                     //keep config and client for later reference.
                     this.devices.push(device);
-                    if (!configDevice.mac && device.mac) {
-                        //store identified MAC (and encrypted PIN) in config.
+                    if (device.mac && device.mac !== configDevice.mac) {
+                        //store identified MAC (and encrypted PIN) in config. MAC differs if another device answered on the IP.
                         needUpdateConfig = true;
                     }
                 }

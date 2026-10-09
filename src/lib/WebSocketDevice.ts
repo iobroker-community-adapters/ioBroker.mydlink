@@ -215,8 +215,12 @@ export class WebSocketDevice extends Device {
         const mac = id.match(/.{2}/g)!.join(':').toUpperCase(); //add back the :.
 
         if (this.mac && this.mac !== mac) {
+            const expectedMac = this.mac;
+            //store reported mac, so a device object for the device that actually answered can be created.
+            this.mac = mac;
+            this.id = id;
             throw new WrongMacError(
-                `${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`,
+                `${this.name} reported mac ${mac}, expected ${expectedMac}, probably ip ${this.ip} wrong and talking to wrong device?`,
             );
         }
         this.mac = mac;
