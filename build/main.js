@@ -81,6 +81,25 @@ class Mydlink extends utils.Adapter {
     }
   }
   /**
+   * Store new IP of a device in config. Changing the config restarts the adapter.
+   *
+   * @param mac MAC of the device
+   * @param ip new IP
+   */
+  async updateDeviceIp(mac, ip) {
+    const instanceObject = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+    if (!instanceObject) {
+      return;
+    }
+    const configDevice = instanceObject.native.devices.find(
+      (d) => d.mac && (0, import_TableDevice.normalizeMac)(d.mac) === mac
+    );
+    if (configDevice && configDevice.ip !== ip) {
+      configDevice.ip = ip;
+      await this.setForeignObjectAsync(instanceObject._id, instanceObject);
+    }
+  }
+  /**
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
@@ -98,11 +117,13 @@ class Mydlink extends utils.Adapter {
     for (const existingDevice of existingDevices) {
       let found = false;
       for (const configDevice of this.config.devices) {
-        (0, import_TableDevice.sanitizeTableDevice)(configDevice);
+        if ((0, import_TableDevice.sanitizeTableDevice)(configDevice)) {
+          needUpdateConfig = true;
+        }
         if (!configDevice.mac) {
           needUpdateConfig = true;
         }
-        if (configDevice.mac && configDevice.mac === existingDevice.native.mac || !configDevice.mac && configDevice.ip === existingDevice.native.ip) {
+        if (configDevice.mac && existingDevice.native.mac && configDevice.mac === (0, import_TableDevice.normalizeMac)(existingDevice.native.mac) || !configDevice.mac && configDevice.ip === existingDevice.native.ip) {
           found = true;
           for (const key of Object.keys(configDevice)) {
             existingDevice.native[key] = configDevice[key];
@@ -130,7 +151,9 @@ class Mydlink extends utils.Adapter {
       }
     }
     for (const configDevice of configDevicesToAdd) {
-      (0, import_TableDevice.sanitizeTableDevice)(configDevice);
+      if ((0, import_TableDevice.sanitizeTableDevice)(configDevice)) {
+        needUpdateConfig = true;
+      }
       const device = await (0, import_DeviceFactory.createFromTable)(this, configDevice, !configDevice.pinNotEncrypted);
       if (device) {
         this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);
@@ -145,7 +168,7 @@ class Mydlink extends utils.Adapter {
           await device.start();
           await device.createDeviceObject();
           this.devices.push(device);
-          if (!configDevice.mac && device.mac) {
+          if (device.mac && device.mac !== configDevice.mac) {
             needUpdateConfig = true;
           }
         }
@@ -153,6 +176,7 @@ class Mydlink extends utils.Adapter {
         this.log.error(`Could not create device for config entry with IP: ${configDevice.ip}`);
       }
     }
+    this.autoDetector.query();
     if (needUpdateConfig) {
       const devices = [];
       for (const device of this.devices) {
@@ -233,6 +257,7 @@ class Mydlink extends utils.Adapter {
               for (const key of Object.keys(this.autoDetector.detectedDevices)) {
                 const device = this.autoDetector.detectedDevices[key];
                 if (device.mac) {
+                  device.alreadyPresent = this.devices.some((d) => d.mac === device.mac);
                   device.readOnly = true;
                   devices.push(device);
                 }

@@ -18,9 +18,17 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var TableDevice_exports = {};
 __export(TableDevice_exports, {
+  normalizeMac: () => normalizeMac,
   sanitizeTableDevice: () => sanitizeTableDevice
 });
 module.exports = __toCommonJS(TableDevice_exports);
+function normalizeMac(mac) {
+  const hex = mac.replace(/[^0-9a-f]/gi, "").toUpperCase();
+  if (hex.length !== 12) {
+    return mac.toUpperCase();
+  }
+  return hex.match(/.{2}/g).join(":");
+}
 function sanitizeTableDevice(tblDev) {
   if (!tblDev.ip) {
     console.error("Device without IP found. This is not allowed.");
@@ -29,9 +37,18 @@ function sanitizeTableDevice(tblDev) {
   if (!tblDev.pin) {
     tblDev.pin = "INVALID";
   }
+  if (tblDev.mac) {
+    const mac = normalizeMac(tblDev.mac);
+    if (mac !== tblDev.mac) {
+      tblDev.mac = mac;
+      return true;
+    }
+  }
+  return false;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  normalizeMac,
   sanitizeTableDevice
 });
 //# sourceMappingURL=TableDevice.js.map

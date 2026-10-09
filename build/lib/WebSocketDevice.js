@@ -139,7 +139,8 @@ class WebSocketDevice extends import_Device.Device {
    */
   async onError(code, err) {
     if (this.id) {
-      await this.adapter.setState(this.id + import_suffixes.Suffixes.unreachable, true, true);
+      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
+      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, false, true);
     }
     if (code || err) {
       this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
@@ -174,9 +175,9 @@ class WebSocketDevice extends import_Device.Device {
     this.client.on("close", () => this.onError());
     this.client.on("message", (message) => this.adapter.log.debug(`${this.name} got message: ${message}`));
     if (this.id) {
-      await this.adapter.setState(this.id + import_suffixes.Suffixes.unreachable, false, true);
+      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
+      await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, this.ready, true);
     }
-    this.ready = true;
     this.adapter.log.debug("Setup device event listener.");
   }
   /**
@@ -224,8 +225,11 @@ class WebSocketDevice extends import_Device.Device {
     const id = this.client.getDeviceId();
     const mac = id.match(/.{2}/g).join(":").toUpperCase();
     if (this.mac && this.mac !== mac) {
+      const expectedMac = this.mac;
+      this.mac = mac;
+      this.id = id;
       throw new import_Device.WrongMacError(
-        `${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`
+        `${this.name} reported mac ${mac}, expected ${expectedMac}, probably ip ${this.ip} wrong and talking to wrong device?`
       );
     }
     this.mac = mac;

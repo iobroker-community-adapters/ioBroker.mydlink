@@ -35,6 +35,7 @@ __export(soapDevice_exports, {
 module.exports = __toCommonJS(soapDevice_exports);
 var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
+var import_TableDevice = require("./TableDevice");
 var import_soapclient = __toESM(require("./soapclient"));
 class SoapDevice extends import_Device.Device {
   client;
@@ -120,13 +121,17 @@ class SoapDevice extends import_Device.Device {
     const settings = await this.client.getDeviceSettings();
     let dirty = false;
     this.adapter.log.debug(`${this.name} returned following device settings: ${JSON.stringify(settings, null, 2)}`);
-    if (this.mac && this.mac !== settings.DeviceMacId) {
+    const mac = (0, import_TableDevice.normalizeMac)(settings.DeviceMacId);
+    if (this.mac && this.mac !== mac) {
+      const expectedMac = this.mac;
+      this.mac = mac;
+      this.idFromMac();
       throw new import_Device.WrongMacError(
-        `${this.name} reported mac ${settings.DeviceMacId}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`
+        `${this.name} reported mac ${mac}, expected ${expectedMac}, probably ip ${this.ip} wrong and talking to wrong device?`
       );
     }
-    if (this.mac !== settings.DeviceMacId) {
-      this.mac = settings.DeviceMacId.toUpperCase();
+    if (this.mac !== mac) {
+      this.mac = mac;
       this.idFromMac();
       dirty = true;
     }
