@@ -136,6 +136,22 @@ class Device extends import_DeviceInfo.DeviceInfo {
     });
   }
   /**
+   * (Re-)schedules the next poll or reconnect. Does nothing while the adapter is unloading, so requests that were
+   * still running during unload don't start new timers.
+   *
+   * @param callback function to call
+   * @param timeout time in ms
+   */
+  schedule(callback, timeout) {
+    if (this.intervalHandle) {
+      this.adapter.clearTimeout(this.intervalHandle);
+      this.intervalHandle = void 0;
+    }
+    if (!this.adapter.unloading) {
+      this.intervalHandle = this.adapter.setTimeout(callback, timeout);
+    }
+  }
+  /**
    * Stops communication with device.
    */
   stop() {
@@ -180,10 +196,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
       }
       this.loggedIn = false;
       if (!this.pollInterval && this.model) {
-        if (this.intervalHandle) {
-          this.adapter.clearTimeout(this.intervalHandle);
-        }
-        this.intervalHandle = this.adapter.setTimeout(() => this.start(), 1e4);
+        this.schedule(() => this.start(), 1e4);
       }
     }
     return this.loggedIn;
@@ -241,7 +254,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
       await this.handleNetworkError(e);
     }
     if (this.pollInterval > 0) {
-      this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
+      this.schedule(() => this.onInterval(), this.pollInterval);
     }
   }
   /**
@@ -282,7 +295,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
         }
         this.adapter.log.debug(`Start polling for ${this.name} with interval ${interval}`);
         this.pollInterval = interval;
-        this.intervalHandle = this.adapter.setTimeout(() => this.onInterval(), this.pollInterval);
+        this.schedule(() => this.onInterval(), this.pollInterval);
       } else {
         this.pollInterval = 0;
         this.adapter.log.debug(`Polling of ${this.name} disabled, interval was ${interval} (0 means disabled)`);

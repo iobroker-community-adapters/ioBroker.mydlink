@@ -134,29 +134,27 @@ class WebSocketDevice extends import_Device.Device {
     }
   }
   /**
-   * Error handler for event base client.
+   * Error and close handler for event based client. Client emits 'error' with the error and 'close' with code and
+   * reason of the socket.
    *
-   * @param code error code recieved
-   * @param err error object
+   * @param err error object, if called because of an error
+   * @param closeCode close code of the socket, if called because socket was closed
+   * @param reason close reason of the socket
    */
-  async onError(code, err) {
+  async onError(err, closeCode, reason) {
+    var _a, _b;
     if (this.id) {
       await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
       await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, false, true);
     }
-    if (code || err) {
-      this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
+    if (err) {
+      this.adapter.log.debug(`${this.name}: Socket error: ${(_a = err.code) != null ? _a : ""} - ${err.stack}`);
     } else {
-      this.adapter.log.debug(`${this.name}: Socket closed.`);
+      this.adapter.log.debug(`${this.name}: Socket closed: ${closeCode} ${(_b = reason == null ? void 0 : reason.toString()) != null ? _b : ""}`);
     }
     this.stop();
     this.ready = false;
-    if (this.intervalHandle) {
-      this.adapter.clearTimeout(this.intervalHandle);
-    }
-    this.intervalHandle = this.adapter.setTimeout(async () => {
-      await this.start();
-    }, 1e4);
+    this.schedule(() => this.start(), 1e4);
   }
   /**
    * starting communication with device from config.
@@ -173,8 +171,8 @@ class WebSocketDevice extends import_Device.Device {
         await this.adapter.setState(this.id + import_suffixes.Suffixes.state, val, true);
       }
     });
-    this.client.on("error", (code, error) => this.onError(code, error));
-    this.client.on("close", () => this.onError());
+    this.client.on("error", (error) => this.onError(error));
+    this.client.on("close", (code, reason) => this.onError(void 0, code, reason));
     this.client.on("message", (message) => this.adapter.log.debug(`${this.name} got message: ${message}`));
     if (this.id) {
       await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, !this.ready, true);
