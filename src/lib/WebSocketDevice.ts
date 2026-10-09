@@ -115,20 +115,22 @@ export class WebSocketDevice extends Device {
     }
 
     /**
-     * Error handler for event base client.
+     * Error and close handler for event based client. Client emits 'error' with the error and 'close' with code and
+     * reason of the socket.
      *
-     * @param code error code recieved
-     * @param err error object
+     * @param err error object, if called because of an error
+     * @param closeCode close code of the socket, if called because socket was closed
+     * @param reason close reason of the socket
      */
-    async onError(code?: number, err?: Error): Promise<void> {
+    async onError(err?: Error & { code?: string }, closeCode?: number, reason?: Buffer | string): Promise<void> {
         if (this.id) {
             await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
             await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, false, true);
         }
-        if (code || err) {
-            this.adapter.log.debug(`${this.name}: Socket error: ${code} - ${err ? err.stack : err}`);
+        if (err) {
+            this.adapter.log.debug(`${this.name}: Socket error: ${err.code ?? ''} - ${err.stack}`);
         } else {
-            this.adapter.log.debug(`${this.name}: Socket closed.`);
+            this.adapter.log.debug(`${this.name}: Socket closed: ${closeCode} ${reason?.toString() ?? ''}`);
         }
         this.stop();
         this.ready = false;
@@ -154,8 +156,8 @@ export class WebSocketDevice extends Device {
             }
         });
         //error handling:
-        this.client.on('error', (code: number, error: Error) => this.onError(code, error));
-        this.client.on('close', () => this.onError());
+        this.client.on('error', (error: Error) => this.onError(error));
+        this.client.on('close', (code: number, reason: Buffer) => this.onError(undefined, code, reason));
         this.client.on('message', (message: string) => this.adapter.log.debug(`${this.name} got message: ${message}`));
         //ready is set by super.start() only if login worked, i.e. the socket is connected.
         if (this.id) {
