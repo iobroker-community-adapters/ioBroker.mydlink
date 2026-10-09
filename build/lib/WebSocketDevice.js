@@ -35,6 +35,7 @@ var import_Device = require("./Device");
 var import_suffixes = require("./suffixes");
 var import_axios = __toESM(require("axios"));
 var import_dlink_websocketclient = __toESM(require("dlink_websocketclient"));
+var import_node_util = require("node:util");
 class WebSocketDevice extends import_Device.Device {
   client;
   numSockets = 1;
@@ -55,7 +56,8 @@ class WebSocketDevice extends import_Device.Device {
       pin: this.pinDecrypted,
       keepAlive: 5,
       useTelnetForToken: ((_a = this.pinDecrypted) == null ? void 0 : _a.toUpperCase()) === "TELNET",
-      log: console.debug
+      //library logs every message; console would write to stdout of the adapter process.
+      log: (...args) => this.adapter.log.silly(`${this.ip}: ${(0, import_node_util.format)(...args)}`)
     });
   }
   /**
