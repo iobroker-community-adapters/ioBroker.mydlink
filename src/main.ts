@@ -10,7 +10,7 @@ import type { Device } from './lib/Device';
 import { DeviceInfo } from './lib/DeviceInfo';
 import { AutoDetector } from './lib/autoDetect';
 import type { TableDevice } from './lib/TableDevice';
-import { sanitizeTableDevice } from './lib/TableDevice';
+import { normalizeMac, sanitizeTableDevice } from './lib/TableDevice';
 import { createFromObject, createFromTable } from './lib/DeviceFactory';
 
 // Load your modules here, e.g.:
@@ -105,12 +105,16 @@ class Mydlink extends utils.Adapter {
         for (const existingDevice of existingDevices) {
             let found = false;
             for (const configDevice of this.config.devices as TableDevice[]) {
-                sanitizeTableDevice(configDevice);
+                if (sanitizeTableDevice(configDevice)) {
+                    needUpdateConfig = true; //store normalized MAC.
+                }
                 if (!configDevice.mac) {
                     needUpdateConfig = true;
                 }
                 if (
-                    (configDevice.mac && configDevice.mac === existingDevice.native.mac) ||
+                    (configDevice.mac &&
+                        existingDevice.native.mac &&
+                        configDevice.mac === normalizeMac(existingDevice.native.mac)) ||
                     (!configDevice.mac && configDevice.ip === existingDevice.native.ip)
                 ) {
                     found = true;
@@ -146,7 +150,9 @@ class Mydlink extends utils.Adapter {
 
         //add non-existing devices from config:
         for (const configDevice of configDevicesToAdd) {
-            sanitizeTableDevice(configDevice);
+            if (sanitizeTableDevice(configDevice)) {
+                needUpdateConfig = true; //store normalized MAC.
+            }
             const device = await createFromTable(this, configDevice, !configDevice.pinNotEncrypted);
             if (device) {
                 this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);

@@ -1,5 +1,6 @@
 import { Device, processNetworkError, WrongMacError, WrongModelError } from './Device';
 import { Suffixes } from './suffixes';
+import { normalizeMac } from './TableDevice';
 import type { SoapClientInterface } from './Clients';
 import createSoapClient from './soapclient';
 import type { Mydlink } from './mydlink';
@@ -101,13 +102,14 @@ export class SoapDevice extends Device {
         const settings = await this.client.getDeviceSettings();
         let dirty = false;
         this.adapter.log.debug(`${this.name} returned following device settings: ${JSON.stringify(settings, null, 2)}`);
-        if (this.mac && this.mac !== settings.DeviceMacId) {
+        const mac = normalizeMac(settings.DeviceMacId);
+        if (this.mac && this.mac !== mac) {
             throw new WrongMacError(
-                `${this.name} reported mac ${settings.DeviceMacId}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`,
+                `${this.name} reported mac ${mac}, expected ${this.mac}, probably ip ${this.ip} wrong and talking to wrong device?`,
             );
         }
-        if (this.mac !== settings.DeviceMacId) {
-            this.mac = settings.DeviceMacId.toUpperCase();
+        if (this.mac !== mac) {
+            this.mac = mac;
             this.idFromMac();
             dirty = true;
         }

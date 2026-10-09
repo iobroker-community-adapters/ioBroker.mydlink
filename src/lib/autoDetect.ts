@@ -5,6 +5,7 @@ import type { Answer, StringAnswer, TxtAnswer, TxtData } from 'dns-packet';
 import type { RemoteInfo } from 'node:dgram';
 
 import { WebSocketDevice } from './WebSocketDevice';
+import { normalizeMac } from './TableDevice';
 
 const SOAP_SERVICE = '_dhnap._tcp.local';
 const WEBSOCKET_SERVICE = '_dcp._tcp.local';
@@ -174,10 +175,11 @@ export class AutoDetector {
                 switch (key.toLowerCase()) {
                     //extract mac:
                     case 'mac': {
-                        device.mac = value.toUpperCase();
+                        device.mac = normalizeMac(value);
                         break;
                     }
-                    //extract model number:
+                    //extract model number (websocket devices use 'model'):
+                    case 'model':
                     case 'model_number': {
                         device.type = value;
                         break;
