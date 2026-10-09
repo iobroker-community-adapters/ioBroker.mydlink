@@ -6,12 +6,22 @@ import WebSocketClient from 'dlink_websocketclient';
 import { format } from 'node:util';
 
 /**
+ * Invalid device tokens in a row before login is paused. Device locks itself after 10 within 10 minutes.
+ */
+const MAX_INVALID_TOKENS = 3;
+
+/**
  * Class for WebSocket based devices, i.e. newer ones.
  */
 export class WebSocketDevice extends Device {
     client: WebSocketClient;
 
     numSockets = 1;
+
+    /**
+     * Requests rejected because of an invalid device token in a row.
+     */
+    invalidTokens = 0;
 
     /**
      * Creates an instance of WebSocketDevice.
@@ -108,10 +118,40 @@ export class WebSocketDevice extends Device {
                     const val = (await this.client.state(0)) as boolean;
                     await this.adapter.setStateChangedAsync(this.id + Suffixes.state, val, true);
                 }
+                this.invalidTokens = 0;
             } catch (e) {
                 await this.handleNetworkError(e);
             }
         }
+    }
+
+    /**
+     * Counts invalid device tokens. The device locks itself after 10 invalid tokens within 10 minutes, so stop before
+     * that happens, if the PIN is probably wrong. A token that got invalid, because the device rebooted, is only
+     * rejected once (client uses the new salt sent with the rejection).
+     */
+    private onInvalidToken(): void {
+        this.invalidTokens += 1;
+        if (this.invalidTokens >= MAX_INVALID_TOKENS) {
+            this.invalidTokens = 0;
+            this.blockLogin(
+                `${this.name} rejected the device token ${MAX_INVALID_TOKENS} times in a row, probably the PIN is wrong. Will try again in 10 minutes, so the device does not lock itself.`,
+            );
+        }
+    }
+
+    /**
+     * Handle network error during communication.
+     *
+     * @param e error object
+     * @returns code as number or string
+     */
+    async handleNetworkError(e: any): Promise<number | string> {
+        const code = await super.handleNetworkError(e);
+        if (code === 403) {
+            this.onInvalidToken();
+        }
+        return code;
     }
 
     /**
@@ -185,12 +225,14 @@ export class WebSocketDevice extends Device {
             }
             try {
                 const newVal = await this.client.switch(state.val, socket);
+                this.invalidTokens = 0;
                 this.adapter.log.debug(`Switched Socket ${socket} of ${this.name} ${state.val ? 'on' : 'off'}.`);
                 await this.adapter.setState(id, newVal, true);
             } catch (e: any) {
                 const code = processNetworkError(e);
                 if (code === 403) {
                     this.loggedIn = false; //login next polling.
+                    this.onInvalidToken();
                 }
                 this.adapter.log.error(`Error while switching device ${this.name}: ${code} - ${e.stack}`);
             }

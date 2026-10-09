@@ -38,6 +38,11 @@ export class WrongModelError extends Error {
 }
 
 /**
+ * Time to wait before next login, if the device refuses logins.
+ */
+const LOGIN_BLOCK_TIME = 10 * 60 * 1000;
+
+/**
  * Get code from network error.
  *
  * @param e error object
@@ -185,9 +190,28 @@ export abstract class Device extends DeviceInfo {
     }
 
     /**
+     * Blocks further logins for some time, e.g. because the device refuses them.
+     *
+     * @param message warning to log
+     */
+    protected blockLogin(message: string): void {
+        this.loginBlockedUntil = Date.now() + LOGIN_BLOCK_TIME;
+        this.loggedIn = false;
+        this.adapter.log.warn(message);
+    }
+
+    /**
      * Starts log in for device. Needs to be done before additional commands can work.
      */
     async login(): Promise<boolean> {
+        if (this.loginBlockedUntil > Date.now()) {
+            this.adapter.log.debug(
+                `${this.name}: no login before ${new Date(this.loginBlockedUntil).toLocaleTimeString()}.`,
+            );
+            this.loggedIn = false;
+            this.scheduleRetryWithoutPolling();
+            return false;
+        }
         try {
             const loginResult = await this.client.login();
             if (loginResult === true) {
@@ -209,7 +233,12 @@ export abstract class Device extends DeviceInfo {
         } catch (e: any) {
             this.adapter.log.debug(`Login error: ${e.stack}`);
 
-            if (
+            if (e.code === 34) {
+                //websocket devices lock themselves after 10 invalid device tokens within 10 minutes.
+                this.blockLogin(
+                    `${this.name} refuses logins, because it got too many invalid device tokens. Please check the PIN and other programs that access the device (e.g. old versions of this adapter). Will try again in 10 minutes.`,
+                );
+            } else if (
                 !this.loginErrorPrinted &&
                 e.code !== 'ETIMEDOUT' &&
                 e.code !== 'ECONNABORTED' &&
@@ -225,12 +254,18 @@ export abstract class Device extends DeviceInfo {
             }
 
             this.loggedIn = false;
-            if (!this.pollInterval && this.model) {
-                //if no polling takes place, need to retry login!
-                this.schedule(() => this.start(), 10000); //retry here if no polling.
-            }
+            this.scheduleRetryWithoutPolling();
         }
         return this.loggedIn;
+    }
+
+    /**
+     * If no polling takes place, login needs to be retried here.
+     */
+    private scheduleRetryWithoutPolling(): void {
+        if (!this.pollInterval && this.model) {
+            this.schedule(() => this.start(), Math.max(10000, this.loginBlockedUntil - Date.now()));
+        }
     }
 
     /**
