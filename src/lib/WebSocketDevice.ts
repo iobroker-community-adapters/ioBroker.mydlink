@@ -3,6 +3,7 @@ import { Suffixes } from './suffixes';
 import type { Mydlink } from './mydlink';
 import { default as axios } from 'axios';
 import WebSocketClient from 'dlink_websocketclient';
+import { format } from 'node:util';
 
 /**
  * Class for WebSocket based devices, i.e. newer ones.
@@ -29,7 +30,8 @@ export class WebSocketDevice extends Device {
             pin: this.pinDecrypted,
             keepAlive: 5,
             useTelnetForToken: this.pinDecrypted?.toUpperCase() === 'TELNET',
-            log: console.debug,
+            //library logs every message; console would write to stdout of the adapter process.
+            log: (...args: any[]) => this.adapter.log.silly(`${this.ip}: ${format(...args)}`),
         });
     }
 
