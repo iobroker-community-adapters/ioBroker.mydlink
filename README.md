@@ -70,9 +70,8 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22 now
-- (copilot) Adapter requires admin >= 7.7.22 now
+- (Garfonso) Adapter requires admin >= 8.0.14 now
 - (Garfonso) Adapter requires js-controller >= 7.0.7 now
-- (copilot) Adapter requires admin >= 7.6.17 now
 - (Garfonso) fix: auto detection did not work on Linux (replaced mdns-discovery with multicast-dns)
 - (Garfonso) fix: admin discovery and device identification work again
 - (Garfonso) fix: total power consumption was written to currentPower
