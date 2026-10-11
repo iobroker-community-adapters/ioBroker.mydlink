@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "Urządzenia są dodawane i usuwane w menedżerze urządzeń (karta \"Urządzenia\"). Tam można też zmienić PIN. Tutaj można zmienić nazwę, adres IP, interwał odpytywania i aktywację urządzeń.",
+    "enabled": "Włączone",
+    "ipaddress": "Adres IP",
+    "mac": "Adres MAC",
+    "model": "Model",
+    "name": "Nazwa",
+    "pollInterval": "Interwał odpytywania"
+}

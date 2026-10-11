@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "设备在设备管理器（\"设备\"选项卡）中添加和删除，PIN 也可以在那里更改。在这里可以更改设备的名称、IP 地址、轮询间隔以及是否启用。",
+    "enabled": "已启用",
+    "ipaddress": "IP 地址",
+    "mac": "MAC 地址",
+    "model": "型号",
+    "name": "名称",
+    "pollInterval": "轮询间隔"
+}

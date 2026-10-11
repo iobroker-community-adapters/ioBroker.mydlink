@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "Os dispositivos são adicionados e removidos no gerenciador de dispositivos (aba \"Dispositivos\"). O PIN também pode ser alterado lá. Aqui você pode alterar nome, endereço IP, intervalo de consulta e se o dispositivo está ativado.",
+    "enabled": "Ativado",
+    "ipaddress": "Endereço IP",
+    "mac": "Endereço MAC",
+    "model": "Modelo",
+    "name": "Nome",
+    "pollInterval": "Intervalo de consulta"
+}

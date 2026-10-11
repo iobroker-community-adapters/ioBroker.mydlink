@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "Geräte werden im Gerätemanager (Tab \"Geräte\") hinzugefügt und entfernt. Dort kann auch die PIN geändert werden. Hier lassen sich Name, IP-Adresse, Abfrageintervall und Aktivierung der Geräte ändern.",
+    "enabled": "Aktiviert",
+    "ipaddress": "IP-Adresse",
+    "mac": "MAC-Adresse",
+    "model": "Modell",
+    "name": "Name",
+    "pollInterval": "Abfrageintervall"
+}

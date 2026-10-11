@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "Los dispositivos se añaden y eliminan en el administrador de dispositivos (pestaña \"Dispositivos\"). Allí también se puede cambiar el PIN. Aquí puede cambiar el nombre, la dirección IP, el intervalo de sondeo y si el dispositivo está activado.",
+    "enabled": "Activado",
+    "ipaddress": "Dirección IP",
+    "mac": "Dirección MAC",
+    "model": "Modelo",
+    "name": "Nombre",
+    "pollInterval": "Intervalo de sondeo"
+}

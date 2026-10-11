@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "Devices are added and removed in the device manager (tab \"Devices\"). The PIN can also be changed there. Here you can change name, IP address, polling interval and whether the device is enabled.",
+    "enabled": "Enabled",
+    "ipaddress": "IP address",
+    "mac": "MAC address",
+    "model": "Model",
+    "name": "Name",
+    "pollInterval": "Polling interval"
+}

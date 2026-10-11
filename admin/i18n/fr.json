@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "Les appareils sont ajoutés et supprimés dans le gestionnaire d'appareils (onglet \"Appareils\"). Le code PIN peut aussi y être modifié. Ici, vous pouvez modifier le nom, l'adresse IP, l'intervalle d'interrogation et l'activation des appareils.",
+    "enabled": "Activé",
+    "ipaddress": "Adresse IP",
+    "mac": "Adresse MAC",
+    "model": "Modèle",
+    "name": "Nom",
+    "pollInterval": "Intervalle d'interrogation"
+}

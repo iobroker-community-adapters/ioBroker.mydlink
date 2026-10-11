@@ -1,0 +1,9 @@
+{
+    "devicesInfo": "Apparaten worden toegevoegd en verwijderd in de apparaatbeheerder (tabblad \"Apparaten\"). Daar kan ook de PIN worden gewijzigd. Hier kunt u naam, IP-adres, pollinginterval en activering van de apparaten wijzigen.",
+    "enabled": "Ingeschakeld",
+    "ipaddress": "IP-adres",
+    "mac": "MAC-adres",
+    "model": "Model",
+    "name": "Naam",
+    "pollInterval": "Pollinginterval"
+}
