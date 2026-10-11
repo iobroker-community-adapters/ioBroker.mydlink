@@ -103,7 +103,7 @@ class AutoDetector {
     if (entry.name === WEBSOCKET_SERVICE && !(alreadyDetected == null ? void 0 : alreadyDetected.mac)) {
       this.adapter.log.debug(`Maybe detected websocket device on ${entry.ip}`);
       const model = entry.ptrData ? entry.ptrData.substring(0, 8) : "";
-      const newDevice = new import_WebSocketDevice.WebSocketDevice(this.adapter, entry.ip, "INVALID", false);
+      const newDevice = new import_WebSocketDevice.WebSocketDevice(this.adapter, entry.ip, "INVALID");
       newDevice.model = model;
       try {
         await newDevice.client.login();
@@ -222,7 +222,7 @@ class AutoDetector {
   async verifyMac(oldDevice, ip) {
     try {
       if (oldDevice.isWebsocket) {
-        const device2 = new import_WebSocketDevice.WebSocketDevice(this.adapter, ip, oldDevice.pinDecrypted, false);
+        const device2 = new import_WebSocketDevice.WebSocketDevice(this.adapter, ip, oldDevice.pin);
         try {
           await device2.client.login();
           return (0, import_TableDevice.normalizeMac)(device2.client.getDeviceId()) === oldDevice.mac;
@@ -230,7 +230,7 @@ class AutoDetector {
           device2.stop();
         }
       }
-      const device = new import_soapDevice.SoapDevice(this.adapter, ip, oldDevice.pinDecrypted, false);
+      const device = new import_soapDevice.SoapDevice(this.adapter, ip, oldDevice.pin);
       if (!await device.client.login()) {
         return false;
       }

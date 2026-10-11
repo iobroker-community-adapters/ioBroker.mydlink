@@ -22,10 +22,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
-var import_DeviceInfo = require("./lib/DeviceInfo");
+var import_node_path = require("node:path");
 var import_autoDetect = require("./lib/autoDetect");
 var import_TableDevice = require("./lib/TableDevice");
 var import_DeviceFactory = require("./lib/DeviceFactory");
+var import_DeviceManagement = require("./lib/DeviceManagement");
+var import_Config = require("./lib/Config");
 class Mydlink extends utils.Adapter {
   /**
    * Array of devices.
@@ -36,6 +38,10 @@ class Mydlink extends utils.Adapter {
    */
   devices = [];
   /**
+   * Devices of the instance configuration, PINs decrypted.
+   */
+  configDevices = [];
+  /**
    * Auto-detected devices. Store here and aggregate until we are sure it is mydlink and have mac
    * -> multiple messages.
    *
@@ -45,6 +51,10 @@ class Mydlink extends utils.Adapter {
    * Set during unload, prevents devices from starting new timers.
    */
   unloading = false;
+  /**
+   * Communication with the device manager in admin.
+   */
+  deviceManagement;
   constructor(options = {}) {
     super({
       ...options,
@@ -52,8 +62,8 @@ class Mydlink extends utils.Adapter {
     });
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
-    this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
+    this.deviceManagement = new import_DeviceManagement.MydlinkDeviceManagement(this);
   }
   /**
    * deletes all objects of a device and the device itself (deleteDeviceAsync does not work somehow...?)
@@ -62,18 +72,30 @@ class Mydlink extends utils.Adapter {
    */
   async deleteDeviceFull(device) {
     device.stop();
+    await this.deleteDeviceObjects(device.id, device.mac);
+  }
+  /**
+   * deletes all objects of a device id
+   *
+   * @param id id of the device object (MAC without colons)
+   * @param mac MAC of the device
+   */
+  async deleteDeviceObjects(id, mac) {
+    if (!id) {
+      return;
+    }
     if (this.autoDetector) {
       for (const ip of Object.keys(this.autoDetector.detectedDevices)) {
         const dectDevice = this.autoDetector.detectedDevices[ip];
-        if (dectDevice.mac === device.id) {
+        if (dectDevice.mac === mac) {
           dectDevice.alreadyPresent = false;
         }
       }
     }
     try {
       const ids = await this.getObjectListAsync({
-        startkey: `${this.namespace}.${device.id}`,
-        endkey: `${this.namespace}.${device.id}\u9999`
+        startkey: `${this.namespace}.${id}`,
+        endkey: `${this.namespace}.${id}\u9999`
       });
       if (ids) {
         for (const obj of ids.rows) {
@@ -81,8 +103,18 @@ class Mydlink extends utils.Adapter {
         }
       }
     } catch (e) {
-      this.log.error(`Error during deletion of ${device.id}: ${e.stack}`);
+      this.log.error(`Error during deletion of ${id}: ${e.stack}`);
     }
+  }
+  /**
+   * Stores the devices in the instance configuration. js-controller encrypts the PINs and restarts the adapter.
+   *
+   * @param devices devices with PINs in plain text
+   */
+  async saveConfigDevices(devices) {
+    const copies = devices.map((device) => ({ ...device }));
+    this.configDevices = devices;
+    await this.updateConfig({ configVersion: import_Config.CONFIG_VERSION, devices: copies });
   }
   /**
    * Store new IP of a device in config. Changing the config restarts the adapter.
@@ -91,116 +123,168 @@ class Mydlink extends utils.Adapter {
    * @param ip new IP
    */
   async updateDeviceIp(mac, ip) {
-    const instanceObject = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
-    if (!instanceObject) {
-      return;
-    }
-    const configDevice = instanceObject.native.devices.find(
-      (d) => d.mac && (0, import_TableDevice.normalizeMac)(d.mac) === mac
-    );
+    const configDevice = this.configDevices.find((d) => d.mac && (0, import_TableDevice.normalizeMac)(d.mac) === mac);
     if (configDevice && configDevice.ip !== ip) {
-      configDevice.ip = ip;
-      await this.setForeignObjectAsync(instanceObject._id, instanceObject);
+      await this.saveConfigDevices(this.configDevices.map((d) => d === configDevice ? { ...d, ip } : d));
     }
+  }
+  /**
+   * Logs in to a device and identifies it. Used to add a new device.
+   *
+   * @param ip IP of the device
+   * @param pin PIN of the device
+   * @returns identified device (stopped) or undefined, if login or identification failed
+   */
+  async identifyDevice(ip, pin) {
+    const device = await (0, import_DeviceFactory.createFromTable)(this, { ip, pin });
+    if (!device) {
+      return void 0;
+    }
+    try {
+      await device.start();
+      if (device.loggedIn && device.identified && device.ready && device.mac) {
+        return device;
+      }
+      this.log.info(`Could not log in to device on ${ip}.`);
+    } catch (e) {
+      this.log.info(`Could not log in to device on ${ip}: ${e.stack}`);
+    } finally {
+      device.stop();
+    }
+    if (device.id && !this.devices.some((d) => d.id === device.id)) {
+      await this.deleteDeviceObjects(device.id, device.mac);
+    }
+    return void 0;
+  }
+  /**
+   * Reads the devices from the instance configuration with decrypted PINs.
+   * Converts configurations of old versions, which encrypted the PINs themselves.
+   *
+   * @returns devices or undefined, if the configuration was converted. The adapter restarts then.
+   */
+  async loadConfigDevices() {
+    const config = this.config;
+    if (config.configVersion !== import_Config.CONFIG_VERSION) {
+      const devices2 = await this.migrateConfig();
+      if (devices2.length) {
+        this.log.info(
+          "Converted configuration, PINs are now encrypted by js-controller. Adapter will restart."
+        );
+        await this.saveConfigDevices(devices2);
+        return void 0;
+      }
+      return devices2;
+    }
+    const devices = (config.devices || []).map((device) => ({ ...device }));
+    let pins = [];
+    try {
+      pins = await this.getEncryptedConfig("devices.pin");
+    } catch (e) {
+      this.log.error(`Could not decrypt PINs: ${e}`);
+    }
+    devices.forEach((device, index) => {
+      const pin = Array.isArray(pins) ? pins[index] : void 0;
+      device.pin = typeof pin === "string" ? pin : "";
+    });
+    return devices;
+  }
+  /**
+   * Reads devices of a configuration of version 1 from the instance object. this.config can not be used, because
+   * js-controller might have tried to decrypt PINs that were not encrypted.
+   * Also removes the PINs old versions stored in the device objects.
+   *
+   * @returns devices with decrypted PINs
+   */
+  async migrateConfig() {
+    var _a;
+    for (const deviceObject of await this.getDevicesAsync()) {
+      if ("pin" in deviceObject.native || "pinNotEncrypted" in deviceObject.native) {
+        delete deviceObject.native.pin;
+        delete deviceObject.native.pinNotEncrypted;
+        await this.setForeignObjectAsync(deviceObject._id, deviceObject);
+      }
+    }
+    const instanceObject = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+    const devices = (instanceObject == null ? void 0 : instanceObject.native.devices) || [];
+    if (!devices.length) {
+      return [];
+    }
+    const systemConfig = await this.getForeignObjectAsync("system.config");
+    const secret = ((_a = systemConfig == null ? void 0 : systemConfig.native) == null ? void 0 : _a.secret) || import_Config.LEGACY_SECRET;
+    return (0, import_Config.migrateLegacyDevices)(devices, secret);
+  }
+  /**
+   * Creates device of a configuration entry. Devices with known model are created without login.
+   *
+   * @param configDevice entry of the configuration
+   * @param deviceObjects existing device objects, to get the model if missing in the configuration
+   * @returns device or undefined, if creation failed
+   */
+  async createConfiguredDevice(configDevice, deviceObjects) {
+    var _a;
+    const deviceObject = configDevice.mac ? deviceObjects.find((o) => o.native.mac && (0, import_TableDevice.normalizeMac)(o.native.mac) === configDevice.mac) : void 0;
+    const model = configDevice.model || (deviceObject == null ? void 0 : deviceObject.native.model);
+    const useWebSocket = (_a = configDevice.useWebSocket) != null ? _a : deviceObject == null ? void 0 : deviceObject.native.useWebSocket;
+    if (configDevice.mac && model) {
+      return (0, import_DeviceFactory.createDevice)(this, {
+        ip: configDevice.ip,
+        pin: configDevice.pin,
+        model,
+        pollInterval: Number(configDevice.pollInterval),
+        mac: configDevice.mac,
+        name: configDevice.name,
+        enabled: configDevice.enabled,
+        isWebsocket: useWebSocket
+      });
+    }
+    this.log.info(`Model still unknown for ${configDevice.name || configDevice.ip}. Trying to identify.`);
+    return (0, import_DeviceFactory.createFromTable)(this, configDevice, useWebSocket);
   }
   /**
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    const systemConfig = await this.getForeignObjectAsync("system.config");
-    if (systemConfig) {
-      import_DeviceInfo.DeviceInfo.setSecret(systemConfig.native ? systemConfig.native.secret : "RJaeBLRPwvPfh5O");
-    }
+    await utils.I18n.init((0, import_node_path.join)(__dirname, "..", "admin"), this);
     await this.delObjectAsync("info", { recursive: true });
-    this.autoDetector = new import_autoDetect.AutoDetector(this);
-    const existingDevices = await this.getDevicesAsync();
-    const configDevicesToAdd = [].concat(this.config.devices);
-    this.log.debug(`Got existing devices: ${JSON.stringify(existingDevices, null, 2)}`);
-    this.log.debug(`Got config devices: ${JSON.stringify(configDevicesToAdd, null, 2)}`);
-    let needUpdateConfig = false;
-    for (const existingDevice of existingDevices) {
-      let found = false;
-      for (const configDevice of this.config.devices) {
-        if ((0, import_TableDevice.sanitizeTableDevice)(configDevice)) {
-          needUpdateConfig = true;
-        }
-        if (!configDevice.mac) {
-          needUpdateConfig = true;
-        }
-        if (configDevice.mac && existingDevice.native.mac && configDevice.mac === (0, import_TableDevice.normalizeMac)(existingDevice.native.mac) || !configDevice.mac && configDevice.ip === existingDevice.native.ip) {
-          found = true;
-          for (const key of Object.keys(configDevice)) {
-            existingDevice.native[key] = configDevice[key];
-          }
-          existingDevice.native.pinNotEncrypted = !configDevice.mac;
-          configDevicesToAdd.splice(configDevicesToAdd.indexOf(configDevice), 1);
-          break;
-        }
-      }
-      const device = await (0, import_DeviceFactory.createFromObject)(this, existingDevice);
-      if (device) {
-        await device.createDeviceObject();
-        if (existingDevice.native.pinNotEncrypted) {
-          needUpdateConfig = true;
-        }
-        if (found) {
-          await device.start();
-          this.devices.push(device);
-        } else {
-          this.log.debug(`Deleting ${device.name}`);
-          await this.deleteDeviceFull(device);
-        }
-      } else {
-        this.log.error(`Could not create device for existing device entry: ${existingDevice._id}`);
-      }
+    const configDevices = await this.loadConfigDevices();
+    if (!configDevices) {
+      return;
     }
-    for (const configDevice of configDevicesToAdd) {
-      if ((0, import_TableDevice.sanitizeTableDevice)(configDevice)) {
-        needUpdateConfig = true;
-      }
-      const device = await (0, import_DeviceFactory.createFromTable)(this, configDevice, !configDevice.pinNotEncrypted);
-      if (device) {
-        this.log.debug(`Device ${device.name} in config but not in devices -> create and add.`);
-        const oldDevice = this.devices.find((d) => d.mac === device.mac);
-        if (oldDevice) {
-          this.log.info(
-            `Duplicate entry for ${device.mac} in config. Trying to rectify. Restart will happen. Affected devices: ${device.name} === ${configDevice.name}`
-          );
-          needUpdateConfig = true;
-        } else {
-          await device.createDeviceObject();
-          await device.start();
-          await device.createDeviceObject();
-          this.devices.push(device);
-          if (device.mac && device.mac !== configDevice.mac) {
-            needUpdateConfig = true;
-          }
-        }
-      } else {
+    this.configDevices = configDevices;
+    this.autoDetector = new import_autoDetect.AutoDetector(this);
+    const deviceObjects = await this.getDevicesAsync();
+    this.log.debug(`Got existing devices: ${JSON.stringify(deviceObjects, null, 2)}`);
+    this.log.debug(`Got ${configDevices.length} config devices.`);
+    for (const configDevice of configDevices.map((d) => ({ ...d }))) {
+      (0, import_TableDevice.sanitizeTableDevice)(configDevice);
+      const device = await this.createConfiguredDevice(configDevice, deviceObjects);
+      if (!device) {
         this.log.error(`Could not create device for config entry with IP: ${configDevice.ip}`);
+        continue;
+      }
+      if (device.mac && this.devices.some((d) => d.mac === device.mac)) {
+        device.stop();
+        this.log.info(
+          `Duplicate entry for ${device.mac} in config. Trying to rectify. Restart will happen. Affected devices: ${device.name} === ${configDevice.name}`
+        );
+        continue;
+      }
+      await device.createDeviceObject();
+      await device.start();
+      await device.createDeviceObject();
+      this.devices.push(device);
+    }
+    for (const deviceObject of deviceObjects) {
+      const id = deviceObject._id.split(".")[2];
+      if (!this.devices.some((d) => d.id === id)) {
+        this.log.debug(`Deleting ${deviceObject.common.name}`);
+        await this.deleteDeviceObjects(id, deviceObject.native.mac);
       }
     }
     this.autoDetector.query();
-    if (needUpdateConfig) {
-      const devices = [];
-      for (const device of this.devices) {
-        const configDevice = {
-          ip: device.ip,
-          mac: device.mac,
-          pin: device.pinEncrypted,
-          pollInterval: device.pollInterval,
-          enabled: device.enabled,
-          name: device.name,
-          model: device.model,
-          useWebSocket: device.isWebsocket
-        };
-        devices.push(configDevice);
-      }
-      await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-        native: {
-          devices
-        }
-      });
+    const devices = this.devices.map(import_Config.deviceToTableDevice);
+    if (!(0, import_Config.sameTableDevices)(devices, configDevices)) {
+      await this.saveConfigDevices(devices);
     }
   }
   /**
@@ -241,114 +325,6 @@ class Mydlink extends utils.Adapter {
           await device.handleStateChange(id, state);
         } else {
           this.log.info(`Unknown device ${deviceId} for ${id}. Can't control anything.`);
-        }
-      }
-    }
-  }
-  /**
-   * Some message was sent to this instance over message box.
-   * Using this method requires "common.messagebox" property to be set to true in io-package.json
-   *
-   * @param obj the message object
-   */
-  async onMessage(obj) {
-    if (typeof obj === "object" && obj.message) {
-      switch (obj.command) {
-        case "discovery": {
-          if (obj.callback) {
-            const devices = [];
-            if (this.autoDetector) {
-              this.autoDetector.refresh();
-              for (const key of Object.keys(this.autoDetector.detectedDevices)) {
-                const device = this.autoDetector.detectedDevices[key];
-                if (device.mac) {
-                  device.alreadyPresent = this.devices.some((d) => d.mac === device.mac);
-                  device.readOnly = true;
-                  devices.push(device);
-                }
-              }
-            }
-            this.sendTo(obj.from, obj.command, devices, obj.callback);
-          }
-          break;
-        }
-        case "getDevices": {
-          const tableDevices = [];
-          for (const device of this.devices) {
-            const tableDevice = {
-              name: device.name,
-              mac: device.mac,
-              ip: device.ip,
-              pin: device.pinDecrypted,
-              pollInterval: device.pollInterval,
-              enabled: device.enabled
-            };
-            tableDevices.push(tableDevice);
-          }
-          if (obj.callback) {
-            this.sendTo(obj.from, obj.command, tableDevices, obj.callback);
-          }
-          break;
-        }
-        case "identifyDevice": {
-          const params = obj.message;
-          if (params && params.ip && params.pin) {
-            let device = await (0, import_DeviceFactory.createFromTable)(
-              this,
-              {
-                ip: params.ip,
-                pin: params.pin
-              },
-              false
-            );
-            if (!device) {
-              this.log.info("could not create device -> error.");
-              if (obj.callback) {
-                this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
-              }
-              return;
-            }
-            try {
-              await device.start();
-              if (device.loggedIn && device.identified) {
-                const oldDevice = this.devices.find((d) => d.mac === (device == null ? void 0 : device.mac));
-                if (oldDevice) {
-                  device.stop();
-                  device = oldDevice;
-                } else {
-                  this.devices.push(device);
-                }
-                const sendDevice = {
-                  mac: device.mac,
-                  name: device.name,
-                  ip: device.ip,
-                  pollInterval: device.pollInterval,
-                  pin: device.pinDecrypted,
-                  enabled: device.loggedIn && device.identified
-                };
-                if (obj.callback) {
-                  this.sendTo(obj.from, obj.command, sendDevice, obj.callback);
-                }
-              } else {
-                device.stop();
-                this.log.info("could not login -> error.");
-                if (obj.callback) {
-                  this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
-                }
-              }
-            } catch (e) {
-              device.stop();
-              this.log.info(`could not login device: ${e.stack}`);
-              if (obj.callback) {
-                this.sendTo(obj.from, obj.command, "ERROR", obj.callback);
-              }
-            }
-          }
-          break;
-        }
-        default: {
-          this.log.debug(`Unknown command ${obj.command}`);
-          break;
         }
       }
     }

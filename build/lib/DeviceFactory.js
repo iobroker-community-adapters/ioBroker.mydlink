@@ -19,7 +19,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var DeviceFactory_exports = {};
 __export(DeviceFactory_exports, {
   createDevice: () => createDevice,
-  createFromObject: () => createFromObject,
   createFromTable: () => createFromTable
 });
 module.exports = __toCommonJS(DeviceFactory_exports);
@@ -27,16 +26,6 @@ var import_Device = require("./Device");
 var import_KnownDevices = require("./KnownDevices");
 var import_WebSocketDevice = require("./WebSocketDevice");
 var import_soapDevice = require("./soapDevice");
-function deviceObjetToTableDevice(configDevice) {
-  return {
-    name: configDevice.native.name,
-    mac: configDevice.native.mac,
-    ip: configDevice.native.ip,
-    pin: configDevice.native.pin,
-    pollInterval: configDevice.native.pollInterval,
-    enabled: configDevice.native.enabled
-  };
-}
 function sendModelInfoToSentry(adapter, model, xml) {
   if (!import_KnownDevices.KnownDevices[model]) {
     adapter.log.info(
@@ -63,31 +52,11 @@ function sendModelInfoToSentry(adapter, model, xml) {
     }
   }
 }
-async function createFromObject(adapter, configDevice) {
-  const native = configDevice.native;
-  const pinEncrypted = native.mac && !native.pinNotEncrypted;
-  if (native.model) {
-    return createDevice(adapter, {
-      ip: native.ip,
-      pin: native.pin,
-      pinEncrypted,
-      model: native.model,
-      pollInterval: Number(native.pollInterval),
-      mac: native.mac,
-      id: configDevice._id.split(".")[2],
-      name: native.name,
-      enabled: native.enabled,
-      isWebsocket: native.useWebSocket
-    });
-  }
-  adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
-  return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebSocket);
-}
 async function createDevice(adapter, params) {
   const deviceFlags = import_KnownDevices.KnownDevices[params.model];
   let device;
   if (deviceFlags) {
-    device = new deviceFlags.DeviceType(adapter, params.ip, params.pin, params.pinEncrypted);
+    device = new deviceFlags.DeviceType(adapter, params.ip, params.pin);
     if (typeof deviceFlags.moreSetup === "function") {
       deviceFlags.moreSetup(device);
     }
@@ -96,11 +65,11 @@ async function createDevice(adapter, params) {
     try {
       let info;
       if (params.isWebsocket) {
-        device = new import_WebSocketDevice.WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+        device = new import_WebSocketDevice.WebSocketDevice(adapter, params.ip, params.pin);
         const body = await device.getModelInfoForSentry();
         info = { info: `UNKNOWN WEBSOCKET DEVICE: ${params.model}`, body };
       } else {
-        device = new import_soapDevice.SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+        device = new import_soapDevice.SoapDevice(adapter, params.ip, params.pin);
         info = await device.client.getDeviceDescriptionXML();
       }
       sendModelInfoToSentry(adapter, params.model, info);
@@ -123,14 +92,13 @@ async function createDevice(adapter, params) {
   }
   return device;
 }
-async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWebsocket = false) {
-  const pinEncrypted = doDecrypt && Boolean(tableDevice.mac);
+async function createFromTable(adapter, tableDevice, forceWebsocket = false) {
   const mac = tableDevice.mac ? tableDevice.mac.toUpperCase() : "";
   let device;
   if (!forceWebsocket) {
-    device = new import_soapDevice.SoapDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
+    device = new import_soapDevice.SoapDevice(adapter, tableDevice.ip, tableDevice.pin);
   } else {
-    device = new import_WebSocketDevice.WebSocketDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
+    device = new import_WebSocketDevice.WebSocketDevice(adapter, tableDevice.ip, tableDevice.pin);
   }
   device.mac = mac;
   device.pollInterval = tableDevice.pollInterval !== void 0 && isFinite(Number(tableDevice.pollInterval)) && tableDevice.pollInterval >= 0 ? Number(tableDevice.pollInterval) : 3e4;
@@ -146,7 +114,7 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
     } else {
       if (!forceWebsocket) {
         adapter.log.debug(`${device.name} could not login with SOAP, try websocket.`);
-        return createFromTable(adapter, tableDevice, doDecrypt, true);
+        return createFromTable(adapter, tableDevice, true);
       }
       throw new Error("Device not logged in... why?");
     }
@@ -154,15 +122,14 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
     device.stop();
     const code = (0, import_Device.processNetworkError)(e);
     if (!forceWebsocket && (code === 500 || code === "ECONNREFUSED")) {
-      return createFromTable(adapter, tableDevice, doDecrypt, true);
+      return createFromTable(adapter, tableDevice, true);
     }
     if (e.name === import_Device.WrongModelError.errorName) {
       adapter.log.debug(`Found ${device.model} for ${device.name}. Create a fitting device.`);
       return createDevice(adapter, {
         model: device.model,
         ip: device.ip,
-        pinEncrypted: false,
-        pin: device.pinDecrypted,
+        pin: device.pin,
         name: device.name,
         mac: device.mac,
         pollInterval: device.pollInterval,
@@ -179,8 +146,7 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
         return createDevice(adapter, {
           model: device.model,
           ip: device.ip,
-          pinEncrypted: false,
-          pin: device.pinDecrypted,
+          pin: device.pin,
           name: device.name,
           mac: device.mac,
           pollInterval: device.pollInterval,
@@ -192,7 +158,7 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
       return createFromTable(adapter, {
         mac: device.mac,
         ip: device.ip,
-        pin: device.pinDecrypted,
+        pin: device.pin,
         name: device.name,
         pollInterval: device.pollInterval,
         enabled: device.enabled
@@ -212,7 +178,6 @@ async function createFromTable(adapter, tableDevice, doDecrypt = false, forceWeb
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   createDevice,
-  createFromObject,
   createFromTable
 });
 //# sourceMappingURL=DeviceFactory.js.map

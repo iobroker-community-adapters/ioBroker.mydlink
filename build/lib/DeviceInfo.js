@@ -21,56 +21,15 @@ __export(DeviceInfo_exports, {
   DeviceInfo: () => DeviceInfo
 });
 module.exports = __toCommonJS(DeviceInfo_exports);
-function encryptDecrypt(key, value) {
-  if (!value || !key) {
-    return value;
-  }
-  let result = "";
-  for (let i = 0; i < value.length; ++i) {
-    result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-  }
-  return result;
-}
 class DeviceInfo {
-  static secret;
-  /**
-   * Used to set secret from main.ts -> so we can use it here to decrypt stuff if necessary.
-   *
-   * @param secret the secret use for encryption / decryption
-   */
-  static setSecret(secret) {
-    DeviceInfo.secret = secret;
-  }
   /**
    * ip of device, might change in dhcp setups
    */
   ip;
   /**
-   * pin of device, needed for login. Should be protected.
+   * pin of device, needed for login. Stored encrypted in the instance configuration by js-controller.
    */
-  pinDecrypted = "";
-  /**
-   * pin of device, needed for login. Should be protected.
-   */
-  pinEncrypted = "";
-  /**
-   * Set Pin, please supply if it is encrypted or decrypted.
-   *
-   * @param pin the pin to set in device information
-   * @param encrypted is the supplied pin encrypted?
-   */
-  setPin(pin, encrypted = false) {
-    if (!pin) {
-      pin = "INVALID";
-    }
-    if (encrypted) {
-      this.pinEncrypted = pin;
-      this.pinDecrypted = encryptDecrypt(DeviceInfo.secret, pin);
-    } else {
-      this.pinEncrypted = encryptDecrypt(DeviceInfo.secret, pin);
-      this.pinDecrypted = pin;
-    }
-  }
+  pin;
   /**
    * mac of device, used as base for ID. Should not change.
    */
@@ -135,11 +94,10 @@ class DeviceInfo {
    *
    * @param ip ip of the device
    * @param pin pin of the device
-   * @param pinEncrypted - is the supplied pin encrypted?
    */
-  constructor(ip, pin, pinEncrypted) {
+  constructor(ip, pin) {
     this.ip = ip;
-    this.setPin(pin, pinEncrypted);
+    this.pin = pin || "INVALID";
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

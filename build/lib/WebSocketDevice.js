@@ -50,17 +50,15 @@ class WebSocketDevice extends import_Device.Device {
    * @param adapter reference to adapter
    * @param ip ip of device
    * @param pin pin of device
-   * @param pinEncrypted is pin encrypted
    */
-  constructor(adapter, ip, pin, pinEncrypted) {
-    var _a;
-    super(adapter, ip, pin, pinEncrypted);
+  constructor(adapter, ip, pin) {
+    super(adapter, ip, pin);
     this.isWebsocket = true;
     this.client = new import_dlink_websocketclient.default({
       ip: this.ip,
-      pin: this.pinDecrypted,
+      pin: this.pin,
       keepAlive: 5,
-      useTelnetForToken: ((_a = this.pinDecrypted) == null ? void 0 : _a.toUpperCase()) === "TELNET",
+      useTelnetForToken: this.pin.toUpperCase() === "TELNET",
       //library logs every message; console would write to stdout of the adapter process.
       log: (...args) => this.adapter.log.silly(`${this.ip}: ${(0, import_node_util.format)(...args)}`)
     });
@@ -249,7 +247,7 @@ class WebSocketDevice extends import_Device.Device {
    * Get model info of unknown devices for Sentry logging.
    */
   async getModelInfoForSentry() {
-    const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+    const url = `http://${this.ip}/login?username=Admin&password=${this.pin}`;
     const result = await import_axios.default.get(url);
     return result.data;
   }
@@ -269,7 +267,7 @@ class WebSocketDevice extends import_Device.Device {
     }
     this.mac = mac;
     this.id = id;
-    const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+    const url = `http://${this.ip}/login?username=Admin&password=${this.pin}`;
     let recievedModel = "";
     try {
       const result = await import_axios.default.get(url);

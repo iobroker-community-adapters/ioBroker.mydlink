@@ -45,13 +45,12 @@ class SoapDevice extends import_Device.Device {
    * @param adapter reference to adapter
    * @param ip ip of device
    * @param pin pin of device
-   * @param pinEncrypted is pin encrypted
    */
-  constructor(adapter, ip, pin, pinEncrypted) {
-    super(adapter, ip, pin, pinEncrypted);
+  constructor(adapter, ip, pin) {
+    super(adapter, ip, pin);
     this.client = (0, import_soapclient.default)({
       user: "Admin",
-      password: this.pinDecrypted,
+      password: this.pin,
       url: `http://${this.ip}/HNAP1`
     });
   }

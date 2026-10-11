@@ -61,8 +61,8 @@ function processNetworkError(e) {
 }
 class Device extends import_DeviceInfo.DeviceInfo {
   adapter;
-  constructor(adapter, ip, pin, pinEncrypted) {
-    super(ip, pin, pinEncrypted);
+  constructor(adapter, ip, pin) {
+    super(ip, pin);
     this.adapter = adapter;
   }
   /**
@@ -88,13 +88,11 @@ class Device extends import_DeviceInfo.DeviceInfo {
       native: {
         ip: this.ip,
         mac: this.mac,
-        pin: this.pinEncrypted,
         pollInterval: Number(this.pollInterval),
         enabled: this.enabled,
         name: this.name,
         model: this.model,
-        useWebSocket: this.isWebsocket,
-        pinNotEncrypted: false
+        useWebSocket: this.isWebsocket
       }
     });
   }
