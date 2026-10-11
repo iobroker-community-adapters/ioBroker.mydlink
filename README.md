@@ -69,24 +69,25 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 -->
 
 ### **WORK IN PROGRESS**
-- (copilot) Adapter requires node.js >= 22 now
-- (Garfonso) Adapter requires admin >= 8.0.14 now
-- (Garfonso) Adapter requires js-controller >= 7.0.7 now
+- (copilot) **Breaking:** Adapter requires node.js >= 22 now
+- (Garfonso) **Breaking:** Adapter requires js-controller >= 7.0.7 and admin >= 8.0.14 now
+- (Garfonso) **Breaking:** PINs are encrypted by js-controller and hidden from other adapters. The configuration is converted on first start, the adapter restarts once. After a downgrade to 1.3.x the PINs have to be entered again.
+- (Garfonso) feat: devices are added, edited, enabled / disabled and deleted in the device manager
+- (Garfonso) feat: settings page uses jsonConfig and embeds the device manager (#594, #414)
+- (Garfonso) fix: adapter did crash on invalid data from websocket devices (#384)
 - (Garfonso) fix: auto detection did not work on Linux (replaced mdns-discovery with multicast-dns)
-- (Garfonso) fix: admin discovery and device identification work again
 - (Garfonso) fix: total power consumption was written to currentPower
 - (Garfonso) fix: log in again if session of a device expired
 - (Garfonso) fix: polling can be disabled for devices with known model
 - (Garfonso) fix: normalize MAC addresses, fixes endless loop if another device answers on the configured IP
 - (Garfonso) fix: detect changed IP of devices and update the configuration
 - (Garfonso) fix: websocket devices were reported reachable while offline
-- (Garfonso) fix: websocket devices reconnect after they were offline (dlink_websocketclient 0.6.0)
-- (Garfonso) fix: no new timers during unload
+- (Garfonso) fix: websocket devices reconnect after they were offline (dlink_websocketclient 0.6.2)
 - (Garfonso) fix: pause login of websocket devices for 10 minutes if they refuse it or the PIN is wrong (device locks itself after 10 invalid tokens)
+- (Garfonso) fix: no new timers during unload
 - (Garfonso) chore: reduced log noise
-- (Garfonso) feat: devices are added, edited, enabled / disabled and deleted in the device manager
-- (Garfonso) feat: settings page uses jsonConfig and embeds the device manager
-- (Garfonso) feat: PINs are encrypted by js-controller and hidden from other adapters. The configuration is converted on first start, the adapter restarts once
+- (Garfonso) chore: tested with node.js 26 (#632)
+- (Garfonso) chore: dependencies updated
 
 ### 1.3.6 (2024-05-24)
 * fixed: crash with empty pin.
