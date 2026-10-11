@@ -152,14 +152,16 @@ export class MydlinkDeviceManagement extends DeviceManagement<Mydlink> {
             model: device.model,
             connectionType: 'wifi',
             enabled: device.enabled,
-            status: device.id
-                ? {
-                      connection: {
-                          stateId: `${this.adapter.namespace}.${device.id}${Suffixes.reachable}`,
-                          mapping: { true: 'connected', false: 'disconnected' },
-                      },
-                  }
-                : 'disconnected',
+            //disabled devices are not contacted, their reachable state is not current.
+            status:
+                device.id && device.enabled
+                    ? {
+                          connection: {
+                              stateId: `${this.adapter.namespace}.${device.id}${Suffixes.reachable}`,
+                              mapping: { true: 'connected', false: 'disconnected' },
+                          },
+                      }
+                    : 'disconnected',
             hasDetails: true,
             actions: [
                 {

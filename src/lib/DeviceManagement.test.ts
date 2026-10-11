@@ -105,6 +105,15 @@ describe('MydlinkDeviceManagement', () => {
         expect(added[1].status).to.equal('disconnected');
     });
 
+    it('shows disabled devices as disconnected', () => {
+        const { adapter } = createAdapter([createDevice({ enabled: false })]);
+        const dm = new MydlinkDeviceManagement(adapter) as any;
+        const added: any[] = [];
+        dm.loadDevices({ addDevice: (d: any) => added.push(d), setTotalDevices: () => {} });
+
+        expect(added[0].status).to.equal('disconnected');
+    });
+
     it('deletes device and stores configuration without it', async () => {
         const plug = createDevice({});
         const other = createDevice({ mac: 'AA:BB:CC:DD:EE:FF', id: 'AABBCCDDEEFF', ip: '192.168.0.12' });

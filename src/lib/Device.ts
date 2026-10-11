@@ -362,6 +362,11 @@ export abstract class Device extends DeviceInfo {
         //transfer enabled flag to object (only possible once the device is identified and has an id):
         if (this.id) {
             await this.adapter.setState(this.id + Suffixes.enabled, { val: this.enabled, ack: true });
+            //disabled devices are not contacted -> do not keep the last reachable state of the device.
+            if (!this.enabled) {
+                await this.adapter.setStateChangedAsync(this.id + Suffixes.reachable, false, true);
+                await this.adapter.setStateChangedAsync(this.id + Suffixes.unreachable, true, true);
+            }
         }
 
         //start polling if device is enabled (do this after all is set up).
