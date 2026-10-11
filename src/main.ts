@@ -154,7 +154,8 @@ class Mydlink extends utils.Adapter {
         }
         try {
             await device.start();
-            if (device.loggedIn && device.identified && device.mac) {
+            //some devices (e.g. DSP-W118) accept websocket logins with any PIN -> only ready proves a working device.
+            if (device.loggedIn && device.identified && device.ready && device.mac) {
                 return device;
             }
             this.log.info(`Could not log in to device on ${ip}.`);
@@ -163,6 +164,10 @@ class Mydlink extends utils.Adapter {
         } finally {
             //configuration is stored and adapter restarts -> no need to keep it running.
             device.stop();
+        }
+        //identification creates objects -> remove them again, if they do not belong to a configured device.
+        if (device.id && !this.devices.some(d => d.id === device.id)) {
+            await this.deleteDeviceObjects(device.id, device.mac);
         }
         return undefined;
     }
