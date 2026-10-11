@@ -379,7 +379,8 @@ export abstract class Device extends DeviceInfo {
                 }
                 this.adapter.log.debug(`Start polling for ${this.name} with interval ${interval}`);
                 this.pollInterval = interval;
-                this.schedule(() => this.onInterval(), this.pollInterval);
+                //poll ready devices right away, so their states are current after start.
+                this.schedule(() => this.onInterval(), this.ready ? 0 : this.pollInterval);
             } else {
                 this.pollInterval = 0;
                 this.adapter.log.debug(`Polling of ${this.name} disabled, interval was ${interval} (0 means disabled)`);
