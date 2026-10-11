@@ -18,7 +18,7 @@
     "dmReady": "Listo",
     "dmSearchDevices": "Añadir dispositivo detectado",
     "dmSearchDevicesDescription": "Añadir un dispositivo detectado en la red",
-    "enabled": "Activado",
+    "deviceEnabled": "Activado",
     "ipaddress": "Dirección IP",
     "mac": "Dirección MAC",
     "model": "Modelo",

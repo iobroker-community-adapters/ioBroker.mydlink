@@ -71,13 +71,14 @@
                             "attr": "pollInterval",
                             "title": "pollInterval",
                             "min": 0,
+                            "max": 2147483646,
                             "unit": "ms",
                             "width": "20%"
                         },
                         {
                             "type": "checkbox",
                             "attr": "enabled",
-                            "title": "enabled",
+                            "title": "deviceEnabled",
                             "width": "10%"
                         }
                     ]

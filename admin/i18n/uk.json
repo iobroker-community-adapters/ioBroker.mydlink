@@ -18,7 +18,7 @@
     "dmReady": "Готово",
     "dmSearchDevices": "Додати виявлений пристрій",
     "dmSearchDevicesDescription": "Додати пристрій, виявлений у мережі",
-    "enabled": "Увімкнено",
+    "deviceEnabled": "Увімкнено",
     "ipaddress": "IP-адреса",
     "mac": "MAC-адреса",
     "model": "Модель",

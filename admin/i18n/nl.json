@@ -18,7 +18,7 @@
     "dmReady": "Gereed",
     "dmSearchDevices": "Gedetecteerd apparaat toevoegen",
     "dmSearchDevicesDescription": "Een in het netwerk gedetecteerd apparaat toevoegen",
-    "enabled": "Ingeschakeld",
+    "deviceEnabled": "Ingeschakeld",
     "ipaddress": "IP-adres",
     "mac": "MAC-adres",
     "model": "Model",

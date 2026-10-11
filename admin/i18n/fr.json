@@ -18,7 +18,7 @@
     "dmReady": "Prêt",
     "dmSearchDevices": "Ajouter un appareil détecté",
     "dmSearchDevicesDescription": "Ajouter un appareil détecté sur le réseau",
-    "enabled": "Activé",
+    "deviceEnabled": "Activé",
     "ipaddress": "Adresse IP",
     "mac": "Adresse MAC",
     "model": "Modèle",

@@ -18,7 +18,7 @@
     "dmReady": "就绪",
     "dmSearchDevices": "添加检测到的设备",
     "dmSearchDevicesDescription": "添加在网络中检测到的设备",
-    "enabled": "已启用",
+    "deviceEnabled": "已启用",
     "ipaddress": "IP 地址",
     "mac": "MAC 地址",
     "model": "型号",
