@@ -30,15 +30,24 @@ neuere Geräte liefern ihren Status sofort an den ioBroker.
 Das Pollintervall kann pro Gerät einzeln eingestellt werden.
 
 #### Konfiguration:
-* Alle Geräte müssen in der Liste konfiguriert werden:
+Geräte werden im Gerätemanager verwaltet, entweder im Tab "Geräte" der Adaptereinstellungen oder im Gerätemanager
+des Admin:
+* **Erkanntes Gerät hinzufügen**: Geräte, die sich im Netzwerk melden, stehen zur Auswahl. Die PIN muss eingegeben werden.
+* **Gerät über IP hinzufügen**: für Geräte, die nicht erkannt wurden. IP-Adresse und PIN eingeben.
+* Jedes Gerät kann bearbeitet, aktiviert / deaktiviert und gelöscht werden. Beim Löschen werden auch die Objekte des Geräts gelöscht.
+
+Einstellungen eines Geräts:
 
 <table>
 <tr><td>Name</td><td>Name, beliebig</td></tr>
 <tr><td>IP</td><td>IP Adresse oder Hostname des Geräts</td></tr>
-<tr><td>PIN</td><td>Die PIN steht auf der Gerät, z.B. auf dem Boden. Für DSP-W115 kann hier auch TELNET eingegeben werden, siehe unten.</td></tr>
+<tr><td>PIN</td><td>Die PIN steht auf der Gerät, z.B. auf dem Boden. Für DSP-W115 kann hier auch TELNET eingegeben werden, siehe unten.<br />Die PIN wird verschlüsselt gespeichert und kann nur im Gerätemanager geändert werden.</td></tr>
 <tr><td>Poll interval (in ms)</td><td>Poll interval<br /> Auf 0 setzen um polling abzuschalten. <br /><b>Empfehlung:</b> Nutze ein kurzes Intervall für Bewegungsmelder und ein längeres für Steckdosen.</td></tr>
 <tr><td>enable</td><td>Wenn hier kein Haken ist, wird das Gerät nicht angesprochen.<br />So können Geräte, die eine Zeitlang nicht eingesteckt sind (z.B. für Weihnachtsdeko) einfach deaktiviert werden und der Adapter meldet keine Fehler im log.</td></tr>
 </table>
+
+Der Tab "Gerätetabelle" der Einstellungen zeigt alle Geräte. Dort lassen sich Name, IP, Poll interval und Aktivierung ändern.
+Jede Änderung der Konfiguration startet den Adapter neu.
 
 Für alte Geräte stört die Nutzung des Adapters die Nutzung der App nicht. Für neuere Geräte, wie die DSP-W115 ist das etwas anders, siehe unten.
 
@@ -57,6 +66,6 @@ Das erreicht man wie folgt:
 4. Aus dem Gerät über telnet ausführen: `nvram_set FactoryMode 1`
 5. Dann mit `reboot; exit;` (auf dem Gerät ausführen) neustarten.
 
-Jetzt kann in der Adapterkonfiguration `TELNET` als Pin eingegeben werden und
+Jetzt kann im Gerätemanager `TELNET` als Pin eingegeben werden und
 der Adapter holt sich (über den offenen telnet Port) alle Informationen von dem
 Gerät, die er braucht. 

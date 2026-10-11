@@ -71,7 +71,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22 now
 - (copilot) Adapter requires admin >= 7.7.22 now
-- (copilot) Adapter requires js-controller >= 6.0.11 now
+- (Garfonso) Adapter requires js-controller >= 7.0.7 now
 - (copilot) Adapter requires admin >= 7.6.17 now
 - (Garfonso) fix: auto detection did not work on Linux (replaced mdns-discovery with multicast-dns)
 - (Garfonso) fix: admin discovery and device identification work again
@@ -85,6 +85,9 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 - (Garfonso) fix: no new timers during unload
 - (Garfonso) fix: pause login of websocket devices for 10 minutes if they refuse it or the PIN is wrong (device locks itself after 10 invalid tokens)
 - (Garfonso) chore: reduced log noise
+- (Garfonso) feat: devices are added, edited, enabled / disabled and deleted in the device manager
+- (Garfonso) feat: settings page uses jsonConfig and embeds the device manager
+- (Garfonso) feat: PINs are encrypted by js-controller and hidden from other adapters. The configuration is converted on first start, the adapter restarts once
 
 ### 1.3.6 (2024-05-24)
 * fixed: crash with empty pin.

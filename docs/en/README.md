@@ -21,15 +21,24 @@ The adapter needs to poll some devices. Newer ones do send push messages, which 
 delayed by polling interval, if they need to be polled (can be set in config).
 
 #### Configuration:
-* List of devices, each device with following settings:
+Devices are managed in the device manager, either on the tab "Devices" of the adapter settings or in the device
+manager of admin:
+* **Add detected device**: devices announced in the network are offered for selection. Enter the PIN.
+* **Add device by IP**: for devices that were not detected. Enter IP address and PIN.
+* Every device can be edited, enabled / disabled and deleted. Deleting a device also deletes its objects.
+
+Settings of a device:
 
 <table>
 <tr><td>Name</td><td>set a name here, must be unique (for mydlink devices)</td></tr>
 <tr><td>IP</td><td>fill in IP address here, hostname should also work</td></tr>
-<tr><td>PIN</td><td>PIN is printed on a sticker on the device, probably at the bottom. Can be TELNET for DSP-W115, see below.</td></tr>
+<tr><td>PIN</td><td>PIN is printed on a sticker on the device, probably at the bottom. Can be TELNET for DSP-W115, see below.<br />The PIN is stored encrypted and can only be changed in the device manager.</td></tr>
 <tr><td>Poll interval</td><td>per device poll interval<br /> Set 0 to disable polling. <br /><b>Recommendation:</b> Set a fast poll interval for sensors and a longer one for plugs.</td></tr>
 <tr><td>enable</td><td>if not enabled, will not be polled or controlled. <br />Devices that are not plugged in can be disabled to avoid network traffic and error messages in the log.</td></tr>
 </table>
+
+The tab "Device table" of the settings shows all devices and allows to change name, IP, poll interval and enabled state.
+Every change of the configuration restarts the adapter.
 
 The adapter does not interfere with the use of the app.
 
