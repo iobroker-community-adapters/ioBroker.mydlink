@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "mydlink",
-    "version": "1.3.6",
+    "version": "2.0.0",
     "news": {
       "2.0.0": {
         "en": "Breaking: requires node.js >= 22, js-controller >= 7.0.7 and admin >= 8.0.14.\nDevices are added and edited in the device manager now.\nPINs are stored encrypted, after a downgrade they have to be entered again.\nFixes for auto detection, websocket devices (e.g. DSP-W115), login and power values.",
