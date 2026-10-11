@@ -28,7 +28,7 @@
     "@iobroker/adapter-core": "^3.4.3",
     "@iobroker/dm-utils": "^3.2.1",
     "@xmldom/xmldom": "^0.9.12",
-    "axios": "^1.13.6",
+    "axios": "^1.20.0",
     "dlink_websocketclient": "^0.6.2",
     "multicast-dns": "^7.2.5"
   },
