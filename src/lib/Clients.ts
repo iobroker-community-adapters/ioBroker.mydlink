@@ -26,6 +26,32 @@ export interface Client {
 }
 
 /**
+ * Settings of a motion detector (DCH-S150).
+ */
+export interface MotionDetectorSettings {
+    /**
+     * Name of the detector module.
+     */
+    NickName: string;
+    /**
+     * Description of the detector module.
+     */
+    Description: string;
+    /**
+     * Sensitivity of the sensor, 0 - 100.
+     */
+    Sensitivity: number;
+    /**
+     * Detection enabled.
+     */
+    OPStatus: boolean;
+    /**
+     * Time in seconds after a detection, in which the sensor does not detect again.
+     */
+    Backoff: number;
+}
+
+/**
  * Interface for SOAP clients.
  */
 export interface SoapClientInterface extends Client {
@@ -58,6 +84,30 @@ export interface SoapClientInterface extends Client {
      * Perform a device reboot.
      */
     reboot(): Promise<boolean>;
+
+    /**
+     * Get settings of the motion detector.
+     */
+    getMotionDetectorSettings(): Promise<MotionDetectorSettings>;
+
+    /**
+     * Set settings of the motion detector.
+     *
+     * @param settings complete settings
+     */
+    setMotionDetectorSettings(settings: MotionDetectorSettings): Promise<boolean>;
+
+    /**
+     * Get time settings (NTP server, time zone, daylight saving) as key/value pairs.
+     */
+    getTimeSettings(): Promise<Record<string, string>>;
+
+    /**
+     * Set time settings.
+     *
+     * @param settings complete settings as returned by getTimeSettings
+     */
+    setTimeSettings(settings: Record<string, string>): Promise<boolean>;
 
     /**
      * Get device description XML and supported SOAP actions.

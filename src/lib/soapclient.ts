@@ -31,12 +31,48 @@ import * as crypto from 'node:crypto';
 import axios from 'axios';
 import { DOMParser } from '@xmldom/xmldom';
 import { Agent } from 'node:http';
-import type { SoapClientInterface } from './Clients';
+import type { MotionDetectorSettings, SoapClientInterface } from './Clients';
 
 const HNAP1_XMLNS = 'http://purenetworks.com/HNAP1/';
 //const HNAP_METHOD = 'POST';
 //const HNAP_BODY_ENCODING = 'UTF8';
 const HNAP_LOGIN_METHOD = 'Login';
+
+/**
+ * Fields of Get/SetTimeSettings in the order the device expects them.
+ */
+const TIME_SETTINGS_FIELDS = [
+    'NTP',
+    'NTPServer',
+    'TimeZone',
+    'DaylightSaving',
+    'DSTStartMonth',
+    'DSTStartWeek',
+    'DSTStartDayOfWeek',
+    'DSTStartTime',
+    'DSTEndMonth',
+    'DSTEndWeek',
+    'DSTEndDayOfWeek',
+    'DSTEndTime',
+];
+
+/**
+ * Escapes text for XML.
+ *
+ * @param text text to escape
+ */
+function xmlEscape(text: string): string {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * readResponseValue returns 'ERROR' for empty elements -> empty string.
+ *
+ * @param value value read from response
+ */
+function textValue(value: string | undefined): string {
+    return value === undefined || value === 'ERROR' ? '' : value;
+}
 
 class HNAP_ERROR extends Error {
     errno: number;
@@ -449,6 +485,7 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
                     'FirmwareVersion',
                     'PresentationURL',
                     'ModuleTypes', //not yet helpfully implemented. Hm
+                    'SOAPActions', //array of supported actions
                 ],
                 requestBody('GetDeviceSettings', ''),
             ) as Promise<Record<string, string>>;
@@ -457,6 +494,61 @@ export const soapClient = function (opt = { url: '', user: '', password: '' }): 
         //reboot device
         reboot: function (): Promise<boolean> {
             return soapAction('Reboot', 'RebootResult', requestBody('Reboot', '')) as Promise<boolean>;
+        },
+
+        getMotionDetectorSettings: async function (): Promise<MotionDetectorSettings> {
+            const result = (await soapAction(
+                'GetMotionDetectorSettings',
+                ['NickName', 'Description', 'Sensitivity', 'OPStatus', 'Backoff'],
+                requestBody('GetMotionDetectorSettings', moduleParameters(1)),
+            )) as Record<string, string>;
+            return {
+                NickName: textValue(result.NickName),
+                Description: textValue(result.Description),
+                Sensitivity: Number(result.Sensitivity),
+                OPStatus: result.OPStatus === 'true',
+                Backoff: Number(result.Backoff),
+            };
+        },
+
+        setMotionDetectorSettings: async function (settings: MotionDetectorSettings): Promise<boolean> {
+            const parameters =
+                `${moduleParameters(1)}<NickName>${xmlEscape(settings.NickName)}</NickName>` +
+                `<Description>${xmlEscape(settings.Description)}</Description>` +
+                `<Sensitivity>${settings.Sensitivity}</Sensitivity>` +
+                `<OPStatus>${settings.OPStatus}</OPStatus>` +
+                `<Backoff>${settings.Backoff}</Backoff>`;
+            const result = await soapAction(
+                'SetMotionDetectorSettings',
+                'SetMotionDetectorSettingsResult',
+                requestBody('SetMotionDetectorSettings', parameters),
+            );
+            return result === 'OK';
+        },
+
+        getTimeSettings: async function (): Promise<Record<string, string>> {
+            const result = (await soapAction(
+                'GetTimeSettings',
+                TIME_SETTINGS_FIELDS,
+                requestBody('GetTimeSettings', ''),
+            )) as Record<string, string>;
+            const settings: Record<string, string> = {};
+            for (const field of TIME_SETTINGS_FIELDS) {
+                settings[field] = textValue(result[field]);
+            }
+            return settings;
+        },
+
+        setTimeSettings: async function (settings: Record<string, string>): Promise<boolean> {
+            const parameters = TIME_SETTINGS_FIELDS.map(
+                field => `<${field}>${xmlEscape(settings[field] ?? '')}</${field}>`,
+            ).join('');
+            const result = await soapAction(
+                'SetTimeSettings',
+                'SetTimeSettingsResult',
+                requestBody('SetTimeSettings', parameters),
+            );
+            return result === 'OK';
         },
 
         /**

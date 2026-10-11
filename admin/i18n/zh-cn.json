@@ -21,5 +21,7 @@
     "model": "型号",
     "name": "名称",
     "pin": "PIN",
-    "pollInterval": "轮询间隔"
+    "pollInterval": "轮询间隔",
+    "ntpServer": "NTP 服务器",
+    "ntpServerHelp": "在设备上设置的时间服务器。留空：保留设备的设置。旧设备使用 ntp1.dlink.com。"
 }

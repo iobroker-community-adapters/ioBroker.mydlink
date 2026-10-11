@@ -84,6 +84,14 @@ describe('Config', () => {
             expect(sameTableDevices([device], [withoutModel])).to.equal(false);
         });
 
+        it('treats missing and empty NTP server as same', () => {
+            expect(sameTableDevices([device], [{ ...device, ntpServer: '' }])).to.equal(true);
+        });
+
+        it('detects changed NTP server', () => {
+            expect(sameTableDevices([device], [{ ...device, ntpServer: '192.168.0.2' }])).to.equal(false);
+        });
+
         it('treats poll interval as string and number as same', () => {
             expect(sameTableDevices([device], [{ ...device, pollInterval: '30000' as unknown as number }])).to.equal(
                 true,

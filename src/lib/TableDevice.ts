@@ -35,6 +35,10 @@ export type TableDevice = {
      */
     useWebSocket?: boolean;
     /**
+     * NTP server to set on the device (only HNAP devices). Empty: keep setting of the device.
+     */
+    ntpServer?: string;
+    /**
      * Additional properties.
      */
     [key: string]: string | number | boolean | undefined;

@@ -10,6 +10,10 @@ import type { Mydlink } from './mydlink';
  */
 export class SoapDevice extends Device {
     client: SoapClientInterface;
+    /**
+     * SOAP actions the device supports, e.g. 'SetTimeSettings'.
+     */
+    soapActions: string[] = [];
 
     /**
      * Creates a new Soap Device.
@@ -133,7 +137,41 @@ export class SoapDevice extends Device {
             await this.createDeviceObject();
         }
 
-        return super.identify();
+        //readResponseValue returns arrays for lists, getDeviceSettings is typed as strings.
+        const actions = settings.SOAPActions as unknown;
+        this.soapActions = Array.isArray(actions)
+            ? actions.map((a: string) => a.substring(a.lastIndexOf('/') + 1))
+            : [];
+
+        const result = await super.identify();
+        await this.applyNtpServer();
+        return result;
+    }
+
+    /**
+     * Sets the configured NTP server on the device, if it differs. Old devices use ntp1.dlink.com, which may stop
+     * working some day. Without correct time the timestamps of the device are wrong.
+     */
+    protected async applyNtpServer(): Promise<void> {
+        if (!this.ntpServer || !this.soapActions.includes('SetTimeSettings')) {
+            return;
+        }
+        try {
+            const settings = await this.client.getTimeSettings();
+            if (settings.NTP === 'true' && settings.NTPServer === this.ntpServer) {
+                return;
+            }
+            const success = await this.client.setTimeSettings({ ...settings, NTP: 'true', NTPServer: this.ntpServer });
+            if (success) {
+                this.adapter.log.info(
+                    `${this.name}: NTP server changed from ${settings.NTPServer} to ${this.ntpServer}.`,
+                );
+            } else {
+                this.adapter.log.warn(`${this.name}: could not set NTP server ${this.ntpServer}.`);
+            }
+        } catch (e: any) {
+            this.adapter.log.warn(`${this.name}: could not set NTP server ${this.ntpServer}: ${e.message}`);
+        }
     }
 }
 
@@ -345,5 +383,110 @@ export class SoapMotionDetector extends SoapDevice {
             },
             native: {},
         });
+
+        await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.sensitivity, {
+            type: 'state',
+            common: {
+                name: 'sensitivity',
+                type: 'number',
+                role: 'level',
+                min: 0,
+                max: 100,
+                read: true,
+                write: true,
+            },
+            native: {},
+        });
+        await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.backoff, {
+            type: 'state',
+            common: {
+                name: 'time without new detection after a detection',
+                type: 'number',
+                role: 'level',
+                unit: 's',
+                min: 1,
+                read: true,
+                write: true,
+            },
+            native: {},
+        });
+        await this.adapter.setObjectNotExistsAsync(this.id + Suffixes.detectionEnabled, {
+            type: 'state',
+            common: {
+                name: 'motion detection enabled',
+                type: 'boolean',
+                role: 'switch.enable',
+                read: true,
+                write: true,
+            },
+            native: {},
+        });
+        for (const suffix of [Suffixes.sensitivity, Suffixes.backoff, Suffixes.detectionEnabled]) {
+            await this.adapter.subscribeStatesAsync(this.id + suffix);
+        }
+    }
+
+    /**
+     * Identify the device and read settings of the detector.
+     *
+     * @returns true if identification successful
+     */
+    async identify(): Promise<boolean> {
+        const result = await super.identify();
+        await this.readDetectorSettings();
+        return result;
+    }
+
+    /**
+     * Reads the settings of the detector into the states.
+     */
+    private async readDetectorSettings(): Promise<void> {
+        try {
+            const settings = await this.withRelogin(() => this.client.getMotionDetectorSettings());
+            await this.adapter.setState(this.id + Suffixes.sensitivity, settings.Sensitivity, true);
+            await this.adapter.setState(this.id + Suffixes.backoff, settings.Backoff, true);
+            await this.adapter.setState(this.id + Suffixes.detectionEnabled, settings.OPStatus, true);
+        } catch (e: any) {
+            this.adapter.log.warn(`${this.name}: could not read settings of motion detector: ${e.message}`);
+        }
+    }
+
+    /**
+     * Writes changed settings of the detector.
+     *
+     * @param id id of state
+     * @param state new state
+     */
+    async handleStateChange(id: string, state: ioBroker.State): Promise<void> {
+        await super.handleStateChange(id, state);
+
+        const isSensitivity = id.endsWith(Suffixes.sensitivity);
+        const isBackoff = id.endsWith(Suffixes.backoff);
+        const isEnabled = id.endsWith(Suffixes.detectionEnabled);
+        if (!isSensitivity && !isBackoff && !isEnabled) {
+            return;
+        }
+        const value = isEnabled ? Boolean(state.val) : Math.round(Number(state.val));
+        if (!isEnabled && (!Number.isFinite(value) || (value as number) < (isBackoff ? 1 : 0))) {
+            this.adapter.log.warn(`${this.name}: invalid value ${state.val} for ${id}.`);
+        } else {
+            try {
+                const settings = await this.withRelogin(() => this.client.getMotionDetectorSettings());
+                if (isSensitivity) {
+                    settings.Sensitivity = Math.min(value as number, 100);
+                } else if (isBackoff) {
+                    settings.Backoff = value as number;
+                } else {
+                    settings.OPStatus = value as boolean;
+                }
+                if (!(await this.client.setMotionDetectorSettings(settings))) {
+                    this.adapter.log.warn(`${this.name}: device did not accept ${state.val} for ${id}.`);
+                }
+            } catch (e: any) {
+                this.adapter.log.warn(`${this.name}: could not change settings of motion detector: ${e.message}`);
+            }
+        }
+        //confirm the values the device really uses:
+        await this.readDetectorSettings();
     }
 }

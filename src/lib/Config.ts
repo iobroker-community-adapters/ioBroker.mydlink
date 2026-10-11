@@ -80,6 +80,7 @@ export function deviceToTableDevice(device: DeviceInfo): TableDevice {
         enabled: device.enabled,
         model: device.model,
         useWebSocket: device.isWebsocket,
+        ntpServer: device.ntpServer,
     };
 }
 
@@ -93,6 +94,7 @@ function normalize(device: TableDevice): Record<string, unknown> {
         enabled: device.enabled !== false,
         model: device.model ?? '',
         useWebSocket: Boolean(device.useWebSocket),
+        ntpServer: device.ntpServer ?? '',
     };
 }
 

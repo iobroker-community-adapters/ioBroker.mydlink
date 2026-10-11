@@ -21,5 +21,7 @@
     "model": "Modelo",
     "name": "Nome",
     "pin": "PIN",
-    "pollInterval": "Intervalo de consulta"
+    "pollInterval": "Intervalo de consulta",
+    "ntpServer": "Servidor NTP",
+    "ntpServerHelp": "Servidor de horário definido no dispositivo. Vazio: manter a configuração do dispositivo. Dispositivos antigos usam ntp1.dlink.com."
 }

@@ -314,8 +314,18 @@ export class MydlinkDeviceManagement extends DeviceManagement<Mydlink> {
                 pollInterval: { type: 'number', label: t('pollInterval'), min: 0, unit: 'ms', ...FULL_WIDTH },
             },
         };
+        //only HNAP devices allow to set the NTP server:
+        if (!device.isWebsocket) {
+            schema.items.ntpServer = { type: 'text', label: t('ntpServer'), help: t('ntpServerHelp'), ...FULL_WIDTH };
+        }
         const data = await context.showForm(schema, {
-            data: { name: device.name, ip: device.ip, pin: device.pin, pollInterval: device.pollInterval },
+            data: {
+                name: device.name,
+                ip: device.ip,
+                pin: device.pin,
+                pollInterval: device.pollInterval,
+                ntpServer: device.ntpServer,
+            },
             title: t('dmEditDevice'),
         });
         if (!data) {
@@ -333,6 +343,9 @@ export class MydlinkDeviceManagement extends DeviceManagement<Mydlink> {
         device.ip = ip;
         device.pin = pin;
         device.pollInterval = Number.isFinite(pollInterval) && pollInterval >= 0 ? pollInterval : device.pollInterval;
+        if (!device.isWebsocket) {
+            device.ntpServer = String(data.ntpServer ?? '').trim();
+        }
         this.scheduleSave();
         return { refresh: 'devices' };
     }

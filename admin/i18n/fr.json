@@ -21,5 +21,7 @@
     "model": "Modèle",
     "name": "Nom",
     "pin": "Code PIN",
-    "pollInterval": "Intervalle d'interrogation"
+    "pollInterval": "Intervalle d'interrogation",
+    "ntpServer": "Serveur NTP",
+    "ntpServerHelp": "Serveur de temps défini sur l'appareil. Vide : conserver le réglage de l'appareil. Les anciens appareils utilisent ntp1.dlink.com."
 }

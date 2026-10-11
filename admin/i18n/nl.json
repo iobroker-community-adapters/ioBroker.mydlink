@@ -21,5 +21,7 @@
     "model": "Model",
     "name": "Naam",
     "pin": "PIN",
-    "pollInterval": "Pollinginterval"
+    "pollInterval": "Pollinginterval",
+    "ntpServer": "NTP-server",
+    "ntpServerHelp": "Tijdserver die op het apparaat wordt ingesteld. Leeg: instelling van het apparaat behouden. Oude apparaten gebruiken ntp1.dlink.com."
 }

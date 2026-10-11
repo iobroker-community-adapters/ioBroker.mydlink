@@ -21,5 +21,7 @@
     "model": "Model",
     "name": "Nazwa",
     "pin": "PIN",
-    "pollInterval": "Interwał odpytywania"
+    "pollInterval": "Interwał odpytywania",
+    "ntpServer": "Serwer NTP",
+    "ntpServerHelp": "Serwer czasu ustawiany w urządzeniu. Puste: zachowaj ustawienie urządzenia. Stare urządzenia używają ntp1.dlink.com."
 }

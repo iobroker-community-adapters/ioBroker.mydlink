@@ -249,8 +249,9 @@ class Mydlink extends utils.Adapter {
             : undefined;
         const model = configDevice.model || deviceObject?.native.model;
         const useWebSocket = configDevice.useWebSocket ?? deviceObject?.native.useWebSocket;
+        let device: Device | undefined;
         if (configDevice.mac && model) {
-            return createDevice(this, {
+            device = await createDevice(this, {
                 ip: configDevice.ip,
                 pin: configDevice.pin,
                 model,
@@ -260,9 +261,14 @@ class Mydlink extends utils.Adapter {
                 enabled: configDevice.enabled,
                 isWebsocket: useWebSocket,
             });
+        } else {
+            this.log.info(`Model still unknown for ${configDevice.name || configDevice.ip}. Trying to identify.`);
+            device = await createFromTable(this, configDevice, useWebSocket);
         }
-        this.log.info(`Model still unknown for ${configDevice.name || configDevice.ip}. Trying to identify.`);
-        return createFromTable(this, configDevice, useWebSocket);
+        if (device) {
+            device.ntpServer = configDevice.ntpServer ?? '';
+        }
+        return device;
     }
 
     /**

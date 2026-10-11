@@ -64,6 +64,10 @@ export class DeviceInfo {
      * How to get rid of that here?? Hm...
      */
     isWebsocket = false;
+    /**
+     * NTP server to set on the device (only HNAP devices). Empty: keep setting of the device.
+     */
+    ntpServer = '';
 
     /**
      * create id from mac:

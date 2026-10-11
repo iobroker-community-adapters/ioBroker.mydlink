@@ -21,5 +21,7 @@
     "model": "Model",
     "name": "Name",
     "pin": "PIN",
-    "pollInterval": "Polling interval"
+    "pollInterval": "Polling interval",
+    "ntpServer": "NTP server",
+    "ntpServerHelp": "Time server set on the device. Empty: keep the setting of the device. Old devices use ntp1.dlink.com."
 }

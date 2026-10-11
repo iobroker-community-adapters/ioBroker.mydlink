@@ -81,7 +81,8 @@ function createContext(formData?: Record<string, any>): { context: any; messages
             return Promise.resolve();
         },
         showConfirmation: () => Promise.resolve(true),
-        showForm: () => Promise.resolve(formData),
+        //like the GUI: start with the data of the form, apply the answers.
+        showForm: (_schema: any, options: any) => Promise.resolve(formData && { ...options?.data, ...formData }),
         openProgress: () => Promise.resolve({ update: async () => {}, close: async () => {} }),
     };
     return { context, messages };
@@ -127,6 +128,28 @@ describe('MydlinkDeviceManagement', () => {
         expect(await dm.editDevice('18:0F:76:CC:6C:09', context)).to.deep.equal({ refresh: 'devices' });
 
         expect(saved[0][0]).to.include({ name: 'Lamp', ip: '192.168.0.20', pin: '654321', pollInterval: 0 });
+    });
+
+    it('stores NTP server of HNAP devices', async () => {
+        const plug = createDevice({ isWebsocket: false, ntpServer: '' });
+        const { adapter, saved } = createAdapter([plug]);
+        const dm = new MydlinkDeviceManagement(adapter) as any;
+        const { context } = createContext({ ntpServer: ' 192.168.0.2 ' });
+
+        await dm.editDevice('18:0F:76:CC:6C:09', context);
+
+        expect(saved[0][0].ntpServer).to.equal('192.168.0.2');
+    });
+
+    it('ignores NTP server of websocket devices', async () => {
+        const plug = createDevice({ ntpServer: '' });
+        const { adapter, saved } = createAdapter([plug]);
+        const dm = new MydlinkDeviceManagement(adapter) as any;
+        const { context } = createContext({ ntpServer: '192.168.0.2' });
+
+        await dm.editDevice('18:0F:76:CC:6C:09', context);
+
+        expect(saved[0][0].ntpServer).to.equal('');
     });
 
     it('does not store edit without PIN', async () => {
