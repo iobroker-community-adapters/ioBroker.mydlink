@@ -37,6 +37,7 @@ var import_KnownDevices = require("./KnownDevices");
 var import_suffixes = require("./suffixes");
 var import_Config = require("./Config");
 const SAVE_DELAY = 1e3;
+const FULL_WIDTH = { xs: 12, sm: 12, md: 12, lg: 12, xl: 12 };
 const TYPE_ICONS = {
   "Smart plug": "socket",
   "Motion detection": "motion",
@@ -101,7 +102,7 @@ class MydlinkDeviceManagement extends import_dm_utils.DeviceManagement {
       label: t(label),
       data,
       booleanAsCheckbox: true,
-      sm: 12
+      ...FULL_WIDTH
     });
     const schema = {
       type: "panel",
@@ -217,9 +218,9 @@ class MydlinkDeviceManagement extends import_dm_utils.DeviceManagement {
     const schema = {
       type: "panel",
       items: {
-        ip: detected ? { type: "select", label: t("dmDetectedDevice"), options: detected, sm: 12 } : { type: "text", label: t("ipaddress"), sm: 12 },
-        pin: { type: "password", label: t("pin"), visible: true, sm: 12 },
-        name: { type: "text", label: t("name"), sm: 12 }
+        ip: detected ? { type: "select", label: t("dmDetectedDevice"), options: detected, ...FULL_WIDTH } : { type: "text", label: t("ipaddress"), ...FULL_WIDTH },
+        pin: { type: "password", label: t("pin"), visible: true, ...FULL_WIDTH },
+        name: { type: "text", label: t("name"), ...FULL_WIDTH }
       }
     };
     const data = await context.showForm(schema, {
@@ -276,10 +277,10 @@ class MydlinkDeviceManagement extends import_dm_utils.DeviceManagement {
     const schema = {
       type: "panel",
       items: {
-        name: { type: "text", label: t("name"), sm: 12 },
-        ip: { type: "text", label: t("ipaddress"), sm: 12 },
-        pin: { type: "password", label: t("pin"), visible: true, sm: 12 },
-        pollInterval: { type: "number", label: t("pollInterval"), min: 0, unit: "ms", sm: 12 }
+        name: { type: "text", label: t("name"), ...FULL_WIDTH },
+        ip: { type: "text", label: t("ipaddress"), ...FULL_WIDTH },
+        pin: { type: "password", label: t("pin"), visible: true, ...FULL_WIDTH },
+        pollInterval: { type: "number", label: t("pollInterval"), min: 0, unit: "ms", ...FULL_WIDTH }
       }
     };
     const data = await context.showForm(schema, {
