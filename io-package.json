@@ -139,6 +139,9 @@
     },
     "tier": 2,
     "messagebox": true,
+    "supportedMessages": {
+      "deviceManager": true
+    },
     "docs": {
       "de": "docs/de/README.md",
       "en": "docs/en/README.md"
