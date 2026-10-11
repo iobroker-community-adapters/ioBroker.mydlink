@@ -10,7 +10,7 @@ import type { Device } from './Device';
  * Constructor type for devices.
  */
 export interface DeviceConstructor<T> {
-    new (adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean): T;
+    new (adapter: Mydlink, ip: string, pin: string): T;
 }
 
 /**

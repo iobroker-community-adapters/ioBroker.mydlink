@@ -72,8 +72,8 @@ export function processNetworkError(e: Record<string, any>): number | string {
 export abstract class Device extends DeviceInfo {
     readonly adapter: Mydlink;
     abstract client: Client;
-    protected constructor(adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean) {
-        super(ip, pin, pinEncrypted);
+    protected constructor(adapter: Mydlink, ip: string, pin: string) {
+        super(ip, pin);
         this.adapter = adapter;
     }
 
@@ -103,13 +103,11 @@ export abstract class Device extends DeviceInfo {
             native: {
                 ip: this.ip,
                 mac: this.mac,
-                pin: this.pinEncrypted,
                 pollInterval: Number(this.pollInterval),
                 enabled: this.enabled,
                 name: this.name,
                 model: this.model,
                 useWebSocket: this.isWebsocket,
-                pinNotEncrypted: false,
             },
         });
     }

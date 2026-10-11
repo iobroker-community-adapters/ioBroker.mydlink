@@ -6,16 +6,6 @@ import { KnownDevices } from './KnownDevices';
 import { WebSocketDevice } from './WebSocketDevice';
 import { SoapDevice } from './soapDevice';
 
-function deviceObjetToTableDevice(configDevice: ioBroker.DeviceObject): TableDevice {
-    return {
-        name: configDevice.native.name,
-        mac: configDevice.native.mac,
-        ip: configDevice.native.ip,
-        pin: configDevice.native.pin,
-        pollInterval: configDevice.native.pollInterval,
-        enabled: configDevice.native.enabled,
-    };
-}
 function sendModelInfoToSentry(adapter: Mydlink, model: string, xml: Record<string, string>): void {
     if (!KnownDevices[model]) {
         //unknown device -> report to sentry.
@@ -45,44 +35,12 @@ function sendModelInfoToSentry(adapter: Mydlink, model: string, xml: Record<stri
 }
 
 /**
- * Create DeviceInfo from ioBroker object, old createDeviceFromConfig (model known)
- *
- * @param adapter ioBroker Adapter
- * @param configDevice ioBroker device object
- * @returns Promise<Device>
- */
-export async function createFromObject(
-    adapter: Mydlink,
-    configDevice: ioBroker.DeviceObject,
-): Promise<Device | undefined> {
-    const native = configDevice.native;
-    const pinEncrypted = native.mac && !native.pinNotEncrypted;
-    if (native.model) {
-        return createDevice(adapter, {
-            ip: native.ip,
-            pin: native.pin,
-            pinEncrypted,
-            model: native.model,
-            pollInterval: Number(native.pollInterval),
-            mac: native.mac,
-            id: configDevice._id.split('.')[2],
-            name: native.name,
-            enabled: native.enabled,
-            isWebsocket: native.useWebSocket,
-        });
-    }
-    adapter.log.info(`Model still unknown for ${native.name}. Trying to identify.`);
-    return createFromTable(adapter, deviceObjetToTableDevice(configDevice), pinEncrypted, native.useWebSocket);
-}
-
-/**
  * Create a device with model known.
  *
  * @param adapter reference to the running adapter
  * @param params parameters for device creation
  * @param params.ip ip of device
  * @param params.pin pin of device
- * @param params.pinEncrypted is the supplied pin encrypted?
  * @param params.model model of device
  * @param params.pollInterval polling interval
  * @param params.mac mac address
@@ -96,7 +54,6 @@ export async function createDevice(
     params: {
         ip: string;
         pin: string;
-        pinEncrypted: boolean;
         model: string;
         pollInterval?: number;
         mac?: string;
@@ -109,7 +66,7 @@ export async function createDevice(
     const deviceFlags = KnownDevices[params.model];
     let device: SoapDevice | WebSocketDevice;
     if (deviceFlags) {
-        device = new deviceFlags.DeviceType(adapter, params.ip, params.pin, params.pinEncrypted);
+        device = new deviceFlags.DeviceType(adapter, params.ip, params.pin);
         if (typeof deviceFlags.moreSetup === 'function') {
             deviceFlags.moreSetup(device);
         }
@@ -118,11 +75,11 @@ export async function createDevice(
         try {
             let info: Record<string, string>;
             if (params.isWebsocket) {
-                device = new WebSocketDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+                device = new WebSocketDevice(adapter, params.ip, params.pin);
                 const body = await device.getModelInfoForSentry();
                 info = { info: `UNKNOWN WEBSOCKET DEVICE: ${params.model}`, body };
             } else {
-                device = new SoapDevice(adapter, params.ip, params.pin, params.pinEncrypted);
+                device = new SoapDevice(adapter, params.ip, params.pin);
                 info = await device.client.getDeviceDescriptionXML();
             }
             sendModelInfoToSentry(adapter, params.model, info);
@@ -152,25 +109,22 @@ export async function createDevice(
  *
  * @param adapter ioBroker Adapter
  * @param tableDevice device information from configuration table
- * @param [doDecrypt] do we need to decrypt the PIN?
  * @param [forceWebsocket] force usage of websocket device. Set to true, if soap already failed.
  * @returns Promise<Device>
  */
 export async function createFromTable(
     adapter: Mydlink,
     tableDevice: TableDevice,
-    doDecrypt = false,
     forceWebsocket = false,
 ): Promise<Device | undefined> {
-    const pinEncrypted = doDecrypt && Boolean(tableDevice.mac);
     const mac = tableDevice.mac ? tableDevice.mac.toUpperCase() : '';
 
     let device: SoapDevice | WebSocketDevice;
     //first try soap:
     if (!forceWebsocket) {
-        device = new SoapDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
+        device = new SoapDevice(adapter, tableDevice.ip, tableDevice.pin);
     } else {
-        device = new WebSocketDevice(adapter, tableDevice.ip, tableDevice.pin, pinEncrypted);
+        device = new WebSocketDevice(adapter, tableDevice.ip, tableDevice.pin);
     }
 
     device.mac = mac;
@@ -194,7 +148,7 @@ export async function createFromTable(
         } else {
             if (!forceWebsocket) {
                 adapter.log.debug(`${device.name} could not login with SOAP, try websocket.`);
-                return createFromTable(adapter, tableDevice, doDecrypt, true);
+                return createFromTable(adapter, tableDevice, true);
             }
             throw new Error('Device not logged in... why?');
         }
@@ -203,7 +157,7 @@ export async function createFromTable(
         const code = processNetworkError(e);
         if (!forceWebsocket && (code === 500 || code === 'ECONNREFUSED')) {
             //try websocket.
-            return createFromTable(adapter, tableDevice, doDecrypt, true);
+            return createFromTable(adapter, tableDevice, true);
         }
 
         if (e.name === WrongModelError.errorName) {
@@ -212,8 +166,7 @@ export async function createFromTable(
             return createDevice(adapter, {
                 model: device.model,
                 ip: device.ip,
-                pinEncrypted: false,
-                pin: device.pinDecrypted,
+                pin: device.pin,
                 name: device.name,
                 mac: device.mac,
                 pollInterval: device.pollInterval,
@@ -231,8 +184,7 @@ export async function createFromTable(
                 return createDevice(adapter, {
                     model: device.model,
                     ip: device.ip,
-                    pinEncrypted: false,
-                    pin: device.pinDecrypted,
+                    pin: device.pin,
                     name: device.name,
                     mac: device.mac,
                     pollInterval: device.pollInterval,
@@ -244,7 +196,7 @@ export async function createFromTable(
             return createFromTable(adapter, {
                 mac: device.mac,
                 ip: device.ip,
-                pin: device.pinDecrypted,
+                pin: device.pin,
                 name: device.name,
                 pollInterval: device.pollInterval,
                 enabled: device.enabled,

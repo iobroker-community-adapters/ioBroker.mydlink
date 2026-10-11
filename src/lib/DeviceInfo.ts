@@ -1,67 +1,15 @@
 /**
- * Used to encrypt & decrypt pin. Necessary as long as js-controller can't decrypt for us in array structure.
- *
- * @param key key to use
- * @param value value to encrypt / decrypt
- * @returns string encrypted / decrypted
- */
-function encryptDecrypt(key: string, value: string): string {
-    if (!value || !key) {
-        return value;
-    }
-    let result = '';
-    for (let i = 0; i < value.length; ++i) {
-        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-    }
-    return result;
-}
-
-/**
  * Information about a device.
  */
 export class DeviceInfo {
-    private static secret: string;
-
-    /**
-     * Used to set secret from main.ts -> so we can use it here to decrypt stuff if necessary.
-     *
-     * @param secret the secret use for encryption / decryption
-     */
-    static setSecret(secret: string): void {
-        DeviceInfo.secret = secret;
-    }
-
     /**
      * ip of device, might change in dhcp setups
      */
     ip: string;
     /**
-     * pin of device, needed for login. Should be protected.
+     * pin of device, needed for login. Stored encrypted in the instance configuration by js-controller.
      */
-    pinDecrypted = '';
-    /**
-     * pin of device, needed for login. Should be protected.
-     */
-    pinEncrypted = '';
-
-    /**
-     * Set Pin, please supply if it is encrypted or decrypted.
-     *
-     * @param pin the pin to set in device information
-     * @param encrypted is the supplied pin encrypted?
-     */
-    setPin(pin: string, encrypted = false): void {
-        if (!pin) {
-            pin = 'INVALID';
-        }
-        if (encrypted) {
-            this.pinEncrypted = pin;
-            this.pinDecrypted = encryptDecrypt(DeviceInfo.secret, pin);
-        } else {
-            this.pinEncrypted = encryptDecrypt(DeviceInfo.secret, pin);
-            this.pinDecrypted = pin;
-        }
-    }
+    pin: string;
 
     /**
      * mac of device, used as base for ID. Should not change.
@@ -129,10 +77,9 @@ export class DeviceInfo {
      *
      * @param ip ip of the device
      * @param pin pin of the device
-     * @param pinEncrypted - is the supplied pin encrypted?
      */
-    constructor(ip: string, pin: string, pinEncrypted: boolean) {
+    constructor(ip: string, pin: string) {
         this.ip = ip;
-        this.setPin(pin, pinEncrypted);
+        this.pin = pin || 'INVALID';
     }
 }

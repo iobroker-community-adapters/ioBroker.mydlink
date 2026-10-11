@@ -27,6 +27,14 @@ export type TableDevice = {
      */
     enabled?: boolean;
     /**
+     * Model of device, known after first successful login.
+     */
+    model?: string;
+    /**
+     * Device is controlled via websocket instead of HNAP.
+     */
+    useWebSocket?: boolean;
+    /**
      * Additional properties.
      */
     [key: string]: string | number | boolean | undefined;

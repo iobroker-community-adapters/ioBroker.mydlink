@@ -29,17 +29,16 @@ export class WebSocketDevice extends Device {
      * @param adapter reference to adapter
      * @param ip ip of device
      * @param pin pin of device
-     * @param pinEncrypted is pin encrypted
      */
-    constructor(adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean) {
-        super(adapter, ip, pin, pinEncrypted);
+    constructor(adapter: Mydlink, ip: string, pin: string) {
+        super(adapter, ip, pin);
         this.isWebsocket = true;
 
         this.client = new WebSocketClient({
             ip: this.ip,
-            pin: this.pinDecrypted,
+            pin: this.pin,
             keepAlive: 5,
-            useTelnetForToken: this.pinDecrypted?.toUpperCase() === 'TELNET',
+            useTelnetForToken: this.pin.toUpperCase() === 'TELNET',
             //library logs every message; console would write to stdout of the adapter process.
             log: (...args: any[]) => this.adapter.log.silly(`${this.ip}: ${format(...args)}`),
         });
@@ -245,7 +244,7 @@ export class WebSocketDevice extends Device {
      * Get model info of unknown devices for Sentry logging.
      */
     async getModelInfoForSentry(): Promise<any> {
-        const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+        const url = `http://${this.ip}/login?username=Admin&password=${this.pin}`;
         const result = await axios.get(url);
         return result.data;
     }
@@ -270,7 +269,7 @@ export class WebSocketDevice extends Device {
         this.id = id;
 
         //get model from webserver / wifi-ssid:
-        const url = `http://${this.ip}/login?username=Admin&password=${this.pinDecrypted}`;
+        const url = `http://${this.ip}/login?username=Admin&password=${this.pin}`;
         let recievedModel = '';
         try {
             const result = await axios.get(url);

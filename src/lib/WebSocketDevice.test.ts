@@ -32,7 +32,7 @@ function createAdapter(): { adapter: Mydlink; warnings: string[] } {
  */
 function createDevice(client: Record<string, any>): { device: WebSocketDevice; warnings: string[] } {
     const { adapter, warnings } = createAdapter();
-    const device = new WebSocketDevice(adapter, '192.168.0.189', '123456', false);
+    const device = new WebSocketDevice(adapter, '192.168.0.189', '123456');
     device.client = { disconnect: () => {}, removeAllListeners: () => {}, ...client } as any;
     device.name = 'W115';
     device.id = '180F76CC6C09';

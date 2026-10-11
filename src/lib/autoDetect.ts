@@ -124,7 +124,7 @@ export class AutoDetector {
             //somehow I get records for devices from wrong IP. or they report devices, they detect under their IP?? not sure...
             //let's connect here and get the MAC -> so we can securely identify the device.
             //then decide if it is a new one (update & present in UI) or an old one (ignore for now).
-            const newDevice = new WebSocketDevice(this.adapter, entry.ip, 'INVALID', false);
+            const newDevice = new WebSocketDevice(this.adapter, entry.ip, 'INVALID');
             newDevice.model = model;
 
             try {
@@ -256,7 +256,7 @@ export class AutoDetector {
     async verifyMac(oldDevice: Device, ip: string): Promise<boolean> {
         try {
             if (oldDevice.isWebsocket) {
-                const device = new WebSocketDevice(this.adapter, ip, oldDevice.pinDecrypted, false);
+                const device = new WebSocketDevice(this.adapter, ip, oldDevice.pin);
                 try {
                     await device.client.login();
                     return normalizeMac(device.client.getDeviceId()) === oldDevice.mac;
@@ -264,7 +264,7 @@ export class AutoDetector {
                     device.stop();
                 }
             }
-            const device = new SoapDevice(this.adapter, ip, oldDevice.pinDecrypted, false);
+            const device = new SoapDevice(this.adapter, ip, oldDevice.pin);
             if (!(await device.client.login())) {
                 return false;
             }

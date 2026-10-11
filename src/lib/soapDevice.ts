@@ -17,15 +17,14 @@ export class SoapDevice extends Device {
      * @param adapter reference to adapter
      * @param ip ip of device
      * @param pin pin of device
-     * @param pinEncrypted is pin encrypted
      */
-    constructor(adapter: Mydlink, ip: string, pin: string, pinEncrypted: boolean) {
-        super(adapter, ip, pin, pinEncrypted);
+    constructor(adapter: Mydlink, ip: string, pin: string) {
+        super(adapter, ip, pin);
 
         //does only set up soapClient -> no connection, yet.
         this.client = createSoapClient({
             user: 'Admin',
-            password: this.pinDecrypted,
+            password: this.pin,
             url: `http://${this.ip}/HNAP1`,
         });
     }
