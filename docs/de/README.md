@@ -43,7 +43,14 @@ Einstellungen eines Geräts:
 <tr><td>PIN</td><td>Die PIN steht auf der Gerät, z.B. auf dem Boden. Für DSP-W115 kann hier auch TELNET eingegeben werden, siehe unten.<br />Die PIN wird verschlüsselt gespeichert und kann nur im Gerätemanager geändert werden.</td></tr>
 <tr><td>Poll interval (in ms)</td><td>Poll interval<br /> Auf 0 setzen um polling abzuschalten. <br /><b>Empfehlung:</b> Nutze ein kurzes Intervall für Bewegungsmelder und ein längeres für Steckdosen.</td></tr>
 <tr><td>enable</td><td>Wenn hier kein Haken ist, wird das Gerät nicht angesprochen.<br />So können Geräte, die eine Zeitlang nicht eingesteckt sind (z.B. für Weihnachtsdeko) einfach deaktiviert werden und der Adapter meldet keine Fehler im log.</td></tr>
+<tr><td>NTP-Server</td><td>Nur ältere Geräte wie DSP-W215 und DCH-S150: Zeitserver, der auf dem Gerät eingestellt wird. Leer lässt die Einstellung des Geräts unverändert.<br />Diese Geräte nutzen ntp1.dlink.com. Ohne richtige Uhrzeit stimmen die Zeitstempel des Bewegungsmelders nicht, ein lokaler Zeitserver (z.B. der Router) ist daher eine gute Wahl.</td></tr>
 </table>
+
+#### Einstellungen des Bewegungsmelders (DCH-S150)
+Über die States des Bewegungsmelders lassen sich auch seine Einstellungen ändern:
+* `sensitivity`: Empfindlichkeit des Sensors, 0 - 100.
+* `backoff`: Zeit in Sekunden nach einer Erkennung, in der der Melder keine neue Erkennung meldet. Das Gerät nutzt standardmäßig 30 Sekunden. Mit einer kurzen Zeit (z.B. 1 - 5 Sekunden) und einem kurzen Pollintervall wird neue Bewegung viel früher erkannt.
+* `detectionEnabled`: schaltet die Bewegungserkennung an oder aus.
 
 Jede Änderung der Konfiguration startet den Adapter neu.
 

@@ -67,6 +67,11 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	Placeholder for next versions (this needs to be indented):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (Garfonso) feat: sensitivity, backoff time and detection of motion detectors can be changed with states
+- (Garfonso) feat: NTP server of older devices (DSP-W215, DCH-S150) can be set in the device manager
+- (Garfonso) feat: devices are polled right after start
+
 ### 2.0.0 (2026-10-11)
 - (copilot) **Breaking:** Adapter requires node.js >= 22 now
 - (Garfonso) **Breaking:** Adapter requires js-controller >= 7.0.7 and admin >= 8.0.14 now

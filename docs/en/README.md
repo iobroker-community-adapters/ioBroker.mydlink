@@ -34,7 +34,14 @@ Settings of a device:
 <tr><td>PIN</td><td>PIN is printed on a sticker on the device, probably at the bottom. Can be TELNET for DSP-W115, see below.<br />The PIN is stored encrypted and can only be changed in the device manager.</td></tr>
 <tr><td>Poll interval</td><td>per device poll interval<br /> Set 0 to disable polling. <br /><b>Recommendation:</b> Set a fast poll interval for sensors and a longer one for plugs.</td></tr>
 <tr><td>enable</td><td>if not enabled, will not be polled or controlled. <br />Devices that are not plugged in can be disabled to avoid network traffic and error messages in the log.</td></tr>
+<tr><td>NTP server</td><td>only older devices like DSP-W215 and DCH-S150: time server that is set on the device. Empty keeps the setting of the device.<br />These devices use ntp1.dlink.com. Without correct time the timestamps of the motion detector are wrong, so a local time server (e.g. your router) is a good choice.</td></tr>
 </table>
+
+#### Settings of the motion detector (DCH-S150)
+The states of the motion detector also allow to change its settings:
+* `sensitivity`: sensitivity of the sensor, 0 - 100.
+* `backoff`: time in seconds after a detection, in which the detector does not report a new detection. The device uses 30 seconds by default. With a short time (e.g. 1 - 5 seconds) and a short poll interval new motion is detected much earlier.
+* `detectionEnabled`: switches motion detection on or off.
 
 Every change of the configuration restarts the adapter.
 
