@@ -1,5 +1,5 @@
 // iobroker eslint configuration
-import iobrokerEslintConfig from '@iobroker/eslint-config/eslint.config.mjs';
+import iobrokerEslintConfig from '@iobroker/eslint-config';
 
 export default [
     ...iobrokerEslintConfig,
