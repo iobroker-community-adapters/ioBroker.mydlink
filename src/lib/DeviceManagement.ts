@@ -24,6 +24,11 @@ import { deviceToTableDevice } from './Config';
 const SAVE_DELAY = 1000;
 
 /**
+ * Size of form items: dialogs show one item per row on all screen sizes.
+ */
+const FULL_WIDTH = { xs: 12, sm: 12, md: 12, lg: 12, xl: 12 } as const;
+
+/**
  * Icons of the device manager for the types of KnownDevices.
  */
 const TYPE_ICONS: Record<string, string> = {
@@ -113,7 +118,7 @@ export class MydlinkDeviceManagement extends DeviceManagement<Mydlink> {
             label: t(label),
             data,
             booleanAsCheckbox: true,
-            sm: 12,
+            ...FULL_WIDTH,
         });
         const schema: JsonFormSchema = {
             type: 'panel',
@@ -241,10 +246,10 @@ export class MydlinkDeviceManagement extends DeviceManagement<Mydlink> {
             type: 'panel',
             items: {
                 ip: detected
-                    ? { type: 'select', label: t('dmDetectedDevice'), options: detected, sm: 12 }
-                    : { type: 'text', label: t('ipaddress'), sm: 12 },
-                pin: { type: 'password', label: t('pin'), visible: true, sm: 12 },
-                name: { type: 'text', label: t('name'), sm: 12 },
+                    ? { type: 'select', label: t('dmDetectedDevice'), options: detected, ...FULL_WIDTH }
+                    : { type: 'text', label: t('ipaddress'), ...FULL_WIDTH },
+                pin: { type: 'password', label: t('pin'), visible: true, ...FULL_WIDTH },
+                name: { type: 'text', label: t('name'), ...FULL_WIDTH },
             },
         };
         const data = await context.showForm(schema, {
@@ -303,10 +308,10 @@ export class MydlinkDeviceManagement extends DeviceManagement<Mydlink> {
         const schema: JsonFormSchema = {
             type: 'panel',
             items: {
-                name: { type: 'text', label: t('name'), sm: 12 },
-                ip: { type: 'text', label: t('ipaddress'), sm: 12 },
-                pin: { type: 'password', label: t('pin'), visible: true, sm: 12 },
-                pollInterval: { type: 'number', label: t('pollInterval'), min: 0, unit: 'ms', sm: 12 },
+                name: { type: 'text', label: t('name'), ...FULL_WIDTH },
+                ip: { type: 'text', label: t('ipaddress'), ...FULL_WIDTH },
+                pin: { type: 'password', label: t('pin'), visible: true, ...FULL_WIDTH },
+                pollInterval: { type: 'number', label: t('pollInterval'), min: 0, unit: 'ms', ...FULL_WIDTH },
             },
         };
         const data = await context.showForm(schema, {
