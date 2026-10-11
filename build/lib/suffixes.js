@@ -32,6 +32,9 @@ const Suffixes = {
   lastDetected: ".lastDetected",
   noMotion: ".no_motion",
   reboot: ".reboot",
+  sensitivity: ".sensitivity",
+  backoff: ".backoff",
+  detectionEnabled: ".detectionEnabled",
   soundType: ".sound",
   soundVolume: ".volume",
   soundDuration: ".duration"

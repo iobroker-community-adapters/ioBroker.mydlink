@@ -38,6 +38,26 @@ var import_xmldom = require("@xmldom/xmldom");
 var import_node_http = require("node:http");
 const HNAP1_XMLNS = "http://purenetworks.com/HNAP1/";
 const HNAP_LOGIN_METHOD = "Login";
+const TIME_SETTINGS_FIELDS = [
+  "NTP",
+  "NTPServer",
+  "TimeZone",
+  "DaylightSaving",
+  "DSTStartMonth",
+  "DSTStartWeek",
+  "DSTStartDayOfWeek",
+  "DSTStartTime",
+  "DSTEndMonth",
+  "DSTEndWeek",
+  "DSTEndDayOfWeek",
+  "DSTEndTime"
+];
+function xmlEscape(text) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function textValue(value) {
+  return value === void 0 || value === "ERROR" ? "" : value;
+}
 class HNAP_ERROR extends Error {
   errno;
   code;
@@ -284,8 +304,10 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
           "HardwareVersion",
           "FirmwareVersion",
           "PresentationURL",
-          "ModuleTypes"
+          "ModuleTypes",
           //not yet helpfully implemented. Hm
+          "SOAPActions"
+          //array of supported actions
         ],
         requestBody("GetDeviceSettings", "")
       );
@@ -293,6 +315,55 @@ const soapClient = function(opt = { url: "", user: "", password: "" }) {
     //reboot device
     reboot: function() {
       return soapAction("Reboot", "RebootResult", requestBody("Reboot", ""));
+    },
+    getMotionDetectorSettings: async function() {
+      const result = await soapAction(
+        "GetMotionDetectorSettings",
+        ["NickName", "Description", "Sensitivity", "OPStatus", "Backoff"],
+        requestBody("GetMotionDetectorSettings", moduleParameters(1))
+      );
+      return {
+        NickName: textValue(result.NickName),
+        Description: textValue(result.Description),
+        Sensitivity: Number(result.Sensitivity),
+        OPStatus: result.OPStatus === "true",
+        Backoff: Number(result.Backoff)
+      };
+    },
+    setMotionDetectorSettings: async function(settings) {
+      const parameters = `${moduleParameters(1)}<NickName>${xmlEscape(settings.NickName)}</NickName><Description>${xmlEscape(settings.Description)}</Description><Sensitivity>${settings.Sensitivity}</Sensitivity><OPStatus>${settings.OPStatus}</OPStatus><Backoff>${settings.Backoff}</Backoff>`;
+      const result = await soapAction(
+        "SetMotionDetectorSettings",
+        "SetMotionDetectorSettingsResult",
+        requestBody("SetMotionDetectorSettings", parameters)
+      );
+      return result === "OK";
+    },
+    getTimeSettings: async function() {
+      const result = await soapAction(
+        "GetTimeSettings",
+        TIME_SETTINGS_FIELDS,
+        requestBody("GetTimeSettings", "")
+      );
+      const settings = {};
+      for (const field of TIME_SETTINGS_FIELDS) {
+        settings[field] = textValue(result[field]);
+      }
+      return settings;
+    },
+    setTimeSettings: async function(settings) {
+      const parameters = TIME_SETTINGS_FIELDS.map(
+        (field) => {
+          var _a;
+          return `<${field}>${xmlEscape((_a = settings[field]) != null ? _a : "")}</${field}>`;
+        }
+      ).join("");
+      const result = await soapAction(
+        "SetTimeSettings",
+        "SetTimeSettingsResult",
+        requestBody("SetTimeSettings", parameters)
+      );
+      return result === "OK";
     },
     /**
      * Returns true if device is ready.

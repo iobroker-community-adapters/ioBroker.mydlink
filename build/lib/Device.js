@@ -308,6 +308,10 @@ class Device extends import_DeviceInfo.DeviceInfo {
     }
     if (this.id) {
       await this.adapter.setState(this.id + import_suffixes.Suffixes.enabled, { val: this.enabled, ack: true });
+      if (!this.enabled) {
+        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.reachable, false, true);
+        await this.adapter.setStateChangedAsync(this.id + import_suffixes.Suffixes.unreachable, true, true);
+      }
     }
     if (this.enabled) {
       let interval = this.pollInterval;
@@ -322,7 +326,7 @@ class Device extends import_DeviceInfo.DeviceInfo {
         }
         this.adapter.log.debug(`Start polling for ${this.name} with interval ${interval}`);
         this.pollInterval = interval;
-        this.schedule(() => this.onInterval(), this.pollInterval);
+        this.schedule(() => this.onInterval(), this.ready ? 0 : this.pollInterval);
       } else {
         this.pollInterval = 0;
         this.adapter.log.debug(`Polling of ${this.name} disabled, interval was ${interval} (0 means disabled)`);

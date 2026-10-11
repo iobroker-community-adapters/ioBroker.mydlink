@@ -57,11 +57,12 @@ function deviceToTableDevice(device) {
     pollInterval: device.pollInterval,
     enabled: device.enabled,
     model: device.model,
-    useWebSocket: device.isWebsocket
+    useWebSocket: device.isWebsocket,
+    ntpServer: device.ntpServer
   };
 }
 function normalize(device) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d;
   return {
     name: (_a = device.name) != null ? _a : "",
     mac: (_b = device.mac) != null ? _b : "",
@@ -70,7 +71,8 @@ function normalize(device) {
     pollInterval: Number(device.pollInterval),
     enabled: device.enabled !== false,
     model: (_c = device.model) != null ? _c : "",
-    useWebSocket: Boolean(device.useWebSocket)
+    useWebSocket: Boolean(device.useWebSocket),
+    ntpServer: (_d = device.ntpServer) != null ? _d : ""
   };
 }
 function sameTableDevices(a, b) {

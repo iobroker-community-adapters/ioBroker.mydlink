@@ -84,6 +84,10 @@ class DeviceInfo {
    */
   isWebsocket = false;
   /**
+   * NTP server to set on the device (only HNAP devices). Empty: keep setting of the device.
+   */
+  ntpServer = "";
+  /**
    * create id from mac:
    */
   idFromMac() {

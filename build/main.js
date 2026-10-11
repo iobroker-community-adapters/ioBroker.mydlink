@@ -221,12 +221,13 @@ class Mydlink extends utils.Adapter {
    * @returns device or undefined, if creation failed
    */
   async createConfiguredDevice(configDevice, deviceObjects) {
-    var _a;
+    var _a, _b;
     const deviceObject = configDevice.mac ? deviceObjects.find((o) => o.native.mac && (0, import_TableDevice.normalizeMac)(o.native.mac) === configDevice.mac) : void 0;
     const model = configDevice.model || (deviceObject == null ? void 0 : deviceObject.native.model);
     const useWebSocket = (_a = configDevice.useWebSocket) != null ? _a : deviceObject == null ? void 0 : deviceObject.native.useWebSocket;
+    let device;
     if (configDevice.mac && model) {
-      return (0, import_DeviceFactory.createDevice)(this, {
+      device = await (0, import_DeviceFactory.createDevice)(this, {
         ip: configDevice.ip,
         pin: configDevice.pin,
         model,
@@ -236,9 +237,14 @@ class Mydlink extends utils.Adapter {
         enabled: configDevice.enabled,
         isWebsocket: useWebSocket
       });
+    } else {
+      this.log.info(`Model still unknown for ${configDevice.name || configDevice.ip}. Trying to identify.`);
+      device = await (0, import_DeviceFactory.createFromTable)(this, configDevice, useWebSocket);
     }
-    this.log.info(`Model still unknown for ${configDevice.name || configDevice.ip}. Trying to identify.`);
-    return (0, import_DeviceFactory.createFromTable)(this, configDevice, useWebSocket);
+    if (device) {
+      device.ntpServer = (_b = configDevice.ntpServer) != null ? _b : "";
+    }
+    return device;
   }
   /**
    * Is called when databases are connected and adapter received configuration.

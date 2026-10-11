@@ -136,7 +136,8 @@ class MydlinkDeviceManagement extends import_dm_utils.DeviceManagement {
       model: device.model,
       connectionType: "wifi",
       enabled: device.enabled,
-      status: device.id ? {
+      //disabled devices are not contacted, their reachable state is not current.
+      status: device.id && device.enabled ? {
         connection: {
           stateId: `${this.adapter.namespace}.${device.id}${import_suffixes.Suffixes.reachable}`,
           mapping: { true: "connected", false: "disconnected" }
@@ -269,7 +270,7 @@ class MydlinkDeviceManagement extends import_dm_utils.DeviceManagement {
    * @param context action context
    */
   async editDevice(id, context) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const device = this.findDevice(id);
     if (!device) {
       return { refresh: "devices" };
@@ -283,8 +284,17 @@ class MydlinkDeviceManagement extends import_dm_utils.DeviceManagement {
         pollInterval: { type: "number", label: t("pollInterval"), min: 0, unit: "ms", ...FULL_WIDTH }
       }
     };
+    if (!device.isWebsocket) {
+      schema.items.ntpServer = { type: "text", label: t("ntpServer"), help: t("ntpServerHelp"), ...FULL_WIDTH };
+    }
     const data = await context.showForm(schema, {
-      data: { name: device.name, ip: device.ip, pin: device.pin, pollInterval: device.pollInterval },
+      data: {
+        name: device.name,
+        ip: device.ip,
+        pin: device.pin,
+        pollInterval: device.pollInterval,
+        ntpServer: device.ntpServer
+      },
       title: t("dmEditDevice")
     });
     if (!data) {
@@ -301,6 +311,9 @@ class MydlinkDeviceManagement extends import_dm_utils.DeviceManagement {
     device.ip = ip;
     device.pin = pin;
     device.pollInterval = Number.isFinite(pollInterval) && pollInterval >= 0 ? pollInterval : device.pollInterval;
+    if (!device.isWebsocket) {
+      device.ntpServer = String((_d = data.ntpServer) != null ? _d : "").trim();
+    }
     this.scheduleSave();
     return { refresh: "devices" };
   }
