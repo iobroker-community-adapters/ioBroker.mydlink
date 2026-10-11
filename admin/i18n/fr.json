@@ -1,6 +1,4 @@
 {
-    "devicesInfo": "Les appareils sont ajoutés et supprimés dans l'onglet \"Appareils\", où le code PIN peut aussi être modifié. Ici, vous pouvez modifier le nom, l'adresse IP, l'intervalle d'interrogation et l'activation des appareils.",
-    "devicesTab": "Appareils",
     "dmAddDevice": "Ajouter un appareil par IP",
     "dmAddDeviceDescription": "Ajouter un appareil par son adresse IP, par ex. s'il n'a pas été détecté",
     "dmDeleteConfirm": "Vraiment supprimer %s ? Tous les objets de l'appareil seront également supprimés.",
@@ -18,12 +16,10 @@
     "dmReady": "Prêt",
     "dmSearchDevices": "Ajouter un appareil détecté",
     "dmSearchDevicesDescription": "Ajouter un appareil détecté sur le réseau",
-    "deviceEnabled": "Activé",
     "ipaddress": "Adresse IP",
     "mac": "Adresse MAC",
     "model": "Modèle",
     "name": "Nom",
     "pin": "Code PIN",
-    "pollInterval": "Intervalle d'interrogation",
-    "settingsTab": "Tableau des appareils"
+    "pollInterval": "Intervalle d'interrogation"
 }

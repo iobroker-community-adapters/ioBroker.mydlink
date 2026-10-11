@@ -1,6 +1,4 @@
 {
-    "devicesInfo": "Apparaten worden toegevoegd en verwijderd op het tabblad \"Apparaten\", daar kan ook de PIN worden gewijzigd. Hier kunt u naam, IP-adres, pollinginterval en activering van de apparaten wijzigen.",
-    "devicesTab": "Apparaten",
     "dmAddDevice": "Apparaat toevoegen via IP",
     "dmAddDeviceDescription": "Een apparaat toevoegen via het IP-adres, bijv. als het niet werd gedetecteerd",
     "dmDeleteConfirm": "%s echt verwijderen? Alle objecten van het apparaat worden ook verwijderd.",
@@ -18,12 +16,10 @@
     "dmReady": "Gereed",
     "dmSearchDevices": "Gedetecteerd apparaat toevoegen",
     "dmSearchDevicesDescription": "Een in het netwerk gedetecteerd apparaat toevoegen",
-    "deviceEnabled": "Ingeschakeld",
     "ipaddress": "IP-adres",
     "mac": "MAC-adres",
     "model": "Model",
     "name": "Naam",
     "pin": "PIN",
-    "pollInterval": "Pollinginterval",
-    "settingsTab": "Apparatentabel"
+    "pollInterval": "Pollinginterval"
 }

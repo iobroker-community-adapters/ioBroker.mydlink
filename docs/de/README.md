@@ -30,8 +30,7 @@ neuere Geräte liefern ihren Status sofort an den ioBroker.
 Das Pollintervall kann pro Gerät einzeln eingestellt werden.
 
 #### Konfiguration:
-Geräte werden im Gerätemanager verwaltet, entweder im Tab "Geräte" der Adaptereinstellungen oder im Gerätemanager
-des Admin:
+Geräte werden im Gerätemanager verwaltet, entweder in den Adaptereinstellungen oder im Gerätemanager des Admin:
 * **Erkanntes Gerät hinzufügen**: Geräte, die sich im Netzwerk melden, stehen zur Auswahl. Die PIN muss eingegeben werden.
 * **Gerät über IP hinzufügen**: für Geräte, die nicht erkannt wurden. IP-Adresse und PIN eingeben.
 * Jedes Gerät kann bearbeitet, aktiviert / deaktiviert und gelöscht werden. Beim Löschen werden auch die Objekte des Geräts gelöscht.
@@ -46,7 +45,6 @@ Einstellungen eines Geräts:
 <tr><td>enable</td><td>Wenn hier kein Haken ist, wird das Gerät nicht angesprochen.<br />So können Geräte, die eine Zeitlang nicht eingesteckt sind (z.B. für Weihnachtsdeko) einfach deaktiviert werden und der Adapter meldet keine Fehler im log.</td></tr>
 </table>
 
-Der Tab "Gerätetabelle" der Einstellungen zeigt alle Geräte. Dort lassen sich Name, IP, Poll interval und Aktivierung ändern.
 Jede Änderung der Konfiguration startet den Adapter neu.
 
 Für alte Geräte stört die Nutzung des Adapters die Nutzung der App nicht. Für neuere Geräte, wie die DSP-W115 ist das etwas anders, siehe unten.

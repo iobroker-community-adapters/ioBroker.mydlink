@@ -1,6 +1,4 @@
 {
-    "devicesInfo": "Urządzenia są dodawane i usuwane na karcie \"Urządzenia\", tam można też zmienić PIN. Tutaj można zmienić nazwę, adres IP, interwał odpytywania i aktywację urządzeń.",
-    "devicesTab": "Urządzenia",
     "dmAddDevice": "Dodaj urządzenie według IP",
     "dmAddDeviceDescription": "Dodaj urządzenie według adresu IP, np. jeśli nie zostało wykryte",
     "dmDeleteConfirm": "Na pewno usunąć %s? Wszystkie obiekty urządzenia również zostaną usunięte.",
@@ -18,12 +16,10 @@
     "dmReady": "Gotowe",
     "dmSearchDevices": "Dodaj wykryte urządzenie",
     "dmSearchDevicesDescription": "Dodaj urządzenie wykryte w sieci",
-    "deviceEnabled": "Włączone",
     "ipaddress": "Adres IP",
     "mac": "Adres MAC",
     "model": "Model",
     "name": "Nazwa",
     "pin": "PIN",
-    "pollInterval": "Interwał odpytywania",
-    "settingsTab": "Tabela urządzeń"
+    "pollInterval": "Interwał odpytywania"
 }

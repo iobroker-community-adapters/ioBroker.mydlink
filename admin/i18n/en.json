@@ -1,6 +1,4 @@
 {
-    "devicesInfo": "Devices are added and removed on the tab \"Devices\", the PIN can also be changed there. Here you can change name, IP address, polling interval and whether a device is enabled.",
-    "devicesTab": "Devices",
     "dmAddDevice": "Add device by IP",
     "dmAddDeviceDescription": "Add a device by its IP address, e.g. if it was not detected",
     "dmDeleteConfirm": "Really delete %s? All objects of the device are deleted, too.",
@@ -18,12 +16,10 @@
     "dmReady": "Ready",
     "dmSearchDevices": "Add detected device",
     "dmSearchDevicesDescription": "Add a device that was detected in the network",
-    "deviceEnabled": "Enabled",
     "ipaddress": "IP address",
     "mac": "MAC address",
     "model": "Model",
     "name": "Name",
     "pin": "PIN",
-    "pollInterval": "Polling interval",
-    "settingsTab": "Device table"
+    "pollInterval": "Polling interval"
 }

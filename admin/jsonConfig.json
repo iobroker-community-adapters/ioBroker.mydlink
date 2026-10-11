@@ -1,88 +1,14 @@
 {
     "i18n": true,
-    "type": "tabs",
+    "type": "panel",
     "items": {
-        "_devicesTab": {
-            "type": "panel",
-            "label": "devicesTab",
-            "items": {
-                "_deviceManager": {
-                    "type": "deviceManager",
-                    "xs": 12,
-                    "style": {
-                        "width": "100%",
-                        "height": "100%",
-                        "overflow": "hidden"
-                    }
-                }
-            },
+        "_deviceManager": {
+            "type": "deviceManager",
+            "xs": 12,
             "style": {
                 "width": "100%",
                 "height": "100%",
                 "overflow": "hidden"
-            }
-        },
-        "_settingsTab": {
-            "type": "panel",
-            "label": "settingsTab",
-            "items": {
-                "_devicesInfo": {
-                    "type": "staticText",
-                    "text": "devicesInfo",
-                    "xs": 12
-                },
-                "devices": {
-                    "type": "table",
-                    "noDelete": true,
-                    "newLine": true,
-                    "xs": 12,
-                    "uniqueColumns": [
-                        "mac"
-                    ],
-                    "items": [
-                        {
-                            "type": "text",
-                            "attr": "name",
-                            "title": "name",
-                            "width": "25%"
-                        },
-                        {
-                            "type": "text",
-                            "attr": "ip",
-                            "title": "ipaddress",
-                            "width": "15%"
-                        },
-                        {
-                            "type": "text",
-                            "attr": "mac",
-                            "title": "mac",
-                            "readOnly": true,
-                            "width": "15%"
-                        },
-                        {
-                            "type": "text",
-                            "attr": "model",
-                            "title": "model",
-                            "readOnly": true,
-                            "width": "15%"
-                        },
-                        {
-                            "type": "number",
-                            "attr": "pollInterval",
-                            "title": "pollInterval",
-                            "min": 0,
-                            "max": 2147483646,
-                            "unit": "ms",
-                            "width": "20%"
-                        },
-                        {
-                            "type": "checkbox",
-                            "attr": "enabled",
-                            "title": "deviceEnabled",
-                            "width": "10%"
-                        }
-                    ]
-                }
             }
         }
     }

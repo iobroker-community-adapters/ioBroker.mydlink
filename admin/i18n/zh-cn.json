@@ -1,6 +1,4 @@
 {
-    "devicesInfo": "设备在\"设备\"选项卡中添加和删除，PIN 也可以在那里更改。在这里可以更改设备的名称、IP 地址、轮询间隔以及是否启用。",
-    "devicesTab": "设备",
     "dmAddDevice": "通过 IP 添加设备",
     "dmAddDeviceDescription": "通过 IP 地址添加设备，例如未检测到时",
     "dmDeleteConfirm": "确定删除 %s 吗？设备的所有对象也将被删除。",
@@ -18,12 +16,10 @@
     "dmReady": "就绪",
     "dmSearchDevices": "添加检测到的设备",
     "dmSearchDevicesDescription": "添加在网络中检测到的设备",
-    "deviceEnabled": "已启用",
     "ipaddress": "IP 地址",
     "mac": "MAC 地址",
     "model": "型号",
     "name": "名称",
     "pin": "PIN",
-    "pollInterval": "轮询间隔",
-    "settingsTab": "设备表"
+    "pollInterval": "轮询间隔"
 }

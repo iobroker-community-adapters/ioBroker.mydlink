@@ -1,6 +1,4 @@
 {
-    "devicesInfo": "Geräte werden im Tab \"Geräte\" hinzugefügt und entfernt, dort kann auch die PIN geändert werden. Hier lassen sich Name, IP-Adresse, Abfrageintervall und Aktivierung der Geräte ändern.",
-    "devicesTab": "Geräte",
     "dmAddDevice": "Gerät über IP hinzufügen",
     "dmAddDeviceDescription": "Ein Gerät über seine IP-Adresse hinzufügen, z. B. wenn es nicht erkannt wurde",
     "dmDeleteConfirm": "%s wirklich löschen? Alle Objekte des Geräts werden ebenfalls gelöscht.",
@@ -18,12 +16,10 @@
     "dmReady": "Bereit",
     "dmSearchDevices": "Erkanntes Gerät hinzufügen",
     "dmSearchDevicesDescription": "Ein im Netzwerk erkanntes Gerät hinzufügen",
-    "deviceEnabled": "Aktiviert",
     "ipaddress": "IP-Adresse",
     "mac": "MAC-Adresse",
     "model": "Modell",
     "name": "Name",
     "pin": "PIN",
-    "pollInterval": "Abfrageintervall",
-    "settingsTab": "Gerätetabelle"
+    "pollInterval": "Abfrageintervall"
 }

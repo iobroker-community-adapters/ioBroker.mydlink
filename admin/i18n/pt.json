@@ -1,6 +1,4 @@
 {
-    "devicesInfo": "Os dispositivos são adicionados e removidos na aba \"Dispositivos\", onde também é possível alterar o PIN. Aqui você pode alterar nome, endereço IP, intervalo de consulta e se o dispositivo está ativado.",
-    "devicesTab": "Dispositivos",
     "dmAddDevice": "Adicionar dispositivo por IP",
     "dmAddDeviceDescription": "Adicionar um dispositivo pelo endereço IP, por exemplo, se não foi detectado",
     "dmDeleteConfirm": "Excluir %s mesmo? Todos os objetos do dispositivo também serão excluídos.",
@@ -18,12 +16,10 @@
     "dmReady": "Pronto",
     "dmSearchDevices": "Adicionar dispositivo detectado",
     "dmSearchDevicesDescription": "Adicionar um dispositivo detectado na rede",
-    "deviceEnabled": "Ativado",
     "ipaddress": "Endereço IP",
     "mac": "Endereço MAC",
     "model": "Modelo",
     "name": "Nome",
     "pin": "PIN",
-    "pollInterval": "Intervalo de consulta",
-    "settingsTab": "Tabela de dispositivos"
+    "pollInterval": "Intervalo de consulta"
 }
