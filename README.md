@@ -85,7 +85,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 	Placeholder for next versions (this needs to be indented):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 2.1.0 (2026-10-12)
 - (Garfonso) feat: sensitivity, backoff time and detection of motion detectors can be changed with states
 - (Garfonso) feat: NTP server of older devices (DSP-W215, DCH-S150) can be set in the device manager
 - (Garfonso) feat: devices are polled right after start
@@ -121,9 +121,6 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 
 ### 1.3.4 (2023-08-18)
 * fixed: missing build...
-
-### 1.3.3 (2023-08-07)
-* fix: crash with js-controller 5.x
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

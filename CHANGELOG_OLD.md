@@ -1,4 +1,7 @@
 # Older changes
+## 1.3.3 (2023-08-07)
+* fix: crash with js-controller 5.x
+
 ## 1.3.2 (2023-06-23)
 * better handle possible exception on unload.
 
