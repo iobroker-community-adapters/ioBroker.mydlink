@@ -16,9 +16,13 @@ Currently tested devices:
 | DSP-W215 | Smart Plug (socket, temperature, current) **Needs polling** | ![Image](media/DSP_W215.png) |
 | DSP-W115 | Smart Plug (socket) | ![Image](media/DSP_W115.png) | 
 | DCH-S150 | Motion Detector (last motion detected) **Needs polling** | ![Image](media/DCH_S150.png) |
+| DSP-W245 | Smart Power Strip (4 sockets) **Needs polling** | |
 
-The adapter needs to poll some devices. Newer ones do send push messages, which is now supported. Sensor readings and motion detection will be 
-delayed by polling interval, if they need to be polled (can be set in config).
+The adapter polls the devices. Sensor readings, motion detection and switching with the buttons of the device are delayed
+by the poll interval (can be set per device). The newer devices (DSP-W115, DSP-W245) do not report switching or power
+consumption to the adapter by themselves, see [Events and power measurement](https://github.com/Garfonso/dlinkWebSocketClient#events-and-power-measurement).
+
+**Not supported:** DSP-W118. Its local interface does not allow to switch the relay, see [analysis](../DSP-W118-analysis.md).
 
 #### Configuration:
 Devices are managed in the device manager, either in the adapter settings or in the device manager of admin:

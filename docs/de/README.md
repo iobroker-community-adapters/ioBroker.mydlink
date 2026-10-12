@@ -21,11 +21,15 @@ Bisher wurden die folgenden Geräte erfolgreich mit dem Adapter getestet:
 | DSP-W215 | Steckdose (schalten, Temperatur, Strom) **Muss gepollt werden** | ![Image](media/DSP_W215.png) |
 | DSP-W115 | Steckdose (schalten) | ![Image](media/DSP_W115.png) | 
 | DCH-S150 | Bewegungsmelder **Muss gepollt werden** | ![Image](media/DCH_S150.png) |
+| DSP-W245 | Steckdosenleiste (4 Steckdosen) **Muss gepollt werden** | |
 
-Ältere Geräte, wie die DSP-W215 oder der DCH-S150 müssen vom Adapter gepollt werden,
-was bedeutet, dass es immer eine kurze Verzögerung für den Statusreport an ioBroker
-gibt. Das ist besonders beim Bewegungsmelder ungünstig. Der DSP-W115 und andere
-neuere Geräte liefern ihren Status sofort an den ioBroker.
+Der Adapter fragt die Geräte regelmäßig ab (pollen). Sensorwerte, Bewegungen und Schalten über die Tasten am Gerät
+kommen daher mit einer Verzögerung von bis zu einem Pollintervall an. Auch die neueren Geräte (DSP-W115, DSP-W245)
+melden Schalten und Stromverbrauch nicht von sich aus an den Adapter, siehe
+[Events and power measurement](https://github.com/Garfonso/dlinkWebSocketClient#events-and-power-measurement).
+
+**Nicht unterstützt:** DSP-W118. Über seine lokale Schnittstelle lässt sich das Relais nicht schalten, siehe
+[Analyse](../DSP-W118-analysis.md).
 
 Das Pollintervall kann pro Gerät einzeln eingestellt werden.
 

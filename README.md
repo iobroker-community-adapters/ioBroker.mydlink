@@ -26,20 +26,38 @@ Currently tested devices:
 | DSP-W215 | Smart Plug (socket, temperature, current) **Needs polling** | ![Image](docs/en/media/DSP_W215.png) |
 | DSP-W115 | Smart Plug (socket) | ![Image](docs/en/media/DSP_W115.png) | 
 | DCH-S150 | Motion Detector (last motion detected) **Needs polling** | ![Image](docs/en/media/DCH_S150.png) |
+| DSP-W245 | Smart Power Strip (4 sockets) **Needs polling** | |
 
-The adapter needs to poll some devices. Newer ones do send push messages, which is now supported. Sensor readings and motion detection will be 
-delayed by polling interval, if they need to be polled (can be set in config).
+The adapter polls the devices. Sensor readings, motion detection and switching with the buttons of the device are delayed
+by the poll interval (can be set per device). The newer devices (DSP-W115, DSP-W245) do not report switching or power
+consumption to the adapter by themselves, see [Events and power measurement](https://github.com/Garfonso/dlinkWebSocketClient#events-and-power-measurement).
+
+**Not supported:** DSP-W118. Its local interface does not allow to switch the relay, see [analysis](docs/DSP-W118-analysis.md).
 
 #### Configuration:
-* List of devices, each device with following settings:
+Devices are managed in the device manager, either in the adapter settings or in the device manager of admin:
+* **Add detected device**: devices announced in the network are offered for selection. Enter the PIN.
+* **Add device by IP**: for devices that were not detected. Enter IP address and PIN.
+* Every device can be edited, enabled / disabled and deleted. Deleting a device also deletes its objects.
+
+Settings of a device:
 
 <table>
 <tr><td>Name</td><td>set a name here, must be unique (for mydlink devices)</td></tr>
 <tr><td>IP</td><td>fill in IP address here, hostname should also work</td></tr>
-<tr><td>PIN</td><td>PIN is printed on a sticker on the device, probably at the bottom. Can be TELNET for DSP-W115, see below.</td></tr>
+<tr><td>PIN</td><td>PIN is printed on a sticker on the device, probably at the bottom. Can be TELNET for DSP-W115, see below.<br />The PIN is stored encrypted and can only be changed in the device manager.</td></tr>
 <tr><td>Poll interval</td><td>per device poll interval<br /> Set 0 to disable polling. <br /><b>Recommendation:</b> Set a fast poll interval for sensors and a longer one for plugs.</td></tr>
 <tr><td>enable</td><td>if not enabled, will not be polled or controlled. <br />Devices that are not plugged in can be disabled to avoid network traffic and error messages in the log.</td></tr>
+<tr><td>NTP server</td><td>only older devices like DSP-W215 and DCH-S150: time server that is set on the device. Empty keeps the setting of the device.<br />These devices use ntp1.dlink.com. Without correct time the timestamps of the motion detector are wrong, so a local time server (e.g. your router) is a good choice.</td></tr>
 </table>
+
+#### Settings of the motion detector (DCH-S150)
+The states of the motion detector also allow to change its settings:
+* `sensitivity`: sensitivity of the sensor, 0 - 100.
+* `backoff`: time in seconds after a detection, in which the detector does not report a new detection. The device uses 30 seconds by default. With a short time (e.g. 1 - 5 seconds) and a short poll interval new motion is detected much earlier.
+* `detectionEnabled`: switches motion detection on or off.
+
+Every change of the configuration restarts the adapter.
 
 The adapter does not interfere with the use of the app.
 
@@ -72,6 +90,7 @@ DSP-W115 and other *newer* devices use a completely different protocol and a dif
 - (Garfonso) feat: NTP server of older devices (DSP-W215, DCH-S150) can be set in the device manager
 - (Garfonso) feat: devices are polled right after start
 - (Garfonso) fix: disabled devices were shown as connected
+- (Garfonso) docs: DSP-W245 is tested, DSP-W118 is not supported, devices have to be polled
 
 ### 2.0.0 (2026-10-11)
 - (copilot) **Breaking:** Adapter requires node.js >= 22 now
