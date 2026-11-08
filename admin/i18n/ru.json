@@ -19,7 +19,7 @@
     "ipaddress": "IP-адрес",
     "mac": "MAC-адрес",
     "model": "Модель",
-    "name": "Имя",
+    "name": "Название",
     "pin": "PIN",
     "pollInterval": "Интервал опроса",
     "ntpServer": "NTP-сервер",
